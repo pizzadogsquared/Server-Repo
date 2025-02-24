@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey</title>
+  <link rel="stylesheet" href="/styles/survey.css">
+</head>
+<body>
+  <div class="survey-container">
+    <h1>Daily Survey</h1>
+
+    <% if (section === "completed") { %>
+      <h2>All surveys completed for today!</h2>
+      <a href="/home" class="btn">Home</a>
+    
+    <% } else if (section === "choice") { %>
+      <h2>Select the next section</h2>
+      <a href="/survey?section=mental" class="btn">Mental</a>
+      <a href="/survey?section=physical" class="btn">Physical</a>
+      <a href="/home" class="btn">Home</a>
+    
+    <% } else if (section === "next") { %>
+      <h2>Would you like to continue?</h2>
+      <% if (!userProgress.mental) { %>
+        <a href="/survey?section=mental" class="btn">Mental</a>
+      <% } %>
+      <% if (!userProgress.physical) { %>
+        <a href="/survey?section=physical" class="btn">Physical</a>
+      <% } %>
+      <a href="/home" class="btn">Home</a>
+    
+    <% } else { %>
+      <form action="/submit-survey" method="POST">
+        <input type="hidden" name="section" value="<%= section %>">
+        <% let questions = {
+          general: [
+            "I drink 8 glasses of water daily.",
+            "I eat meals regularly.",
+            "I feel sluggish and tired most of the time.",
+            "I am hopeful about the future.",
+            "I am satisfied with my daily life."
+          ],
+          mental: [
+            "I have trouble concentrating.",
+            "I feel disconnected from everyone.",
+            "I feel like I’m the only one struggling.",
+            "I don’t feel I’m as good as everyone.",
+            "I’m sad and unhappy all the time."
+          ],
+          physical: [
+            "I use electronic devices after midnight.",
+            "I exercise for 30 minutes or more every day.",
+            "I go outside for the sun at least 10 minutes a day.",
+            "I sleep for 7 to 8 hours.",
+            "I drink caffeinated drinks excessively."
+          ]
+        };
+        %>
+        <% if (questions[section]) { %>
+          <% questions[section].forEach((question, index) => { %>
+            <div class="question">
+              <label for="q<%= index + 1 %>"><%= index + 1 %>. <%= question %></label>
+              <input type="range" id="q<%= index + 1 %>" name="q<%= index + 1 %>" min="1" max="10" step="1" required>
+              <div class="scale-labels">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+        <button type="submit" class="btn">Submit</button>
+      </form>
+    <% } %>
+  </div>
+</body>
+</html>

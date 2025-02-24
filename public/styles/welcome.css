@@ -1,0 +1,135 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: url("/images/background.jpg") no-repeat center center fixed; /* Background image */
+  background-size: cover; /* Make the image cover the entire screen */
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  box-sizing: border-box; /* Ensure padding and borders are included in width/height */
+}
+
+/* Welcome Page */
+.welcome-container {
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add depth */
+  max-width: 600px; /* Limit container width for larger screens */
+  width: 90%; /* Ensure it looks good on smaller screens */
+}
+
+.welcome-container h1 {
+  font-size: 2rem; /* Larger font for the title */
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.welcome-container p {
+  margin-bottom: 20px;
+  color: #555;
+}
+
+.welcome-container .button-group {
+  margin-top: 20px;
+}
+
+.welcome-container .btn {
+  text-decoration: none;
+  color: white;
+  background-color: #ffcc00; /* Brighter yellow for buttons */
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin: 0 10px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.welcome-container .btn:hover {
+  background-color: #e6b800; /* Slightly darker yellow */
+}
+
+/* Auth Pages */
+.auth-container {
+  background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Same shadow for consistency */
+  width: 100%;
+  max-width: 400px; /* Adjust size for auth forms */
+}
+
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.auth-container .form-group {
+  margin-bottom: 15px;
+}
+
+.auth-container .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.auth-container .form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box; /* Ensure padding doesn't break layout */
+}
+
+.auth-container .btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #ffcc00; /* Match button style with welcome page */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.auth-container .btn:hover {
+  background-color: #e6b800; /* Consistent hover color */
+}
+
+.auth-container p {
+  text-align: center;
+  margin-top: 10px;
+  color: #555;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .welcome-container {
+    padding: 20px;
+  }
+
+  .welcome-container h1 {
+    font-size: 1.5rem;
+  }
+
+  .welcome-container .btn {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+
+  .auth-container {
+    padding: 20px;
+  }
+
+  .auth-container h2 {
+    font-size: 1.5rem;
+  }
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp</title>
+    <link rel="stylesheet" href="/styles/login_signup.css"/>
+</head>
+<body>
+    <video autoplay muted 100p id="background-video">
+        <source src="/images/Distant_Lights_4K_Motion_Background_Loop.mp4" type="video/mp4">
+    </video>
+    <section class="form-section">
+        <div class="form-container">
+            <h2 class="form-title">Sign Up</h2>
+            <% if (typeof error !== 'undefined') { %>
+                <div class="error-box">
+                    <p><%= error %></p>
+                </div>
+            <% } %>
+            <form action="" method="POST">
+            <div class=" input-group">
+                <input type="text" name="name" placeholder="Full Name" required />
+            </div>
+            <div class=" input-group">
+                <input type="email" name="email" placeholder="Email" required />
+            </div>
+            <div class=" input-group">
+                <input type="password" name="password" placeholder="Password" required />
+            </div>
+            <div class=" input-group">
+                <input type="password" name="confirm_password" placeholder="Confirm Password" required />
+            </div>
+                <button type="submit" class="btn">Sign Up</button>
+            </form>
+            <div class="form-footer">
+                <p>Already have an account? <a href="/login">Log in</a></p>
+            </div>
+        </div>
+    </section>
+</body> 
+</html>

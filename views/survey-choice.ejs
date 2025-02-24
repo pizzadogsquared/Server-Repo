@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Choice</title>
+  <link rel="stylesheet" href="/styles/survey.css">
+</head>
+<body>
+  <div class="survey-container">
+    <h1>Next Steps</h1>
+
+    <% if (!userProgress.mental && !userProgress.physical) { %>
+      <p>You have completed the General survey. Choose the next section:</p>
+      <a href="/survey?section=mental" class="btn">Mental</a>
+      <a href="/survey?section=physical" class="btn">Physical</a>
+      <a href="/home" class="btn">Home</a>
+    
+    <% } else if (!userProgress.mental) { %>
+      <p>You have completed one section. Would you like to continue?</p>
+      <a href="/survey?section=mental" class="btn">Mental</a>
+      <a href="/home" class="btn">Home</a>
+    <% } else if (!userProgress.physical) { %>
+      <p>You have completed one section. Would you like to continue?</p>
+      <a href="/survey?section=physical" class="btn">Physical</a>
+      <a href="/home" class="btn">Home</a>
+    <% } else { %>
+      <p>All surveys are completed for today!</p>
+      <a href="/home" class="btn">Home</a>
+    <% } %>
+  </div>
+</body>
+</html>

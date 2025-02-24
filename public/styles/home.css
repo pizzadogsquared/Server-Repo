@@ -1,0 +1,42 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background: url('/images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+    text-align: center;
+  }
+  
+  .home-container {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    margin: 50px auto;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .home-container h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+  }
+  
+  .home-container p {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+  }
+
+/* Button Styles */
+  .home-buttons .btn {
+    display: inline-block;
+    background: #333;
+    color: #ffd700;
+    padding: 10px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin: 10px;
+  }
+  
+  .home-buttons .btn:hover {
+    background: #555;
+  }
