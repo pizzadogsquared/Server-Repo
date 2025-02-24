@@ -5,6 +5,7 @@ import { handleLogin } from "./login.js";
 import { handleSignup } from "./signup.js";
 import db from "./db.js";
 
+dotenv.config();
 
 const app = express()
 const PORT = 8000;
