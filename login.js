@@ -1,22 +1,11 @@
-import mysql from "mysql2/promise";
 import bcrypt from "bcrypt";
-
-// Database connection
-const pool = mysql.createPool({
-  host: "localhost",
-  user: "bee_user",
-  password: "G_rizzy3430@",
-  database: "bee_balanced_db",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+import db from "./db.js";
 
 export async function handleLogin(req, res) {
   const { email, password } = req.body;
 
   try {
-    const conn = await pool.getConnection();
+    const conn = await db.getConnection();
 
     // Query the database for the user
     const [rows] = await conn.query("SELECT * FROM users WHERE email = ?", [email]);
@@ -35,11 +24,11 @@ export async function handleLogin(req, res) {
     }
 
     // Store user session
-    req.session.user = { id: user.id, name: user.full_name, email: user.email };
+    req.session.user = { id: user.id, name: user.full_name, email };
 
     res.redirect("/home"); // Redirect to survey after successful login
   } catch (err) {
     console.error("Error during login:", err);
-    res.send("Error logging in.");
+    res.status(500).send("Internal Server Error");
   }
 }

@@ -8,13 +8,13 @@ import db from "./db.js";
 dotenv.config();
 
 const app = express()
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.use(session({
-  secret: "your_secret_key", 
+  secret: process.env.SESSION_SECRET, 
   resave: false, 
   saveUninitialized: true
 }));
@@ -68,11 +68,8 @@ app.post("/submit-survey", (req, res) => {
 
   if (userProgress.general && userProgress.mental && userProgress.physical) {
     return res.redirect("/survey?section=completed");
-  } else if (section === "general") {
-    return res.redirect("/survey-choice");
-  } else {
-    return res.redirect("/survey-choice");
   }
+  return res.redirect("/survey-choice");
 });
 
 app.listen(PORT, ()=>{

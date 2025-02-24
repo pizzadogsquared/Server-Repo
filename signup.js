@@ -1,17 +1,5 @@
-import fs from "fs";
-import mysql from "mysql2/promise";
 import bcrypt from "bcrypt";
-
-// Database connection
-const pool = mysql.createPool({
-    host: "localhost",
-    user: "bee_user",
-    password: "G_rizzy3430@",
-    database: "bee_balanced_db",
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+import db from "./db.js";
 
 export async function handleSignup(req, res) {
   const { name, email, password, confirm_password } = req.body;
@@ -22,7 +10,7 @@ export async function handleSignup(req, res) {
   }
 
   try {
-        const conn = await pool.getConnection();
+        const conn = await db.getConnection();
 
         // Check if email already exists
         const [existingUser] = await conn.query("SELECT * FROM users WHERE email = ?", [email]);
@@ -41,7 +29,7 @@ export async function handleSignup(req, res) {
         conn.release();
         res.redirect("/login"); // Redirect to login after successful signup
     } catch (err) {
-        console.error(err);
-        res.send("Error saving user data.");
+        console.error("Error during signup:", err);
+        res.status(500).send("Internal Server Error");
     }
 }
