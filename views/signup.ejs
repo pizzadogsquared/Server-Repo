@@ -31,7 +31,18 @@
             <div class=" input-group">
                 <input type="password" name="confirm_password" placeholder="Confirm Password" required />
             </div>
-                <button type="submit" class="btn">Sign Up</button>
+            <div class="input-group">
+                    <input type="number" name="age" placeholder="Age (Optional)" min="0"/>
+            </div>
+            <div class="input-group">
+                <select name="gender">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to answer" selected>Prefer not to answer</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Sign Up</button>
             </form>
             <div class="form-footer">
                 <p>Already have an account? <a href="/login">Log in</a></p>
