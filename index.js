@@ -7,7 +7,7 @@ import db from "./db.js";
 
 dotenv.config();
 
-const app = express()
+const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(express.urlencoded({ extended: true }));
@@ -25,53 +25,72 @@ app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-// Route for login ("/login")
 app.get("/login", (req, res) => {
   res.render("login");
 });
-
-// Handle POST request for login
 app.post("/login", handleLogin);
-
-// logout, goes back to login page
 app.get("/logout", (req, res) => {
-  userProgress = {}; // Reset progress
+  userProgress = {}; 
   res.redirect("/login");
 });
 
-// Route for signup ("/signup")
-app.get("/signup", (reg, res) => {
+app.get("/signup", (req, res) => {
   res.render("signup");
 });
-
-// Handle POST request for signup
 app.post("/signup", handleSignup);
 
-// home page, to start surveys
 app.get("/home", (req, res) => {
   res.render("home");
 });
 
-// surveys
 app.get("/survey", (req, res) => {
-  const section = req.query.section || "general"; // Default to 'general'
-  res.render("survey", { section });
+  if (!req.session.user) {
+    return res.redirect("/login"); // Redirect if the user is not logged in
+  }
+
+  const userId = req.session.user.id;
+  const section = req.query.section || "general"; 
+  res.render("survey", { userId, section });
 });
 
 app.get("/survey-choice", (req, res) => {
   res.render("survey-choice", { userProgress });
 });
 
-app.post("/submit-survey", (req, res) => {
-  const { section } = req.body;
+// **Updated /submit-survey route to store responses in MySQL**
+app.post("/submit-survey", async (req, res) => {
+  const { section, userId, ...responses } = req.body;
   userProgress[section] = true;
 
-  if (userProgress.general && userProgress.mental && userProgress.physical) {
-    return res.redirect("/survey?section=completed");
+  let tableName;
+  switch (section) {
+    case "general":
+      tableName = "general_survey";
+      break;
+    case "mental":
+      tableName = "mental_survey";
+      break;
+    case "physical":
+      tableName = "physical_survey";
+      break;
+    default:
+      return res.status(400).json({ error: "Invalid survey section" });
   }
-  return res.redirect("/survey-choice");
+
+  try {
+    const query = `INSERT INTO ${tableName} (user_id, response) VALUES (?, ?)`;
+    await db.query(query, [userId, JSON.stringify(responses)]);
+
+    if (userProgress.general && userProgress.mental && userProgress.physical) {
+      return res.redirect("/survey?section=completed");
+    }
+    return res.redirect("/survey-choice");
+  } catch (err) {
+    console.error("Database Error:", err);
+    return res.status(500).json({ error: "Failed to save survey response" });
+  }
 });
 
-app.listen(PORT, ()=>{
-  console.log(`Listening to port ${PORT}`)
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
 });
