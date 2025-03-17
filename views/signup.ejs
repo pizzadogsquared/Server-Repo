@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles/login_signup.css"/>
 </head>
 <body>
-    <video autoplay muted 100p id="background-video">
+    <video autoplay muted loop id="background-video">
         <source src="/images/Distant_Lights_4K_Motion_Background_Loop.mp4" type="video/mp4">
     </video>
     <section class="form-section">
@@ -18,31 +18,32 @@
                     <p><%= error %></p>
                 </div>
             <% } %>
-            <form action="" method="POST">
-            <div class=" input-group">
-                <input type="text" name="name" placeholder="Full Name" required />
-            </div>
-            <div class=" input-group">
-                <input type="email" name="email" placeholder="Email" required />
-            </div>
-            <div class=" input-group">
-                <input type="password" name="password" placeholder="Password" required />
-            </div>
-            <div class=" input-group">
-                <input type="password" name="confirm_password" placeholder="Confirm Password" required />
-            </div>
-            <div class="input-group">
-                    <input type="number" name="age" placeholder="Age (Optional)" min="0"/>
-            </div>
-            <div class="input-group">
-                <select name="gender">
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                    <option value="Prefer not to answer" selected>Prefer not to answer</option>
-                </select>
-            </div>
-            <button type="submit" class="btn">Sign Up</button>
+            <form action="" method="POST" class="signup-form">
+                <div class="input-group">
+                    <input type="text" name="name" placeholder="Full Name" required class="input-field"/>
+                </div>
+                <div class="input-group">
+                    <input type="email" name="email" placeholder="Email" required class="input-field"/>
+                </div>
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Password" required class="input-field"/>
+                </div>
+                <div class="input-group">
+                    <input type="password" name="confirm_password" placeholder="Confirm Password" required class="input-field"/>
+                </div>
+                <div class="input-group">
+                    <input type="number" name="age" placeholder="Age (Optional)" min="0" class="input-field"/>
+                </div>
+                <div class="input-group">
+                    <select name="gender" class="input-field">
+                        <option value="" disabled selected>Input Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to answer">Prefer not to answer</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Sign Up</button>
             </form>
             <div class="form-footer">
                 <p>Already have an account? <a href="/login">Log in</a></p>

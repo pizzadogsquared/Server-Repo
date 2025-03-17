@@ -33,6 +33,7 @@
     <% } else { %>
       <form action="/submit-survey" method="POST">
         <input type="hidden" name="section" value="<%= section %>">
+        <input type="hidden" name="userId" value="<%= userId %>">
         <% let questions = {
           general: [
             "I drink 8 glasses of water daily.",
