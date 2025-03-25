@@ -34,7 +34,6 @@ app.use(
    next();
  });
 
-
 let userProgress = {};
 let surveyResults = {
    overall: [5],
@@ -63,7 +62,7 @@ app.get("/signup", (req, res) => {
 app.post("/signup", handleSignup);
 
 app.get("/home", async (req, res) => {
-if (!req.session.user) {
+  if (!req.session.user) {
     return res.redirect("/login");
   }
 
@@ -85,33 +84,43 @@ if (!req.session.user) {
        "I sleep for 7 to 8 hours.": "Sleep restores the brain and body—aim for consistent, quality rest. Set a regular bedtime, avoid caffeine late in the day, and make your bedroom a restful space.",
        "I drink caffeinated drinks excessively.": "Too much caffeine disrupts sleep and can increase anxiety. Gradually reduce your caffeine intake, especially in the afternoon, to improve sleep quality."
    };
+
   try {
     // Fetch survey results from the database
     const [general] = await db.query("SELECT * FROM general_survey WHERE user_id = ?", [userId]);
     const [mental] = await db.query("SELECT * FROM mental_survey WHERE user_id = ?", [userId]);
     const [physical] = await db.query("SELECT * FROM physical_survey WHERE user_id = ?", [userId]);
 
+    // Helper function to initialize a week array
     function initializeWeekArray() {
       return new Array(7).fill(0);
     }
 
-// Function to calculate section averages and map them to days of the week
-    function calculateWeeklyAverages(data) {
+    // Function to calculate averages for the last 5 days
+    function calculateRecentAverages(data) {
+      const today = new Date();
+      const fiveDaysAgo = new Date(today);
+      fiveDaysAgo.setDate(today.getDate() - 5);
+
       const weekData = initializeWeekArray();
 
       data.forEach(({ created_at, score }) => {
-        const dayIndex = new Date(created_at).getDay(); // 0 = Sunday, 6 = Saturday
-        weekData[dayIndex] += score; // Sum scores
+        const createdAtDate = new Date(created_at);
+        if (createdAtDate >= fiveDaysAgo && createdAtDate <= today) {
+          const dayIndex = createdAtDate.getDay(); // 0 = Sunday, 6 = Saturday
+          weekData[dayIndex] += score; // Sum scores
+        }
       });
 
       return weekData;
     }
 
-    // Convert survey results into weekly arrays
-    const overallData = calculateWeeklyAverages(general);
-    const mentalData = calculateWeeklyAverages(mental);
-    const physicalData = calculateWeeklyAverages(physical);
+    // Convert survey results into weekly arrays, considering only the last 5 days
+    const overallData = calculateRecentAverages(general);
+    const mentalData = calculateRecentAverages(mental);
+    const physicalData = calculateRecentAverages(physical);
 
+    // Helper function to get the lowest feedback for each section
     function getLowestFeedback(data) {
       return data
         .sort((a, b) => a.avgScore - b.avgScore)
@@ -122,6 +131,7 @@ if (!req.session.user) {
         }));
     }
 
+    // Render the home page with the filtered survey data
     res.render("home", {
       overallData,
       mentalData,
