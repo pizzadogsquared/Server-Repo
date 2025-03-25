@@ -1,40 +1,53 @@
 <script type="module">
    import Plotly from 'plotly.js-dist';
- 
+
    document.addEventListener("DOMContentLoaded", function () {
-     const overallData = <%- JSON.stringify(overallData) %> || [0, 0, 0, 0, 0, 0, 0];
-     const mentalData = <%- JSON.stringify(mentalData) %> || [0, 0, 0, 0, 0, 0, 0];
-     const physicalData = <%- JSON.stringify(physicalData) %> || [0, 0, 0, 0, 0, 0, 0];
-     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
- 
-     function drawChart(chartId, title, data) {
+     const overallData = <%- JSON.stringify(overallData) %> || [];
+     const mentalData = <%- JSON.stringify(mentalData) %> || [];
+     const physicalData = <%- JSON.stringify(physicalData) %> || [];
+     const days = <%- JSON.stringify(days) %> || [];
+
+     function drawChart(chartId, title, data, days) {
+       // Ensure the chart has valid data
+       if (!data || data.length === 0 || !days || days.length === 0) {
+         console.warn(`No data available for ${title}`);
+         return;
+       }
+
        const trace = {
-         x: days,
+         x: days,  // Use actual date labels instead of fixed weekdays
          y: data,
          type: 'scatter',
          mode: 'lines+markers',
-         marker: { color: '#ffd700' },
-         line: { color: '#ffd700' }
+         marker: { color: '#FFD700' },
+         line: { color: '#FFD700' }
        };
- 
+
        const layout = {
          title: title,
-         titlefont: { color: '#ffd700' },
-         xaxis: { title: "Days", tickfont: { color: '#ffd700' }, linecolor: '#ffd700' },
-         yaxis: { title: "Score", range: [0, 10], tickfont: { color: '#ffd700' }, linecolor: '#ffd700' },
+         titlefont: { color: '#FFD700' },
+         xaxis: { 
+           title: "Date",
+           tickangle: -45,  // Rotate for better readability
+           tickfont: { color: '#FFD700' },
+           type: 'category', // Ensures proper date formatting
+           showgrid: true,
+           gridcolor: "#444"
+         },
+         yaxis: { 
+           title: "Average Score", 
+           range: [0, 10], 
+           tickfont: { color: '#FFD700' },
+           showgrid: true,
+           gridcolor: "#444"
+         },
          plot_bgcolor: '#222',
-         paper_bgcolor: '#222',
+         paper_bgcolor: '#222'
        };
 
-       // Updated logic for finding the last non-zero index
-       let lastIndex = -1;
-       for (let i = data.length - 1; i >= 0; i--) {
-         if (data[i] !== 0) {
-           lastIndex = i;
-           break;
-         }
-       }
-
+       // Find the last non-null, non-zero value for placing the bee image
+       let lastIndex = data.findLastIndex(val => val !== null && val !== 0);
+       
        if (lastIndex !== -1) {
          const lastX = days[lastIndex];
          const lastY = data[lastIndex];
@@ -51,12 +64,13 @@
            layer: "above"
          }];
        }
- 
+
        Plotly.newPlot(chartId, [trace], layout);
      }
- 
-     drawChart("overallChart", "Overall Health Progress", overallData);
-     drawChart("mentalChart", "Mental Health Progress", mentalData);
-     drawChart("physicalChart", "Physical Health Progress", physicalData);
+
+     drawChart("overallChart", "Overall Health Progress", overallData, days);
+     drawChart("mentalChart", "Mental Health Progress", mentalData, days);
+     drawChart("physicalChart", "Physical Health Progress", physicalData, days);
    });
 </script>
+
