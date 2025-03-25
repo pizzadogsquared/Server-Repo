@@ -66,6 +66,10 @@ app.get("/home", async (req, res) => {
     return res.redirect("/login");
   }
 
+  // Get the current day of the week
+  const today = new Date().getDay();
+  // Hold the listed days of the week
+  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const userId = req.session.user.id;
   const adviceMap = {
        "I drink 8 glasses of water daily.": "Drinking 8 cups of water daily improves brain function, boosts energy, and supports digestion. Try carrying a water bottle with you to stay on track.",
@@ -87,9 +91,9 @@ app.get("/home", async (req, res) => {
 
   try {
     // Fetch survey results from the database
-    const [general] = await db.query("SELECT * FROM general_survey WHERE user_id = ?", [userId]);
-    const [mental] = await db.query("SELECT * FROM mental_survey WHERE user_id = ?", [userId]);
-    const [physical] = await db.query("SELECT * FROM physical_survey WHERE user_id = ?", [userId]);
+    const [general] = await db.query("SELECT * FROM general_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
+    const [mental] = await db.query("SELECT * FROM mental_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
+    const [physical] = await db.query("SELECT * FROM physical_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
 
     // Helper function to initialize a week array
     function initializeWeekArray() {
@@ -99,29 +103,21 @@ app.get("/home", async (req, res) => {
     // Function to calculate averages for the last 5 days
     function calculateRecentAverages(data) {
       const today = new Date();
-      const fiveDaysAgo = new Date(today);
-      fiveDaysAgo.setDate(today.getDate() - 5);
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 6);
 
-      const weekData = {};
+      const weekData = new Array(7).fill(null);
       const count = {};
 
       data.forEach(({ created_at, score }) => {
         const createdAtDate = new Date(created_at);
-        if (createdAtDate >= fiveDaysAgo && createdAtDate <= today) {
-          const dayKey = createdAtDate.toISOString().split("T")[0]; // Store by date string (YYYY-MM-DD)
-          if (!weekData[dayKey]) {
-            weekData[dayKey] = 0;
-            count[dayKey] = 0;
-          }
-          weekData[dayKey] += score;
-          count[dayKey] += 1;
+        if (createdAtDate >= sevenDaysAgo && createdAtDate <= today) {
+          const dayIndex = (createdAtDate.getDay() + 7) % 7; // Normalize index
+          weekData[dayIndex] = score;
         }
       });
 
-      return Object.keys(weekData).map(date => ({
-        date,
-        avgScore: count[date] ? weekData[date] / count[date] : null
-      }));
+      return weekData.map(score => score || 5);
     }
 
     // Convert survey results into weekly arrays, considering only the last 5 days
@@ -145,10 +141,10 @@ app.get("/home", async (req, res) => {
 
     // Render the home page with the filtered survey data
     res.render("home", {
-      overallData: overallData.map(d => d.avgScore),
-      mentalData: mentalData.map(d => d.avgScore),
-      physicalData: physicalData.map(d => d.avgScore),
-      days: overallData.map(d => d.date),
+      overallData: overallData,
+      mentalData: mentalData,
+      physicalData: physicalData,
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
       overallFeedback: getLowestFeedback(general),
       mentalFeedback: getLowestFeedback(mental),
       physicalFeedback: getLowestFeedback(physical),
