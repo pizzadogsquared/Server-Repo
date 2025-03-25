@@ -102,17 +102,26 @@ app.get("/home", async (req, res) => {
       const fiveDaysAgo = new Date(today);
       fiveDaysAgo.setDate(today.getDate() - 5);
 
-      const weekData = initializeWeekArray();
+      const weekData = {};
+      const count = {};
 
       data.forEach(({ created_at, score }) => {
         const createdAtDate = new Date(created_at);
         if (createdAtDate >= fiveDaysAgo && createdAtDate <= today) {
-          const dayIndex = createdAtDate.getDay(); // 0 = Sunday, 6 = Saturday
-          weekData[dayIndex] += score; // Sum scores
+          const dayKey = createdAtDate.toISOString().split("T")[0]; // Store by date string (YYYY-MM-DD)
+          if (!weekData[dayKey]) {
+            weekData[dayKey] = 0;
+            count[dayKey] = 0;
+          }
+          weekData[dayKey] += score;
+          count[dayKey] += 1;
         }
       });
 
-      return weekData;
+      return Object.keys(weekData).map(date => ({
+        date,
+        avgScore: count[date] ? weekData[date] / count[date] : null
+      }));
     }
 
     // Convert survey results into weekly arrays, considering only the last 5 days
