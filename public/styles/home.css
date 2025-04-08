@@ -1,211 +1,172 @@
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    background: url('/images/background.jpg') no-repeat center center fixed;
-    background-size: cover;
-    color: #333;
-    text-align: center;
-  }
-  
-  .home-container {
-    background: rgba(255, 255, 255, 0.8);
-    padding: 20px;
-    margin: 50px auto;
-    max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  .home-container h1 {
-    font-size: 2em;
-    margin-bottom: 10px;
-    color: #ffd700;
-  }
-  
-  .home-container p {
-    font-size: 1.2em;
-    margin-bottom: 20px;
-  }
+  font-family: Arial, sans-serif;
+  background: url('/images/background.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #333;
+  text-align: center;
+}
+
+/* Updated Home Container (Wider) */
+.home-container {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 20px;
+  margin: 50px auto;
+  max-width: 1200px;  /* Increased width */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.home-container h1 {
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: #ffd700;
+}
+
+.home-container p {
+  font-size: 1.2em;
+  margin-bottom: 20px;
+}
 
 /* Button Styles */
-  .home-buttons .btn {
-    display: inline-block;
-    background: #333;
-    color: #ffd700;
-    padding: 10px 15px;
-    border-radius: 4px;
-    text-decoration: none;
-    margin: 10px;
-  }
-  
-  .home-buttons .btn:hover {
-    background: #555;
-  }
+.home-buttons .btn {
+  display: inline-block;
+  background: #333;
+  color: #ffd700;
+  padding: 10px 15px;
+  border-radius: 4px;
+  text-decoration: none;
+  margin: 10px;
+}
 
-/* Chart Container */
- .chart-container {
-   display: flex;
-   justify-content: space-around;
-   flex-wrap: wrap;
-   margin-top: 30px;
- }
- 
- .chart {
-   width: 400px;
-   height: 300px;
-   background-color: #222; /* Dark background for charts */
-   border-radius: 8px;
-   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
- }
- 
- /* Chart Titles */
- .chart-container h2 {
-   color: #ffd700; /* Yellow */
- }
- 
- /* Feedback Section */
- .feedback-section {
-   margin: 50px auto;
-   max-width: 1000px;
-   text-align: left;
- }
- 
- .feedback-section h2 {
-   text-align: center;
-   color: #444;
-   font-size: 1.8em;
-   margin-bottom: 20px;
- }
- 
- /* Feedback Grid */
- .feedback-grid {
-   display: grid;
-   grid-template-columns: repeat(2, minmax(300px, 1fr));
-   gap: 20px;
-   justify-content: center;
-   align-items: start;
- }
- 
- .overall-row {
-   grid-column: 1 / -1;
-   display: flex;
-   justify-content: center;
-   margin-top: 20px;
- }
- 
- .feedback-grid .feedback-card {
-   width: 100%;
-   max-width: 250px;
- }
- 
- /* Feedback Card */
- .feedback-card {
-   background: #fffdf2;
-   border-left: 6px solid #ffd700;
-   border-radius: 12px;
-   padding: 20px;
-   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-   transition: transform 0.2s ease;
- }
- 
- .feedback-card:hover {
-   transform: scale(1.02);
- }
- 
- /* Feedback Card Titles */
- .feedback-card h3 {
-   margin-bottom: 10px;
-   color: #222;
- }
- 
- /* Select Dropdown */
- .feedback-card select {
-   width: 100%;
-   padding: 8px;
-   font-size: 1em;
-   border-radius: 4px;
-   border: 1px solid #ccc;
-   margin-bottom: 10px;
- }
- 
- /* Advice Text */
- .advice-text {
-   background-color: #fff6d6;
-   border-radius: 8px;
-   padding: 12px;
-   margin-top: 10px;
-   font-size: 0.95em;
-   animation: fadeIn 0.3s ease;
- }
- 
- @keyframes fadeIn {
-   from { opacity: 0; transform: translateY(5px); }
-   to { opacity: 1; transform: translateY(0); }
- }
- 
- /* No Feedback */
- .no-feedback {
-   color: #999;
-   font-style: italic;
- }
- 
- /* Navigation Bar */
- .navbar {
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   background-color: #222;
-   padding: 15px 20px;
- }
- 
- .navbar .logo {
-   font-size: 24px;
-   font-weight: bold;
-   color: #ffd700;
- }
- 
- .navbar .nav-links {
-   display: flex;
-   gap: 20px;
- }
- 
- .navbar a {
-   color: white;
-   text-decoration: none;
-   font-size: 18px;
-   padding: 10px 15px;
-   transition: background 0.3s ease;
- }
- 
- .navbar a:hover {
-   background-color: #444;
-   border-radius: 5px;
- }
- 
- /* Chart Styling */
- .chart-container {
-   display: flex;
-   justify-content: space-around;
-   flex-wrap: wrap;
- }
- 
- .chart {
-   width: 400px;
-   height: 300px;
-   background-color: #222; /* Dark background for charts */
-   border-radius: 8px;
-   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
- }
- 
- select {
-   padding: 10px;
-   font-size: 16px;
-   margin-top: 10px;
- }
- 
- .advice-text {
-   background-color: #f9f2d1;
-   border-left: 5px solid #ffd700;
-   padding: 15px;
-   border-radius: 5px;
- }
+.home-buttons .btn:hover {
+  background: #555;
+}
+
+/* Chart & Feedback Pair Container */
+.chart-feedback-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+/* Each Chart & Feedback Pair Item */
+.chart-feedback-item {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px; /* Prevents items from stretching too much */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Chart Titles (inside each pair) */
+.chart-feedback-item h2 {
+  color: #ffd700; /* Yellow */
+  margin-bottom: 10px;
+}
+
+/* Chart Styling */
+.chart {
+  width: 100%;
+  height: 300px;
+  background-color: #222; /* Dark background for charts */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  margin-bottom: 15px;
+}
+
+/* Feedback Card Styling */
+.feedback-card {
+  background: #fffdf2;
+  border-left: 6px solid #ffd700;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  width: 90%;
+}
+
+.feedback-card:hover {
+  transform: scale(1.02);
+}
+
+.feedback-card h3 {
+  margin-bottom: 10px;
+  color: #222;
+}
+
+/* Select Dropdown (inside Feedback Card) */
+.feedback-card select {
+  width: 100%;
+  padding: 8px;
+  font-size: 1em;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+/* Advice Text */
+.advice-text {
+  background-color: #fff6d6;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 0.95em;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* No Feedback Message */
+.no-feedback {
+  color: #999;
+  font-style: italic;
+}
+
+/* Navigation Bar */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #222;
+  padding: 15px 20px;
+}
+
+.navbar .logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.navbar .nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  padding: 10px 15px;
+  transition: background 0.3s ease;
+}
+
+.navbar a:hover {
+  background-color: #444;
+  border-radius: 5px;
+}
+
+/* Additional Styles for Form Elements */
+select {
+  padding: 10px;
+  font-size: 16px;
+  margin-top: 10px;
+}

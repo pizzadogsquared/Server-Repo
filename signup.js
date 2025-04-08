@@ -4,10 +4,6 @@ import db from "./db.js";
 // Function to validate email format
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-// Function to enforce password strength
-const isStrongPassword = (password) =>
-  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
-
 export async function handleSignup(req, res) {
   let { name, email, password, confirm_password, age, gender } = req.body;
 
@@ -21,20 +17,6 @@ export async function handleSignup(req, res) {
     return res.render("signup", { error: "Invalid email format." });
   }
 
-  // Validate password strength
-  if (!isStrongPassword(password)) {
-    return res.render("signup", {
-      error: "Password must be at least 8 characters long and include a number and special character.",
-    });
-  }
-
-  // Validate password strength
-  if (!isStrongPassword(password)) {
-    return res.render("signup", {
-      error: "Password must be at least 8 characters long and include a number and special character.",
-    });
-  }
-  
   // Validate that the passwords match
   if (password !== confirm_password) {
     return res.render("signup", { error: "Passwords do not match." });

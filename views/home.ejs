@@ -16,86 +16,91 @@
     <div class="home-buttons">
       <a href="/survey" class="btn">Take Today's Survey</a>
     </div>
- 
-    <!-- Charts Section -->
-    <div class="chart-container">
-      <div>
+    
+    <!-- Unified Charts & Feedback Section -->
+    <div class="chart-feedback-container">
+      
+      <!-- Overall Health Column -->
+      <div class="chart-feedback-item">
         <h2>Overall Health</h2>
         <div id="overallChart" class="chart"></div>
-      </div>
-
-      <div>
-        <h2>Mental Health</h2>
-        <div id="mentalChart" class="chart"></div>
-      </div>
-
-      <div>
-        <h2>Physical Health</h2>
-        <div id="physicalChart" class="chart"></div>
-      </div>
-    </div>
-
-    <!-- Feedback Section -->
-    <div class="feedback-section">
-      <h2>What Can I Improve?</h2>
-      <div class="feedback-grid">
-        <% const cards = [
-          { title: "Mental Health", feedback: mentalFeedback, idPrefix: "mental" },
-          { title: "Physical Health", feedback: physicalFeedback, idPrefix: "physical" }
-        ]; %>
-
-        <% cards.forEach(section => { %>
-          <div class="feedback-card">
-            <h3><%= section.title %></h3>
-            <% if (section.feedback && section.feedback.length > 0) { %>
-              <select onchange="showAdvice(this.value, '<%= section.idPrefix %>')">
-                <option value="">Choose an area to improve</option>
-                <% section.feedback.forEach((item, index) => { %>
-                  <option value="<%= section.idPrefix %>Advice<%= index %>"><%= item.question %></option>
-                <% }) %>
-              </select>
-
-              <% section.feedback.forEach((item, index) => { %>
-                <div id="<%= section.idPrefix %>Advice<%= index %>" class="advice-text" style="display: none;">
-                  <p><%= item.advice %></p>
-                </div>
-              <% }) %>
-            <% } else { %>
-              <p class="no-feedback">No feedback yet. Complete the <%= section.title.toLowerCase() %> survey!</p>
-            <% } %>
-          </div>
-        <% }) %>
-
-        <!-- Centered Overall Health Card -->
-        <div class="overall-row">
-          <div class="feedback-card">
-            <h3>Overall Health</h3>
-            <% if (overallFeedback && overallFeedback.length > 0) { %>
-              <select onchange="showAdvice(this.value, 'overall')">
-                <option value="">Choose an area to improve</option>
-                <% overallFeedback.forEach((item, index) => { %>
-                  <option value="overallAdvice<%= index %>"><%= item.question %></option>
-                <% }) %>
-              </select>
-
+        <div class="feedback-card">
+          <h3>Overall Health</h3>
+          <% if (overallFeedback && overallFeedback.length > 0) { %>
+            <select onchange="showAdvice(this.value, 'overall')">
+              <option value="">Choose an area to improve</option>
               <% overallFeedback.forEach((item, index) => { %>
-                <div id="overallAdvice<%= index %>" class="advice-text" style="display: none;">
-                  <p><%= item.advice %></p>
-                </div>
+                <option value="overallAdvice<%= index %>"><%= item.question %></option>
               <% }) %>
-            <% } else { %>
-              <p class="no-feedback">No feedback yet. Complete the overall survey!</p>
-            <% } %>
-          </div>
+            </select>
+            <% overallFeedback.forEach((item, index) => { %>
+              <div id="overallAdvice<%= index %>" class="advice-text" style="display: none;">
+                <p><%= item.advice %></p>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="no-feedback">No feedback yet. Complete the overall survey!</p>
+          <% } %>
         </div>
       </div>
+      
+      <!-- Mental Health Column -->
+      <div class="chart-feedback-item">
+        <h2>Mental Health</h2>
+        <div id="mentalChart" class="chart"></div>
+        <div class="feedback-card">
+          <h3>Mental Health</h3>
+          <% if (mentalFeedback && mentalFeedback.length > 0) { %>
+            <select onchange="showAdvice(this.value, 'mental')">
+              <option value="">Choose an area to improve</option>
+              <% mentalFeedback.forEach((item, index) => { %>
+                <option value="mentalAdvice<%= index %>"><%= item.question %></option>
+              <% }) %>
+            </select>
+            <% mentalFeedback.forEach((item, index) => { %>
+              <div id="mentalAdvice<%= index %>" class="advice-text" style="display: none;">
+                <p><%= item.advice %></p>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="no-feedback">No feedback yet. Complete the mental survey!</p>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Physical Health Column -->
+      <div class="chart-feedback-item">
+        <h2>Physical Health</h2>
+        <div id="physicalChart" class="chart"></div>
+        <div class="feedback-card">
+          <h3>Physical Health</h3>
+          <% if (physicalFeedback && physicalFeedback.length > 0) { %>
+            <select onchange="showAdvice(this.value, 'physical')">
+              <option value="">Choose an area to improve</option>
+              <% physicalFeedback.forEach((item, index) => { %>
+                <option value="physicalAdvice<%= index %>"><%= item.question %></option>
+              <% }) %>
+            </select>
+            <% physicalFeedback.forEach((item, index) => { %>
+              <div id="physicalAdvice<%= index %>" class="advice-text" style="display: none;">
+                <p><%= item.advice %></p>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="no-feedback">No feedback yet. Complete the physical survey!</p>
+          <% } %>
+        </div>
+      </div>
+      
     </div>
-    
+
     <script>
-      // Function for getting and showing advice
+      // Function for displaying advice based on selected feedback option.
       function showAdvice(id, prefix) {
         document.querySelectorAll(`div[id^="${prefix}Advice"]`).forEach(el => el.style.display = 'none');
-        if (id) document.getElementById(id).style.display = 'block';
+        if (id) {
+          document.getElementById(id).style.display = 'block';
+        }
       }
     </script>
     
@@ -107,7 +112,7 @@
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
         function drawChart(chartId, title, data) {
-          // Filter valid (non-null and non-zero) values
+          // Filter valid (non-null and non-zero) values.
           const validIndices = data
             .map((val, idx) => ({ val, idx }))
             .filter(entry => entry.val !== null && entry.val !== 0);
@@ -152,6 +157,7 @@
         drawChart("physicalChart", "Physical Health Progress", physicalData);
       });
     </script>
+    
   </div>
 </body>
 </html>

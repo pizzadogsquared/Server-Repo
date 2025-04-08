@@ -14,13 +14,15 @@
     <% if (section === "completed") { %>
       <h2>All surveys completed for today!</h2>
       <a href="/home" class="btn">Home</a>
-    
+      <a href="/game" class="btn">Game</a>    
+
     <% } else if (section === "choice") { %>
       <h2>Select the next section</h2>
       <a href="/survey?section=mental" class="btn">Mental</a>
       <a href="/survey?section=physical" class="btn">Physical</a>
       <a href="/home" class="btn">Home</a>
-    
+      <a href="/game" class="btn">Game</a>    
+
     <% } else if (section === "next") { %>
       <h2>Would you like to continue?</h2>
       <% if (!userProgress.mental) { %>
@@ -30,7 +32,8 @@
         <a href="/survey?section=physical" class="btn">Physical</a>
       <% } %>
       <a href="/home" class="btn">Home</a>
-    
+      <a href="/game" class="btn">Game</a>
+
     <% } else { %>
       <form action="/submit-survey" method="POST">
         <input type="hidden" name="section" value="<%= section %>">
