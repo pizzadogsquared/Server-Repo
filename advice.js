@@ -21,8 +21,8 @@ export const questionMap = {
     q1: "I drink 8 glasses of water daily.",
     q2: "I eat meals regularly.",
     q3: "I feel sluggish and tired most of the time.",
-    q4: "I am hopeful about the future."
-    q5: "I am satisfied with my daily life.",
+    q4: "I am hopeful about the future.",
+    q5: "I am satisfied with my daily life."
   },
   mental: {
     q1: "I have trouble concentrating.",
