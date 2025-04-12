@@ -7,12 +7,12 @@ body {
   text-align: center;
 }
 
-/* Updated Home Container (Wider) */
+/* Home Container */
 .home-container {
   background: rgba(255, 255, 255, 0.8);
   padding: 20px;
   margin: 50px auto;
-  max-width: 1200px;  /* Increased width */
+  max-width: 1200px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
@@ -43,7 +43,7 @@ body {
   background: #555;
 }
 
-/* Chart & Feedback Pair Container */
+/* Chart & Feedback Container */
 .chart-feedback-container {
   display: flex;
   justify-content: space-around;
@@ -53,34 +53,31 @@ body {
   margin-top: 30px;
 }
 
-/* Each Chart & Feedback Pair Item */
 .chart-feedback-item {
   flex: 1;
   min-width: 300px;
-  max-width: 400px; /* Prevents items from stretching too much */
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 20px;
 }
 
-/* Chart Titles (inside each pair) */
 .chart-feedback-item h2 {
-  color: #ffd700; /* Yellow */
+  color: #ffd700;
   margin-bottom: 10px;
 }
 
-/* Chart Styling */
 .chart {
   width: 100%;
   height: 300px;
-  background-color: #222; /* Dark background for charts */
+  background-color: #222;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
   margin-bottom: 15px;
 }
 
-/* Feedback Card Styling */
+/* Feedback Card */
 .feedback-card {
   background: #fffdf2;
   border-left: 6px solid #ffd700;
@@ -100,7 +97,6 @@ body {
   color: #222;
 }
 
-/* Select Dropdown (inside Feedback Card) */
 .feedback-card select {
   width: 100%;
   padding: 8px;
@@ -112,10 +108,10 @@ body {
 
 /* Advice Text */
 .advice-text {
-  background-color: #fff6d6;
-  border-radius: 8px;
-  padding: 12px;
-  margin-top: 10px;
+  background-color: #f9f2d1;
+  border-left: 5px solid #ffd700;
+  padding: 15px;
+  border-radius: 5px;
   font-size: 0.95em;
   animation: fadeIn 0.3s ease;
 }
@@ -125,7 +121,6 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* No Feedback Message */
 .no-feedback {
   color: #999;
   font-style: italic;
@@ -164,9 +159,178 @@ body {
   border-radius: 5px;
 }
 
-/* Additional Styles for Form Elements */
+/* Select */
 select {
   padding: 10px;
   font-size: 16px;
   margin-top: 10px;
+}
+
+/* Calendar Styles */
+.calendar {
+  margin-top: 50px;
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin-left: 0;
+  margin-right: auto;
+  background-color: #cae9f6;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.calendar table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.calendar th,
+.calendar td {
+  padding: 0;
+  text-align: center;
+  font-size: 16px;
+  height: 60px;
+  width: 60px;
+  vertical-align: middle;
+  border: none;
+  background-color: transparent;
+  position: relative;
+}
+
+.calendar th {
+  background-color: #ffd700;
+  font-size: 10px;
+  font-weight: bold;
+  color: #222;
+}
+
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 14px;
+  padding: 4px;
+  min-height: 60px;
+  position: relative;
+}
+
+.date-number {
+  font-weight: bold;
+  color: #333;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.date-cell[data-score='high'] {
+  background-color: #00c853;
+}
+
+.date-cell[data-score='medium-high'] {
+  background-color: #64dd17;
+}
+
+.date-cell[data-score='medium'] {
+  background-color: #ffd600;
+}
+
+.date-cell[data-score='low'] {
+  background-color: #ff6d00;
+}
+
+.date-cell[data-score='very-low'] {
+  background-color: #d50000;
+}
+
+.calendar td .date-number {
+  color: #333;
+}
+
+.calendar td.empty {
+  background-color: #dfdfdf;
+}
+
+.calendar-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+#calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-cell {
+  width: 40px;
+  height: 40px;
+  background-color: #eee;
+  text-align: center;
+  line-height: 40px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.calendar-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 10px;
+}
+
+.calendar-controls button {
+  background: #ffd700;
+  color: #222;
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+}
+
+.calendar-controls button:hover {
+  background: #ffaa00;
+  transform: scale(1.1);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+.calendar-controls button:active {
+  background: #e68900;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-type {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.calendar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.calendar-month {
+  font-size: 1.5rem;
+  color: #333;
+  animation: monthTransition 0.3s ease;
+}
+
+@keyframes monthTransition {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
