@@ -1,5 +1,3 @@
-// beeAnimation.js
-
 const canvas = document.getElementById("bee-animation-canvas");
 const ctx = canvas.getContext("2d");
 canvas.width = canvas.offsetWidth;
@@ -10,17 +8,17 @@ const images = {
   bee: new Image(),
   sky: new Image(),
   sun: new Image(),
+  cloud: new Image(),
   house: new Image(),
-  tree: new Image(),
-  hive: new Image()
+  grass: new Image()
 };
 
 images.bee.src = "/images/bee.png";
 images.sky.src = "/images/sky.png";
 images.sun.src = "/images/sun.png";
+images.cloud.src = "/images/cloud.png";
 images.house.src = "/images/house.png";
-images.tree.src = "/images/tree.png";
-images.hive.src = "/images/bee_hive.png";
+images.grass.src = "/images/grass.png";
 
 // Wait for all images to load before animating
 let loadedImages = 0;
@@ -76,18 +74,12 @@ function drawBee(bee) {
 }
 
 function drawBackground() {
-  // Draw sky (already includes clouds and grass)
   ctx.drawImage(images.sky, 0, 0, canvas.width, canvas.height);
-
-  // Draw sun in top right
   ctx.drawImage(images.sun, canvas.width - 100, 20, 80, 80);
-
-  // Draw house on the left
-  ctx.drawImage(images.house, 30, canvas.height - 160, 140, 140);
-
-  // Draw tree with hive on the right
-  ctx.drawImage(images.tree, canvas.width - 180, canvas.height - 220, 160, 200);
-  ctx.drawImage(images.hive, canvas.width - 120, canvas.height - 180, 40, 50);
+  ctx.drawImage(images.cloud, 100, 40, 100, 60);
+  ctx.drawImage(images.cloud, 250, 70, 100, 60);
+  ctx.drawImage(images.house, 40, canvas.height - 160, 150, 150);
+  ctx.drawImage(images.grass, 0, canvas.height - 60, canvas.width, 60);
 }
 
 function animateBees() {
