@@ -13,7 +13,6 @@ const images = {
   hive: new Image(),
   house: new Image(),
   flower: new Image(),
-  grass: new Image()
 };
 
 images.bee.src = "/images/bee.png";
@@ -22,7 +21,6 @@ images.tree.src = "/images/tree.png";
 images.hive.src = "/images/bee_hive.png";
 images.house.src = "/images/house.png";
 images.flower.src = "/images/flower.png";
-images.grass.src = "/images/grass.png";
 
 // Wait for all images to load
 let loadedImages = 0;
@@ -103,9 +101,6 @@ function drawBackground() {
     const x = startX + i * (flowerWidth + spacing);
     ctx.drawImage(images.flower, x, flowerY, flowerWidth, 60);
   }
-
-  // Grass overlay at the very bottom
-  ctx.drawImage(images.grass, 0, canvas.height - 60, canvas.width, 60);
 }
 
 function animateBees() {
