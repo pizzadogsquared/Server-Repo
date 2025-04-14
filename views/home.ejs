@@ -59,14 +59,15 @@
           <h2><%= section.charAt(0).toUpperCase() + section.slice(1) %> Health</h2>
           <div class="feedback-card">
             <h3><%= section.charAt(0).toUpperCase() + section.slice(1) %> Health</h3>
-            <% if (typeof global[`${section}Feedback`] !== 'undefined' && global[`${section}Feedback`].length > 0) { %>
+            <% const feedback = section === 'overall' ? overallFeedback : section === 'mental' ? mentalFeedback : physicalFeedback; %>
+            <% if (feedback && feedback.length > 0) { %>
               <select onchange="showAdvice(this.value, '<%= section %>')">
                 <option value="">Choose an area to improve</option>
-                <% global[`${section}Feedback`].forEach((item, index) => { %>
+                <% feedback.forEach((item, index) => { %>
                   <option value="<%= section %>Advice<%= index %>"><%= item.question %></option>
                 <% }) %>
               </select>
-              <% global[`${section}Feedback`].forEach((item, index) => { %>
+              <% feedback.forEach((item, index) => { %>
                 <div id="<%= section %>Advice<%= index %>" class="advice-text" style="display: none;">
                   <p><%= item.advice %></p>
                 </div>
