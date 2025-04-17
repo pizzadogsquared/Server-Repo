@@ -85,9 +85,8 @@ function drawBackground() {
   // House on far left
   ctx.drawImage(images.house, 20, canvas.height - 140, 120, 120);
 
-  // Tree on far left
   const treeWidth = 150;
-  const treeX = 20;
+  const treeX = canvas.width - treeWidth - 20;
   const treeY = canvas.height - 240;
   ctx.drawImage(images.tree, treeX, treeY, treeWidth, 220);
 
