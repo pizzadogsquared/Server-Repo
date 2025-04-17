@@ -61,7 +61,7 @@ for (let i = 0; i < numBees; i++) {
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
     state: "wandering",
-    speed: averageScore >= 7 ? 1.5 : averageScore >= 4 ? 1 : 0.5,
+    speed: averageScore >= 7 ? 0.6 : averageScore >= 4 ? 0.4 : 0.25
     target: getRandomFlower(),
     timer: 0
   });
