@@ -117,7 +117,7 @@ function drawBee(bee) {
     ctx.drawImage(images.bee, -12, -12, 24, 24);
   }
   ctx.restore();
-}}
+}
 
 function drawBackground() {
   ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
