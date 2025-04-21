@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plant Flower</title>
+  <link rel="stylesheet" href="/styles/home.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <div class="home-container">
+    <h1>Choose a Spot to Plant Your Flower</h1>
+    <p>You're planting: <strong><%= flower.name %></strong></p>
+    <img src="<%= flower.image %>" alt="<%= flower.name %>" style="width: 80px; height: auto;">
+
+    <form action="/plant" method="POST">
+      <input type="hidden" name="flower_id" value="<%= flower.id %>">
+      <label for="spot_index">Select Spot (0–14):</label>
+      <select name="spot_index" id="spot_index" required>
+        <% for (let i = 0; i < 15; i++) { %>
+          <% const existing = plantedFlowers.find(p => p.spot_index === i); %>
+          <option value="<%= i %>">
+            Spot <%= i + 1 %> <%= existing ? '(Replace existing flower)' : '' %>
+          </option>
+        <% } %>
+      </select>
+      <br><br>
+      <button class="btn" type="submit">Plant</button>
+    </form>
+  </div>
+</body>
+</html>
