@@ -218,6 +218,7 @@ app.post("/submit-survey", async (req, res) => {
 
     const coinsEarned = avgScore >= 8 ? 10 : avgScore >= 5 ? 5 : 2;
     await db.query("UPDATE users SET coins = coins + ? WHERE id = ?", [coinsEarned, userId]);
+    await db.query("UPDATE users SET survey_count = survey_count + 1 WHERE id = ?", [userId]);
 
     if (userProgress.general && userProgress.mental && userProgress.physical) {
       return res.redirect("/survey?section=completed");
@@ -233,15 +234,9 @@ app.get("/games", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
 
-  const [[{ totalSurveys }]] = await db.query(`
-    SELECT 
-      (SELECT COUNT(*) FROM general_survey WHERE user_id = ?) +
-      (SELECT COUNT(*) FROM mental_survey WHERE user_id = ?) +
-      (SELECT COUNT(*) FROM physical_survey WHERE user_id = ?)
-      AS totalSurveys
-  `, [userId, userId, userId]);
+  const [[{ survey_count }]] = await db.query("SELECT survey_count FROM users WHERE id = ?", [userId]);
 
-  res.render("games", { totalSurveys });
+  res.render("games", { totalSurveys: survey_count });
 });
 
 app.get("/shop", async (req, res) => {
