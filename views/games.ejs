@@ -58,20 +58,40 @@
      <div class="container" id="menu">
          <h1>🎮 Choose a Mini Game</h1>
          <div class="games-grid">
-             <div class="game-card">
-                 <h3>🌸 Flower Game</h3>
-                 <p>Collect flowers and increase your score.</p>
+             <div class="game-card <%= totalSurveys < 3 ? 'locked' : '' %>">
+               <h3>🌸 Flower Game</h3>
+               <p>Collect flowers and increase your score.</p>
+               <% if (totalSurveys < 3) { %>
+                 <div class="overlay">
+                   🔒 <br> Take <%= 3 - totalSurveys %> more surveys to unlock
+                 </div>
+               <% } else { %>
                  <button class="play-button" onclick="startGame('FlowerGame')">Play</button>
+               <% } %>
              </div>
-             <div class="game-card">
-                 <h3>🕹️ Platform Bee</h3>
-                 <p>Jump across platforms and avoid obstacles.</p>
+             
+             <div class="game-card <%= totalSurveys < 9 ? 'locked' : '' %>">
+               <h3>🕹️ Platform Bee</h3>
+               <p>Jump across platforms and avoid obstacles.</p>
+               <% if (totalSurveys < 9) { %>
+                 <div class="overlay">
+                   🔒 <br> Take <%= 9 - totalSurveys %> more surveys to unlock
+                 </div>
+               <% } else { %>
                  <button class="play-button" onclick="startGame('PlatformBee')">Play</button>
+               <% } %>
              </div>
-             <div class="game-card">
-                 <h3>🧹 Maze Game</h3>
-                 <p>Find your way out of the maze.Good luck!</p>
+             
+             <div class="game-card <%= totalSurveys < 15 ? 'locked' : '' %>">
+               <h3>🧹 Maze Game</h3>
+               <p>Find your way out of the maze.</p>
+               <% if (totalSurveys < 15) { %>
+                 <div class="overlay">
+                   🔒 <br> Take <%= 15 - totalSurveys %> more surveys to unlock
+                 </div>
+               <% } else { %>
                  <button class="play-button" onclick="startGame('MazeGame')">Play</button>
+               <% } %>
              </div>
          </div>
      </div>
