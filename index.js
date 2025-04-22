@@ -1,5 +1,3 @@
-// Full working index.js file with MySQL integration + calendarTimeline + weekly logic
-
 import express from "express";
 import helmet from "helmet";
 import session from "express-session";
@@ -9,10 +7,10 @@ import { handleLogin } from "./login.js";
 import { handleSignup } from "./signup.js";
 import db from "./db.js";
 import { adviceMap, questionMap } from "./advice.js";
-
+import { scheduleReminderJob } from "./sendReminders.js";
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = 80;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -43,6 +41,7 @@ app.use(
 );
 app.use((req, res, next) => {
   res.setHeader("Content-Security-Policy", "script-src 'self' 'unsafe-inline' https://cdn.plot.ly;");
+  res.locals.user = req.session.user || null;
   next();
 });
 
@@ -77,10 +76,57 @@ app.post("/login", handleLogin);
 
 app.get("/signup", (req, res) => res.render("signup"));
 app.post("/signup", handleSignup);
+app.get("/admin/data-analysis", async (req, res) => {
+  if (!req.session.user || !req.session.user.is_admin) {
+    return res.status(403).send("Access denied");
+  }
+
+  try {
+    // Query to get the user data categorized by country, gender, and age, excluding admin users
+    const [userStats] = await db.query(`
+      SELECT country, gender, age, COUNT(*) AS userCount
+      FROM users
+      WHERE is_admin = 0  -- Exclude admin users
+      GROUP BY country, gender, age;
+    `);
+
+    // Render the admin-dashboard view with the user statistics
+    res.render("admin-dashboard", { userStats, user: req.session.user });
+  } catch (err) {
+    console.error("Error fetching user statistics:", err);
+    res.status(500).send("Failed to load data analysis");
+  }
+});
+
 
 app.get("/logout", (req, res) => {
   userProgress = {};
   req.session.destroy(() => res.redirect("/login"));
+});
+
+app.get("/edit-account", async (req, res) => {
+  if (!req.session.user) {
+      return res.redirect("/login"); // Ensure user is logged in
+  }
+
+  try {
+      const [user] = await db.query("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
+
+      if (!user) {
+          return res.redirect("/home"); // Redirect if user not found
+      }
+
+      res.render("edit-account", { user: user[0], error: null }); // Always define error
+  } catch (err) {
+      console.error("Database error:", err);
+      res.render("edit-account", { user: req.session.user, error: "Failed to load account details" });
+  }
+});
+
+app.post("/edit-account", async (req, res) => {
+if (!req.session.user) {
+  return res.redirect("/login");
+}
 });
 
 app.get("/home", async (req, res) => {
@@ -152,7 +198,7 @@ app.get("/home", async (req, res) => {
     physicalFeedback: getLowestFeedback(physical, "physical"),
     calendarTimeline,
     calendarView,
-    plantedFlowers: planted,
+    plantedFlowers: planted
   });
 });
 
@@ -279,4 +325,4 @@ app.post("/plant", async (req, res) => {
   res.redirect("/home");
 });
 
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+app.listen(PORT, () => {console.log(`Listening on port ${PORT}`), scheduleReminderJob();});

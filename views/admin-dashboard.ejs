@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/styles/admin.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <div class="admin-container">
+    <h1>Admin Dashboard</h1>
+    <h2>User Statistics</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th>Gender</th>
+          <th>Age</th>
+          <th>User Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% userStats.forEach(stat => { %>
+          <tr>
+            <td><%= stat.country %></td>
+            <td><%= stat.gender %></td>
+            <td><%= stat.age %></td>
+            <td><%= stat.userCount %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+  </div>
+</body>
+</html>

@@ -5,7 +5,7 @@ import db from "./db.js";
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 export async function handleSignup(req, res) {
-  let { name, email, password, confirm_password, age, gender } = req.body;
+  let { name, email, password, confirm_password, age, gender, country } = req.body;
 
   // Trim inputs to remove unnecessary spaces
   name = name.trim();
@@ -36,8 +36,8 @@ export async function handleSignup(req, res) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert new user
-        await conn.query("INSERT INTO users (full_name, email, password, age, gender) VALUES (?, ?, ?, ?, ?)", 
-            [name, email, hashedPassword, age || null, gender]);
+        await conn.query("INSERT INTO users (full_name, email, password, age, gender, country) VALUES (?, ?, ?, ?, ?, ?)", 
+            [name, email, hashedPassword, age || null, gender, country]);
 
         res.redirect("/login"); // Redirect to login after successful signup
     } catch (err) {

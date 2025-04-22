@@ -27,7 +27,7 @@ export async function handleLogin(req, res) {
     }
 
     // Store user session
-    req.session.user = { id: user.id, name: user.full_name, email: normalizedEmail };
+    req.session.user = { id: user.id, name: user.full_name, email: normalizedEmail, is_admin: user.is_admin, country: user.country };
 
     res.redirect("/home"); // Redirect to survey after successful login
   } catch (err) {
