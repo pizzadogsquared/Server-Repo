@@ -5,21 +5,24 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "reminders": "node sendReminders.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@knocklabs/node": "^0.6.19",
     "bcrypt": "^5.1.1",
     "cjs": "^0.0.11",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "fs": "^0.0.1-security",
     "helmet": "^8.1.0",
     "mysql2": "^3.12.0",
+    "node-schedule": "^2.1.1",
     "nodemon": "^3.1.9"
   }
 }

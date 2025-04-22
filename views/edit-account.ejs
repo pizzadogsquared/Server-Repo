@@ -49,6 +49,18 @@
                     </select>
                 </div>
 
+                <div class="input-group">
+                    <label for="gender">Select your country</label>
+                    <select name="country" required>
+                        <option value="United States" <%= user.country === "United States" ? "selected" : "" %>>United States</option>
+                        <option value="Canada" <%= user.country === "Canada" ? "selected" : "" %>>Canada</option>
+                        <option value="United Kingdom" <%= user.country === "United Kingdom" ? "selected" : "" %>>United Kingdom</option>
+                        <option value="India" <%= user.country === "India" ? "selected" : "" %>>India</option>
+                        <option value="Australia" <%= user.country === "Australia" ? "selected" : "" %>>Australia</option>
+                        <option value="Prefer not to answer" <%= user.country === 'Prefer not to answer' ? 'selected' : '' %>>Prefer not to answer</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn">Save Changes</button>
             </form>
 

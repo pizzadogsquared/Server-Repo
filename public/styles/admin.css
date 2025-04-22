@@ -1,0 +1,71 @@
+/* Admin Dashboard Styles */
+
+/* General Layout */
+body {
+    font-family: Arial, sans-serif;
+    background: url('/images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+    text-align: center;
+  }
+  
+  .admin-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    margin: 50px auto;
+    max-width: 1200px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Table Styles */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  table, th, td {
+    border: 1px solid #ddd;
+  }
+  
+  th, td {
+    padding: 12px;
+    text-align: center;
+  }
+  
+  th {
+    background-color: #ffd700;
+    font-size: 1.1em;
+    color: #222;
+  }
+  
+  td {
+    background-color: #fffdf2;
+  }
+  
+  td:hover {
+    background-color: #f9f2d1;
+  }
+  
+
+  /* Responsive Design for Admin Dashboard */
+  @media (max-width: 768px) {
+    .admin-container {
+      padding: 20px;
+    }
+  
+    .navbar {
+      flex-direction: column;
+    }
+  
+    .admin-card {
+      width: 100%;
+      margin: 15px 0;
+    }
+  
+    table {
+      font-size: 0.9em;
+    }
+  }
+  

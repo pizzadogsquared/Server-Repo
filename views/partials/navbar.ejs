@@ -1,16 +1,20 @@
 <nav class="navbar">
-   <div class="logo">
-     <img src="/images/beebalancedlogo.jpg" alt="Bee Logo" class="bee-icon">
-     Bee Balanced
-   </div>
-   <div class="nav-links">
-     <a href="/home">Home</a>
-     <a href="/survey">Survey</a>
-     <a href="/games">Games</a>
-     <a href="/edit-account">Account</a>
-     <a href="/logout">Logout</a>
-   </div>
- </nav>
+  <div class="logo">
+    <img src="/images/beebalancedlogo.jpg" alt="Bee Logo" class="bee-icon">
+    Bee Balanced
+  </div>
+  <div class="nav-links">
+    <a href="/home">Home</a>
+    <a href="/survey">Survey</a>
+    <a href="/games">Games</a>
+    <a href="/edit-account">Account</a>
+    <a href="/logout">Logout</a>
+    <% if (user && user.is_admin) { %>
+      <a href="/admin/data-analysis">Admin Data</a>
+    <% } %>
+  </div>
+</nav>
+
  
  <style>
  /* Navigation Bar Styles */
