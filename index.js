@@ -81,12 +81,15 @@ app.get("/admin/data-analysis", async (req, res) => {
   }
 
   try {
-    const [userStats] = await db.query(`
+    // Query to get the user data categorized by country, gender, and age, excluding admin users
+    const [userStats] = await db.query(
       SELECT country, gender, age, COUNT(*) AS userCount
       FROM users
-      WHERE is_admin = 0
+      WHERE is_admin = 0  -- Exclude admin users
       GROUP BY country, gender, age;
-    `);
+    );
+
+    // Render the admin-dashboard view with the user statistics
     res.render("admin-dashboard", { userStats, user: req.session.user });
   } catch (err) {
     console.error("Error fetching user statistics:", err);
@@ -94,8 +97,113 @@ app.get("/admin/data-analysis", async (req, res) => {
   }
 });
 
+
 app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
+});
+
+app.get("/edit-account", async (req, res) => {
+  if (!req.session.user) {
+      return res.redirect("/login"); // Ensure user is logged in
+  }
+
+  try {
+      const [user] = await db.query("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
+
+      if (!user) {
+          return res.redirect("/home"); // Redirect if user not found
+      }
+
+      res.render("edit-account", { user: user[0], error: null }); // Always define error
+  } catch (err) {
+      console.error("Database error:", err);
+      res.render("edit-account", { user: req.session.user, error: "Failed to load account details" });
+  }
+});
+
+app.post("/edit-account", async (req, res) => {
+if (!req.session.user) {
+  return res.redirect("/login");
+}
+});
+
+app.get("/home", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+  const userId = req.session.user.id;
+  const today = new Date().getDay();
+  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const calendarView = req.query.calendarView || "overall";
+  const [planted] = await db.query(
+    SELECT pf.spot_index, f.image FROM planted_flowers pf
+    JOIN flowers f ON f.id = pf.flower_id
+    WHERE pf.user_id = ?
+  , [userId]);
+
+  if (surveyResults.days.length === 0 && allResponses.length === 0) {
+    while (surveyResults.days.length < today) {
+      surveyResults.days.push(weekdays[surveyResults.days.length]);
+      surveyResults.overall.push(5);
+      surveyResults.mental.push(5);
+      surveyResults.physical.push(5);
+    }
+  }
+
+  const [general] = await db.query("SELECT * FROM general_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
+  const [mental] = await db.query("SELECT * FROM mental_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
+  const [physical] = await db.query("SELECT * FROM physical_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
+
+  function getLowestFeedback(data, sectionName) {
+    const sectionQuestions = questionMap[sectionName];
+    return data
+      .map(entry => ({
+        question: sectionQuestions[entry.question] || entry.question,
+        avgScore: entry.score || 5,
+      }))
+      .sort((a, b) => a.avgScore - b.avgScore)
+      .slice(0, 3)
+      .map(({ question }) => ({
+        question,
+        advice: adviceMap[question] || "No advice available.",
+      }));
+  }
+
+  function calculateRecentAverages(data) {
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 6);
+    const weekData = new Array(7).fill(null);
+    data.forEach(({ created_at, score }) => {
+      const createdAtDate = new Date(created_at);
+      if (createdAtDate >= sevenDaysAgo && createdAtDate <= today) {
+        const dayIndex = (createdAtDate.getDay() + 7) % 7;
+        weekData[dayIndex] = score;
+      }
+    });
+    return weekData.map(score => score || 5);
+  }
+
+  const overallData = calculateRecentAverages(general);
+  const mentalData = calculateRecentAverages(mental);
+  const physicalData = calculateRecentAverages(physical);
+
+  res.render("home", {
+    overallData,
+    mentalData,
+    physicalData,
+    days: weekdays,
+    overallFeedback: getLowestFeedback(general, "general"),
+    mentalFeedback: getLowestFeedback(mental, "mental"),
+    physicalFeedback: getLowestFeedback(physical, "physical"),
+    calendarTimeline,
+    calendarView,
+    plantedFlowers: planted
+  });
+});
+
+app.get("/survey", (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+  const section = req.query.section || "general";
+  res.render("survey", { section, userId: req.session.user.id });
 });
 
 app.get("/survey-choice", async (req, res) => {
@@ -214,12 +322,12 @@ app.post("/plant", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
   const { flowerId, spotIndex } = req.body;
-  await db.query(`
+  await db.query(
     INSERT INTO planted_flowers (user_id, spot_index, flower_id)
     VALUES (?, ?, ?)
     ON DUPLICATE KEY UPDATE flower_id = VALUES(flower_id)
-  `, [userId, spotIndex, flowerId]);
+  , [userId, spotIndex, flowerId]);
   res.redirect("/home");
 });
 
-app.listen(PORT, () => {console.log(`Listening on port ${PORT}`), scheduleReminderJob();});
+app.listen(PORT, () => {console.log(Listening on port ${PORT}), scheduleReminderJob();});
