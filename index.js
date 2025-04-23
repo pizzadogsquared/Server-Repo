@@ -10,7 +10,7 @@ import { adviceMap, questionMap } from "./advice.js";
 import { scheduleReminderJob } from "./sendReminders.js";
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT | 8000;
+const PORT = process.env.PORT || 8000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -35,12 +35,12 @@ app.use(
       defaultSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'"]
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.plot.ly"],
     }
   })
 );
+
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "script-src 'self' 'unsafe-inline' https://cdn.plot.ly;");
   res.locals.user = req.session.user || null;
   next();
 });
