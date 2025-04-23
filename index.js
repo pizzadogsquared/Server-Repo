@@ -34,23 +34,13 @@ app.use(
     directives: {
       defaultSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      styleSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        "https://fonts.googleapis.com"
-      ],
-      scriptSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        "https://cdn.plot.ly"
-      ],
-      imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"],
-    },
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'"]
+    }
   })
 );
-
 app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "script-src 'self' 'unsafe-inline' https://cdn.plot.ly;");
   res.locals.user = req.session.user || null;
   next();
 });
