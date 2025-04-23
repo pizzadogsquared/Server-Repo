@@ -34,9 +34,19 @@ app.use(
     directives: {
       defaultSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.plot.ly"],
-    }
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://fonts.googleapis.com"
+      ],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.plot.ly"
+      ],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+    },
   })
 );
 
