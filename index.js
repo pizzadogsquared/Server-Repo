@@ -122,9 +122,17 @@ app.get("/edit-account", async (req, res) => {
 });
 
 app.post("/edit-account", async (req, res) => {
-if (!req.session.user) {
-  return res.redirect("/login");
-}
+  if (!req.session.user) return res.redirect("/login");
+  const { fullName, email } = req.body;
+  try {
+    await db.query("UPDATE users SET full_name = ?, email = ? WHERE id = ?", [fullName, email, req.session.user.id]);
+    req.session.user.full_name = fullName;
+    req.session.user.email = email;
+    res.redirect("/edit-account");
+  } catch (err) {
+    console.error("Account update error:", err);
+    res.render("edit-account", { user: req.session.user, error: "Failed to update account" });
+  }
 });
 
 app.get("/home", async (req, res) => {
