@@ -82,12 +82,12 @@ app.get("/admin/data-analysis", async (req, res) => {
 
   try {
     // Query to get the user data categorized by country, gender, and age, excluding admin users
-    const [userStats] = await db.query(
+    const [userStats] = await db.query(`
       SELECT country, gender, age, COUNT(*) AS userCount
       FROM users
       WHERE is_admin = 0  -- Exclude admin users
       GROUP BY country, gender, age;
-    );
+    `);
 
     // Render the admin-dashboard view with the user statistics
     res.render("admin-dashboard", { userStats, user: req.session.user });
@@ -133,11 +133,11 @@ app.get("/home", async (req, res) => {
   const today = new Date().getDay();
   const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const calendarView = req.query.calendarView || "overall";
-  const [planted] = await db.query(
+  const [planted] = await db.query(`
     SELECT pf.spot_index, f.image FROM planted_flowers pf
     JOIN flowers f ON f.id = pf.flower_id
     WHERE pf.user_id = ?
-  , [userId]);
+  `, [userId]);
 
   if (surveyResults.days.length === 0 && allResponses.length === 0) {
     while (surveyResults.days.length < today) {
@@ -322,12 +322,12 @@ app.post("/plant", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
   const { flowerId, spotIndex } = req.body;
-  await db.query(
+  await db.query(`
     INSERT INTO planted_flowers (user_id, spot_index, flower_id)
     VALUES (?, ?, ?)
     ON DUPLICATE KEY UPDATE flower_id = VALUES(flower_id)
-  , [userId, spotIndex, flowerId]);
+  `, [userId, spotIndex, flowerId]);
   res.redirect("/home");
 });
 
-app.listen(PORT, () => {console.log(Listening on port ${PORT}), scheduleReminderJob();});
+app.listen(PORT, () => {console.log(`Listening on port ${PORT}`), scheduleReminderJob();});
