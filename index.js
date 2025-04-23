@@ -45,7 +45,6 @@ app.use((req, res, next) => {
   next();
 });
 
-let userProgress = {};
 let surveyResults = {
   overall: [],
   mental: [],
@@ -82,15 +81,12 @@ app.get("/admin/data-analysis", async (req, res) => {
   }
 
   try {
-    // Query to get the user data categorized by country, gender, and age, excluding admin users
     const [userStats] = await db.query(`
       SELECT country, gender, age, COUNT(*) AS userCount
       FROM users
-      WHERE is_admin = 0  -- Exclude admin users
+      WHERE is_admin = 0
       GROUP BY country, gender, age;
     `);
-
-    // Render the admin-dashboard view with the user statistics
     res.render("admin-dashboard", { userStats, user: req.session.user });
   } catch (err) {
     console.error("Error fetching user statistics:", err);
@@ -98,134 +94,35 @@ app.get("/admin/data-analysis", async (req, res) => {
   }
 });
 
-
 app.get("/logout", (req, res) => {
-  userProgress = {};
   req.session.destroy(() => res.redirect("/login"));
 });
 
-app.get("/edit-account", async (req, res) => {
-  if (!req.session.user) {
-      return res.redirect("/login"); // Ensure user is logged in
-  }
-
-  try {
-      const [user] = await db.query("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
-
-      if (!user) {
-          return res.redirect("/home"); // Redirect if user not found
-      }
-
-      res.render("edit-account", { user: user[0], error: null }); // Always define error
-  } catch (err) {
-      console.error("Database error:", err);
-      res.render("edit-account", { user: req.session.user, error: "Failed to load account details" });
-  }
-});
-
-app.post("/edit-account", async (req, res) => {
-if (!req.session.user) {
-  return res.redirect("/login");
-}
-});
-
-app.get("/home", async (req, res) => {
+app.get("/survey-choice", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
+
   const userId = req.session.user.id;
-  const today = new Date().getDay();
-  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const calendarView = req.query.calendarView || "overall";
-  const [planted] = await db.query(`
-    SELECT pf.spot_index, f.image FROM planted_flowers pf
-    JOIN flowers f ON f.id = pf.flower_id
-    WHERE pf.user_id = ?
-  `, [userId]);
+  const today = new Date().toISOString().split("T")[0];
 
-  if (surveyResults.days.length === 0 && allResponses.length === 0) {
-    while (surveyResults.days.length < today) {
-      surveyResults.days.push(weekdays[surveyResults.days.length]);
-      surveyResults.overall.push(5);
-      surveyResults.mental.push(5);
-      surveyResults.physical.push(5);
-    }
+  const sections = ["general_survey", "mental_survey", "physical_survey"];
+  const progress = { general: false, mental: false, physical: false };
+
+  for (const section of sections) {
+    const [rows] = await db.query(
+      `SELECT COUNT(*) AS count FROM ${section} WHERE user_id = ? AND DATE(created_at) = ?`,
+      [userId, today]
+    );
+    const shortName = section.split("_")[0];
+    progress[shortName] = rows[0].count > 0;
   }
 
-  const [general] = await db.query("SELECT * FROM general_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
-  const [mental] = await db.query("SELECT * FROM mental_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
-  const [physical] = await db.query("SELECT * FROM physical_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
-
-  function getLowestFeedback(data, sectionName) {
-    const sectionQuestions = questionMap[sectionName];
-    return data
-      .map(entry => ({
-        question: sectionQuestions[entry.question] || entry.question,
-        avgScore: entry.score || 5,
-      }))
-      .sort((a, b) => a.avgScore - b.avgScore)
-      .slice(0, 3)
-      .map(({ question }) => ({
-        question,
-        advice: adviceMap[question] || "No advice available.",
-      }));
-  }
-
-  function calculateRecentAverages(data) {
-    const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 6);
-    const weekData = new Array(7).fill(null);
-    data.forEach(({ created_at, score }) => {
-      const createdAtDate = new Date(created_at);
-      if (createdAtDate >= sevenDaysAgo && createdAtDate <= today) {
-        const dayIndex = (createdAtDate.getDay() + 7) % 7;
-        weekData[dayIndex] = score;
-      }
-    });
-    return weekData.map(score => score || 5);
-  }
-
-  const overallData = calculateRecentAverages(general);
-  const mentalData = calculateRecentAverages(mental);
-  const physicalData = calculateRecentAverages(physical);
-
-  res.render("home", {
-    overallData,
-    mentalData,
-    physicalData,
-    days: weekdays,
-    overallFeedback: getLowestFeedback(general, "general"),
-    mentalFeedback: getLowestFeedback(mental, "mental"),
-    physicalFeedback: getLowestFeedback(physical, "physical"),
-    calendarTimeline,
-    calendarView,
-    plantedFlowers: planted
-  });
-});
-
-app.get("/survey", (req, res) => {
-  if (!req.session.user) return res.redirect("/login");
-  const section = req.query.section || "general";
-  res.render("survey", { section, userId: req.session.user.id });
-});
-
-app.get("/survey-choice", (req, res) => {
-  res.render("survey-choice", { userProgress });
+  res.render("survey-choice", { userProgress: progress });
 });
 
 app.post("/submit-survey", async (req, res) => {
   const { section, userId, ...responses } = req.body;
-  const today = new Date().getDay();
+  const today = new Date().toISOString().split("T")[0];
   const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const yesterday = today === 0 ? 6 : today - 1;
-
-  if (surveyResults.days.length === 0 && allResponses.length === 0) {
-    while (surveyResults.days.length < yesterday) {
-      surveyResults.days.push(weekdays[surveyResults.days.length]);
-      surveyResults.overall.push(5);
-      surveyResults.mental.push(5);
-      surveyResults.physical.push(5);
-    }
-  }
 
   try {
     const tableMap = {
@@ -244,29 +141,29 @@ app.post("/submit-survey", async (req, res) => {
     const dateKey = new Date().toLocaleDateString("en-CA");
     updateTimeline(dateKey, section, avgScore);
 
-    const nextDay = weekdays[surveyResults.days.length % 7];
-    if (surveyResults.days.at(-1) === "Saturday" && nextDay === "Sunday") {
-      console.log("Resetting chart for new week starting from Sunday");
-      surveyResults = {
-        overall: [],
-        mental: [avgScore],
-        physical: [avgScore],
-        days: []
-      };
-    }
+    const [generalCount] = await db.query(
+      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
+      [userId, today]
+    );
+    const [mentalCount] = await db.query(
+      `SELECT COUNT(*) AS count FROM mental_survey WHERE user_id = ? AND DATE(created_at) = ?`,
+      [userId, today]
+    );
+    const [physicalCount] = await db.query(
+      `SELECT COUNT(*) AS count FROM physical_survey WHERE user_id = ? AND DATE(created_at) = ?`,
+      [userId, today]
+    );
 
-    surveyResults.days.push(nextDay);
-    if (section === "general") surveyResults.overall.push(avgScore);
-    else if (section === "mental") surveyResults.mental.push(avgScore);
-    else if (section === "physical") surveyResults.physical.push(avgScore);
-
-    userProgress[section] = true;
+    const allCompleted =
+      generalCount[0].count > 0 &&
+      mentalCount[0].count > 0 &&
+      physicalCount[0].count > 0;
 
     const coinsEarned = avgScore >= 8 ? 10 : avgScore >= 5 ? 5 : 2;
     await db.query("UPDATE users SET coins = coins + ? WHERE id = ?", [coinsEarned, userId]);
     await db.query("UPDATE users SET survey_count = survey_count + 1 WHERE id = ?", [userId]);
 
-    if (userProgress.general && userProgress.mental && userProgress.physical) {
+    if (allCompleted) {
       return res.redirect("/survey?section=completed");
     }
     return res.redirect("/survey-choice");
