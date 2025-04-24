@@ -30,12 +30,19 @@
     <!-- Calendar Section -->
     <div class="calendar">
       <div class="calendar-header">
-        <h2 id="calendar-month" class="calendar-month">Month</h2>
-        <div class="calendar-controls">
-          <button onclick="changeCalendar(-1)">←</button>
-          <h3 id="calendar-type" class="calendar-type">Health Type</h3>
-          <button onclick="changeCalendar(1)">→</button>
+      
+        <div class="month-switcher">
+          <button onclick="changeMonth(-1)">←</button>
+          <h2 id="calendar-month" class="calendar-month">Month</h2>
+          <button onclick="changeMonth(1)">→</button>
         </div>
+
+        <div class="calendar-controls">
+          <button onclick="changeCalendarType(-1)">←</button>
+          <h3 id="calendar-type" class="calendar-type">Health Type</h3>
+          <button onclick="changeCalendarType(1)">→</button>
+        </div>
+
       </div>
       <table>
         <thead>
@@ -82,6 +89,13 @@
       <% sections.forEach(section => { %>
         <div class="chart-feedback-item">
           <div id="<%= section %>Chart" class="chart"></div>
+          <div class="chart-button">
+            <a 
+              href="<%= section === 'overall' ? '/survey' : `/survey?section=${section}` %>" 
+              class="btn">
+              Take <%= section.charAt(0).toUpperCase() + section.slice(1) %> Survey
+            </a>
+          </div>
         </div>
       <% }); %>
     </div>
@@ -106,63 +120,81 @@
     </script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const overallData = <%- JSON.stringify(overallData) %> || [null, null, null, null, null, null, null];
-        const mentalData = <%- JSON.stringify(mentalData) %> || [null, null, null, null, null, null, null];
-        const physicalData = <%- JSON.stringify(physicalData) %> || [null, null, null, null, null, null, null];
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
+        const charts = {
+          overall: <%- JSON.stringify(overallData) %>,
+          mental: <%- JSON.stringify(mentalData) %>,
+          physical: <%- JSON.stringify(physicalData) %>
+        };
         function drawChart(chartId, title, data) {
-          const validIndices = data.map((val, idx) => ({ val, idx })).filter(entry => entry.val !== null && entry.val !== 0);
-          const lastEntry = validIndices.at(-1);
-          if (!lastEntry) return;
-          const lastX = days[lastEntry.idx];
-          const lastY = data[lastEntry.idx];
+        const x = data.map(e => e.date);
+        const y = data.map(e => e.avgScore);
 
-          Plotly.newPlot(chartId, [{
-            x: days,
-            y: data,
-            type: 'scatter',
-            mode: 'lines+markers',
-            marker: { color: '#FFFFFF' },
-            line: { color: '#FFFFFF' }
-          }], {
-            title: title,
-            titlefont: { color: '#FFD700' },
-            xaxis: { title: "Days", tickfont: { color: '#37AE0F' }, linecolor: '#37AE0F' },
-            yaxis: { title: "Score", range: [0, 10], tickfont: { color: '#37AE0F' }, linecolor: '#37AE0F' },
-            plot_bgcolor: '#cae9f6',
-            paper_bgcolor: '#cae9f6',
-            images: [{
-              source: "/images/bee.gif",
-              x: lastX,
-              y: lastY,
-              xref: "x",
-              yref: "y",
-              sizex: 3,
-              sizey: 3,
-              xanchor: "center",
-              yanchor: "middle",
-              layer: "above"
-            }]
-          });
+        if (!x.length) {
+          document.getElementById(chartId).innerHTML = 
+          '<div style="display: flex; justify-content: center; align-items: center; height: 100%; background-color: #cae9f6; border-radius: 8px; border: 2px solid #ffd700; font-size: 24px; font-weight: bold; color: #ffd700; text-align: center; box-sizing: border-box;">No data for the past 2 weeks.</div>';
+          return;
         }
+        const lastX = x.at(-1);
+        const lastY = y.at(-1);
 
-        drawChart("overallChart", "Overall Health Progress", overallData);
-        drawChart("mentalChart", "Mental Health Progress", mentalData);
-        drawChart("physicalChart", "Physical Health Progress", physicalData);
+        Plotly.newPlot(chartId, [{
+          x,
+          y,
+          type: 'scatter',
+          mode: 'lines+markers',
+          marker: { color: '#FFFFFF' },
+          line: { color: '#FFFFFF' }
+        }], {
+          title: title,
+          titlefont: { color: '#FFD700' },
+          xaxis: {
+            title: "Date",
+            type: 'category',
+            tickfont: { color: '#37AE0F' },
+            linecolor: '#37AE0F'
+          },
+          yaxis: {
+            title: "Score",
+            range: [0, 10],
+            tickfont: { color: '#37AE0F' },
+            linecolor: '#37AE0F'
+          },
+          plot_bgcolor: '#cae9f6',
+          paper_bgcolor: '#cae9f6',
+          images: [{
+            source: "/images/bee.gif",
+            x: lastX,
+            y: lastY,
+            xref: "x",
+            yref: "y",
+            sizex: 3,
+            sizey: 3,
+            xanchor: "center",
+            yanchor: "middle",
+            layer: "above"
+          }]
+        });
+      }
+
+        drawChart("overallChart", "Overall Health (Last 2 Weeks)", charts.overall);
+        drawChart("mentalChart", "Mental Health (Last 2 Weeks)", charts.mental);
+        drawChart("physicalChart", "Physical Health (Last 2 Weeks)", charts.physical);
       });
     </script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        console.log("Calendar data:", <%- JSON.stringify(timelineData) %>);
         const calendarData = {
-          overall: <%- JSON.stringify(calendarTimeline.overall) %>,
-          mental: <%- JSON.stringify(calendarTimeline.mental) %>,
-          physical: <%- JSON.stringify(calendarTimeline.physical) %>
+          overall: <%- JSON.stringify(timelineData.overall) %>,
+          mental: <%- JSON.stringify(timelineData.mental) %>,
+          physical: <%- JSON.stringify(timelineData.physical) %>
         };
 
         let currentTypeIndex = 0;
+        let currentMonthOffset = 0;
         const calendarTypes = ['overall', 'mental', 'physical'];
 
+        // show the color for the score
         function colorForScore(score) {
           if (score >= 8) return "#00c853";
           if (score >= 6) return "#64dd17";
@@ -171,37 +203,50 @@
           return "#d50000";
         }
 
-        function renderCalendar(type) {
+        function renderCalendar(type, monthOffset) {
           const today = new Date();
-          const currentMonth = today.getMonth();
-          const currentYear = today.getFullYear();
+          const displayDate = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+
+          const currentMonth = displayDate.getMonth();
+          const currentYear = displayDate.getFullYear();
+          const currentMonthName = displayDate.toLocaleString('default', { month: 'long' });
           const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-          const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+          const startingDay = new Date(currentYear, currentMonth, 1).getDay();
+
+          const monthElem = document.getElementById("calendar-month");
+          const typeElem = document.getElementById("calendar-type");
           const entries = calendarData[type];
-
-          document.getElementById("calendar-month").innerText = today.toLocaleString('default', { month: 'long' });
-          document.getElementById("calendar-type").innerText = `${type.charAt(0).toUpperCase() + type.slice(1)} Health`;
-
           const calendar = [];
           let week = [];
 
-          for (let i = 0; i < firstDay; i++) week.push(null);
+          if (monthElem) monthElem.innerText = `${currentMonthName} ${currentYear}`;
+          if (typeElem) typeElem.innerText = `${type.charAt(0).toUpperCase() + type.slice(1)} Health`;
+
+          for (let i = 0; i < startingDay; i++) week.push(null);
+
           for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(currentYear, currentMonth, day);
             const dateStr = date.toISOString().split('T')[0];
             const entry = entries.find(e => e.day === dateStr);
-            week.push({ number: day, avgScore: entry?.avgScore ?? null });
-            if (week.length === 7) { calendar.push(week); week = []; }
+            week.push({
+              number: day,
+              avgScore: entry?.avgScore ?? null
+            });
+
+            if (week.length === 7) {
+              calendar.push(week);
+              week = [];
+            }
           }
+
           while (week.length < 7) week.push(null);
           calendar.push(week);
 
           const calendarBody = document.getElementById("calendar-body");
           calendarBody.innerHTML = "";
-
-          calendar.forEach(rowData => {
+          calendar.forEach(week => {
             const row = document.createElement("tr");
-            rowData.forEach(cell => {
+            week.forEach(cell => {
               const td = document.createElement("td");
               if (cell) {
                 const div = document.createElement("div");
@@ -210,7 +255,17 @@
                 const numberDiv = document.createElement("div");
                 numberDiv.className = "date-number";
                 numberDiv.textContent = cell.number;
+
+                const scoreDiv = document.createElement("div");
+                scoreDiv.className = "date-score";
+                // show the score on the calendar
+                if (cell.avgScore !== null) {
+                  scoreDiv.textContent = Math.round(cell.avgScore * 10) / 10;
+                }
+
                 div.appendChild(numberDiv);
+                div.appendChild(scoreDiv);
+
                 td.appendChild(div);
               } else {
                 td.classList.add("empty");
@@ -221,14 +276,20 @@
           });
         }
 
-        window.changeCalendar = function (direction) {
+        window.changeCalendarType = function (direction) {
           currentTypeIndex = (currentTypeIndex + direction + calendarTypes.length) % calendarTypes.length;
-          renderCalendar(calendarTypes[currentTypeIndex]);
+          renderCalendar(calendarTypes[currentTypeIndex], currentMonthOffset);
         };
 
-        renderCalendar(calendarTypes[currentTypeIndex]);
+        window.changeMonth = function (direction) {
+          currentMonthOffset += direction;
+          renderCalendar(calendarTypes[currentTypeIndex], currentMonthOffset);
+        };
+
+        renderCalendar(calendarTypes[currentTypeIndex], currentMonthOffset);
       });
     </script>
+
   </div>
 </body>
 </html>

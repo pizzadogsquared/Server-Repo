@@ -168,11 +168,9 @@
  
  /* Calendar Styles */
  .calendar {
-   margin-top: 50px;
+   margin: 50px auto 0 auto;
    font-family: Arial, sans-serif;
    max-width: 600px;
-   margin-left: 0;
-   margin-right: auto;
    background-color: #cae9f6;
    border-radius: 8px;
    padding: 20px;
@@ -213,6 +211,14 @@
    min-height: 60px;
    position: relative;
  }
+
+ .date-score {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: bold;
+}
  
  .date-number {
    font-weight: bold;
@@ -323,6 +329,33 @@
    align-items: center;
    margin-bottom: 1rem;
  }
+ 
+ .calendar-controls,
+ .month-switcher {
+   display: flex;
+   align-items: center;
+   gap: 1rem;
+   justify-content: center;
+ }
+ 
+ .calendar-controls button,
+ .month-switcher button {
+  background: #ffd700;
+  color: #222;
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+ }
+
  
  .calendar-month {
    font-size: 1.5rem;

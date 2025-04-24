@@ -135,6 +135,31 @@ app.post("/edit-account", async (req, res) => {
   }
 });
 
+async function buildTimeline(userId, section) {
+  const sectionKey = section === "general" ? "overall" : section;
+  const table = {
+    overall: "general_survey",
+    mental: "mental_survey",
+    physical: "physical_survey"
+  }[sectionKey];
+
+  const [entries] = await db.query(`
+    SELECT DATE(created_at) as day, AVG(score) as avgScore
+    FROM ${table}
+    WHERE user_id = ?
+    GROUP BY DATE(created_at)
+    ORDER BY DATE(created_at) DESC
+    LIMIT 30;
+  `, [userId]);
+
+  calendarTimeline[sectionKey] = entries.map(({ day, avgScore }) => ({
+    day: new Date(day).toISOString().split('T')[0],
+    avgScore
+  }));
+  
+}
+
+
 app.get("/home", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
@@ -156,6 +181,10 @@ app.get("/home", async (req, res) => {
     }
   }
 
+  await buildTimeline(userId, "overall");
+  await buildTimeline(userId, "mental");
+  await buildTimeline(userId, "physical");
+
   const [general] = await db.query("SELECT * FROM general_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
   const [mental] = await db.query("SELECT * FROM mental_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
   const [physical] = await db.query("SELECT * FROM physical_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
@@ -175,24 +204,47 @@ app.get("/home", async (req, res) => {
       }));
   }
 
-  function calculateRecentAverages(data) {
-    const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 6);
-    const weekData = new Array(7).fill(null);
-    data.forEach(({ created_at, score }) => {
-      const createdAtDate = new Date(created_at);
-      if (createdAtDate >= sevenDaysAgo && createdAtDate <= today) {
-        const dayIndex = (createdAtDate.getDay() + 7) % 7;
-        weekData[dayIndex] = score;
+  function getRecentSurveyScores(entries) {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - 13);
+  
+    const dailyScores = {};
+  
+    for (const entry of entries) {
+      const rawDate = entry.created_at instanceof Date
+        ? entry.created_at
+        : new Date(entry.created_at);
+  
+      const dateObj = new Date(rawDate.getFullYear(), rawDate.getMonth(), rawDate.getDate());
+      const localDateStr = dateObj.toISOString().split("T")[0];
+  
+      if (dateObj >= start && dateObj <= now) {
+        if (!dailyScores[localDateStr]) {
+          dailyScores[localDateStr] = [];
+        }
+        dailyScores[localDateStr].push(entry.score);
       }
-    });
-    return weekData.map(score => score || 5);
+    }
+  
+    const recentData = Object.keys(dailyScores)
+      .sort()
+      .map(dateStr => {
+        const scores = dailyScores[dateStr];
+        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        return {
+          date: dateStr,
+          avgScore: Math.round(avg * 100) / 100
+        };
+      });
+  
+    return recentData;
   }
+  
 
-  const overallData = calculateRecentAverages(general);
-  const mentalData = calculateRecentAverages(mental);
-  const physicalData = calculateRecentAverages(physical);
+  const overallData = getRecentSurveyScores(general);
+  const mentalData = getRecentSurveyScores(mental);
+  const physicalData = getRecentSurveyScores(physical);
 
   res.render("home", {
     overallData,
@@ -202,7 +254,11 @@ app.get("/home", async (req, res) => {
     overallFeedback: getLowestFeedback(general, "general"),
     mentalFeedback: getLowestFeedback(mental, "mental"),
     physicalFeedback: getLowestFeedback(physical, "physical"),
-    calendarTimeline,
+    timelineData: {
+      overall: calendarTimeline.overall.slice(),
+      mental: calendarTimeline.mental.slice(),
+      physical: calendarTimeline.physical.slice()
+    },
     calendarView,
     plantedFlowers: planted
   });
@@ -255,7 +311,7 @@ app.post("/submit-survey", async (req, res) => {
     }
     const avgScore = Math.round(total / entries.length);
     const dateKey = new Date().toLocaleDateString("en-CA");
-    updateTimeline(dateKey, section, avgScore);
+    // updateTimeline(dateKey, section, avgScore);
 
     const [generalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
