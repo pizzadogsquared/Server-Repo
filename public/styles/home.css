@@ -506,3 +506,12 @@
   border-color: #37AE0F;
 }
 
+.preview {
+  margin-top: 5px;
+  height: 40px;
+}
+
+.preview-image {
+  width: 30px;
+  height: auto;
+}
