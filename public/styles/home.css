@@ -451,8 +451,12 @@
   border-radius: 12px;
   padding: 15px;
   width: 200px;
+  height: 300px; /* Added fixed height */
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* ensures space between name/price and button */
 }
 
 .flower-image {
