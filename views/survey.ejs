@@ -24,9 +24,14 @@
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
 
-    <% } else if (section === "general-completed" || section === "mental-completed" || section === "physical-completed") { %>
-      <h2>You have already completed the <%= section.split('-')[0].charAt(0).toUpperCase() + section.split('-')[0].slice(1) %> Survey today!</h2>
-      <a href="/survey-choice" class="btn">Continue</a>
+    <% } else if (section === "next") { %>
+      <h2>Would you like to continue?</h2>
+      <% if (!userProgress.mental) { %>
+        <a href="/survey?section=mental" class="btn">Mental</a>
+      <% } %>
+      <% if (!userProgress.physical) { %>
+        <a href="/survey?section=physical" class="btn">Physical</a>
+      <% } %>
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
 
@@ -85,4 +90,3 @@
   </div>
 </body>
 </html>
-
