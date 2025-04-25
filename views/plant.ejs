@@ -25,12 +25,7 @@
             data-index="<%= i %>"
             onclick="selectSpot(<%= i %>, <%= existing ? 'true' : 'false' %>)"
           >
-            <% if (existing) { %>
-              🌸
-            <% } else { %>
-              <span class="spot-number"><%= i + 1 %></span>
-              <div class="preview"></div>
-            <% } %>
+            <%= existing ? '🌸' : (i + 1) %>
           </div>
         <% } %>
       </div>
