@@ -13,19 +13,24 @@
     <p>You're planting: <strong><%= flower.name %></strong></p>
     <img src="<%= flower.image %>" alt="<%= flower.name %>" style="width: 80px; height: auto;">
 
-    <form action="/plant" method="POST">
+    <form id="plantForm" action="/plant" method="POST">
       <input type="hidden" name="flowerId" value="<%= flower.id %>">
-      <label for="spot_index">Select Spot (1–15):</label>
-      <select name="spotIndex" id="spot_index" required>
+      <input type="hidden" name="spotIndex" id="spotIndexInput" required>
+    
+      <div class="planting-grid">
         <% for (let i = 0; i < 15; i++) { %>
           <% const existing = plantedFlowers.find(p => p.spot_index === i); %>
-          <option value="<%= i %>">
-            Spot <%= i + 1 %> <%= existing ? '(Replace existing flower)' : '' %>
-          </option>
+          <div 
+            class="plant-spot <%= existing ? 'filled' : 'empty' %>" 
+            data-index="<%= i %>"
+            onclick="selectSpot(<%= i %>, <%= existing ? 'true' : 'false' %>)"
+          >
+            <%= existing ? '🌸' : (i + 1) %>
+          </div>
         <% } %>
-      </select>
-      <br><br>
-      <button class="btn" type="submit">Plant</button>
+      </div>
+    
+      <button class="btn" type="submit" id="plantBtn" disabled>Plant Here</button>
     </form>
   </div>
 </body>
