@@ -33,5 +33,23 @@
       <button class="btn" type="submit" id="plantBtn" disabled>Plant Here</button>
     </form>
   </div>
+  <script>
+    function selectSpot(index, filled) {
+      if (filled) {
+        alert("This spot already has a flower. Choose another.");
+        return;
+      }
+  
+      document.querySelectorAll(".plant-spot").forEach(spot => {
+        spot.classList.remove("selected");
+      });
+  
+      const selected = document.querySelector(`.plant-spot[data-index="${index}"]`);
+      selected.classList.add("selected");
+  
+      document.getElementById("spotIndexInput").value = index;
+      document.getElementById("plantBtn").disabled = false;
+    }
+  </script>
 </body>
 </html>
