@@ -8,7 +8,8 @@ const images = {
   background: new Image(),
   tree: new Image(),
   hive: new Image(),
-  house: new Image()
+  house: new Image(),
+  plantedFlowers: {} // store per-flower images here
 };
 
 images.bee.src = "/images/bee.png";
@@ -18,19 +19,16 @@ images.hive.src = "/images/bee_hive.png";
 images.house.src = "/images/house.png";
 
 let loadedImages = 0;
-const totalImages = Object.keys(images).length;
+const totalImages = Object.keys(images).length - 1; // skip plantedFlowers
 
 for (const key in images) {
+  if (key === "plantedFlowers") continue;
   images[key].onload = () => {
     loadedImages++;
     if (loadedImages === totalImages) startAnimation();
   };
-  images[key].onerror = () => {
-    console.error(`Failed to load ${key}: ${images[key].src}`);
-  };
 }
 
-const bees = [];
 const flowerSpots = [
   { x: 100, y: canvas.height - 70 }, { x: 160, y: canvas.height - 70 },
   { x: 220, y: canvas.height - 70 }, { x: 280, y: canvas.height - 70 },
@@ -42,10 +40,17 @@ const flowerSpots = [
   { x: 940, y: canvas.height - 70 }
 ];
 
-// Only track actual planted flowers
 const plantedFlowerData = Array.isArray(window.plantedFlowers) ? window.plantedFlowers : [];
 
-const flowerPositions = plantedFlowerData.map(({ spot_index }) => flowerSpots[spot_index]).filter(Boolean);
+plantedFlowerData.forEach(({ spot_index, image }) => {
+  const img = new Image();
+  img.src = image;
+  images.plantedFlowers[spot_index] = img;
+});
+
+const flowerPositions = plantedFlowerData
+  .map(({ spot_index }) => flowerSpots[spot_index])
+  .filter(Boolean);
 
 const hivePos = { x: canvas.width - 80, y: canvas.height - 180 };
 const wellnessScores = window.wellnessScores || [];
@@ -58,9 +63,10 @@ const numBees = Math.min(10, Math.max(1, Math.floor(averageScore)));
 function getRandomFlower() {
   return flowerPositions.length > 0
     ? flowerPositions[Math.floor(Math.random() * flowerPositions.length)]
-    : { x: canvas.width / 2, y: canvas.height - 80 }; // fallback
+    : { x: canvas.width / 2, y: canvas.height - 80 };
 }
 
+const bees = [];
 for (let i = 0; i < numBees; i++) {
   bees.push({
     x: Math.random() * canvas.width,
@@ -73,7 +79,6 @@ for (let i = 0; i < numBees; i++) {
 }
 
 function updateBee(bee) {
-  const speed = bee.speed;
   const target = bee.state === "toFlower" ? bee.target : bee.state === "returning" ? hivePos : null;
 
   if (target) {
@@ -82,15 +87,11 @@ function updateBee(bee) {
     const dist = Math.hypot(dx, dy);
 
     if (dist < 5) {
-      if (bee.state === "toFlower") {
-        bee.state = "pollinating";
-        bee.timer = 60 + Math.random() * 60;
-      } else if (bee.state === "returning") {
-        bee.state = "wandering";
-        bee.target = getRandomFlower();
-        bee.timer = 0;
-      }
+      bee.state = bee.state === "toFlower" ? "pollinating" : "wandering";
+      bee.timer = bee.state === "pollinating" ? 60 + Math.random() * 60 : 0;
+      bee.target = bee.state === "wandering" ? getRandomFlower() : bee.target;
     } else {
+      const speed = bee.speed;
       bee.x += (dx / dist) * speed;
       bee.y += (dy / dist) * speed;
     }
@@ -113,36 +114,34 @@ function updateBee(bee) {
 function drawBee(bee) {
   ctx.save();
   ctx.translate(bee.x, bee.y);
-  const facingLeft = bee.target ? bee.target.x < bee.x : false;
-  ctx.scale(facingLeft ? -1 : 1, 1);
+  const flip = bee.target && bee.target.x < bee.x;
+  ctx.scale(flip ? -1 : 1, 1);
   ctx.drawImage(images.bee, -12, -12, 24, 24);
   ctx.restore();
 }
 
 function drawPlantedFlowers() {
-  plantedFlowerData.forEach(({ spot_index, image }) => {
+  plantedFlowerData.forEach(({ spot_index }) => {
     const spot = flowerSpots[spot_index];
-    if (!spot) return;
-    const img = new Image();
-    img.src = image;
-    img.onload = () => {
-      const maxSize = 60;
-      const aspectRatio = img.width / img.height;
-      let width = maxSize;
-      let height = width / aspectRatio;
-      if (height > maxSize) {
-        height = maxSize;
-        width = height * aspectRatio;
-      }
-      ctx.drawImage(img, spot.x - width / 2, spot.y - height / 2, width, height);
-    };
+    const img = images.plantedFlowers[spot_index];
+    if (!spot || !img?.complete) return;
+
+    const maxSize = 60;
+    const aspectRatio = img.width / img.height || 1;
+    let width = maxSize;
+    let height = width / aspectRatio;
+    if (height > maxSize) {
+      height = maxSize;
+      width = height * aspectRatio;
+    }
+
+    ctx.drawImage(img, spot.x - width / 2, spot.y - height / 2, width, height);
   });
 }
 
 function drawBackground() {
   ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
   ctx.drawImage(images.house, 20, canvas.height - 140, 120, 120);
-
   const treeX = canvas.width - 170;
   ctx.drawImage(images.tree, treeX, canvas.height - 240, 150, 220);
   ctx.drawImage(images.hive, treeX + 60, canvas.height - 180, 50, 50);
