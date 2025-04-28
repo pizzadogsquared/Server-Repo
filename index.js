@@ -58,16 +58,6 @@ const calendarTimeline = {
   physical: []
 };
 
-function updateTimeline(date, section, avgScore) {
-  const sectionKey = section === "general" ? "overall" : section;
-  const entry = { day: date, avgScore };
-  const timeline = calendarTimeline[sectionKey];
-  const existing = timeline.find(e => e.day === date);
-  if (existing) existing.avgScore = avgScore;
-  else timeline.push(entry);
-  if (timeline.length > 30) timeline.shift();
-}
-
 app.get("/", (req, res) => res.redirect("/login"));
 
 app.get("/login", (req, res) => res.render("login"));
@@ -75,6 +65,23 @@ app.post("/login", handleLogin);
 
 app.get("/signup", (req, res) => res.render("signup"));
 app.post("/signup", handleSignup);
+
+// unsubscribe from email notifications
+app.get("/unsubscribe", async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(400).send("Missing user ID.");
+  }
+
+  try {
+    await db.query("UPDATE users SET unsubscribed = TRUE WHERE id = ?", [userId]);
+    res.send("You have successfully unsubscribed from future Bee Balanced reminders.");
+  } catch (err) {
+    console.error("Error unsubscribing:", err);
+    res.status(500).send("Error unsubscribing. Please try again later.");
+  }
+});
+
 app.get("/admin/data-analysis", async (req, res) => {
   if (!req.session.user || !req.session.user.is_admin) {
     return res.status(403).send("Access denied");
@@ -292,7 +299,7 @@ app.get("/survey", async (req, res) => {
       physicalCount[0].count > 0;
 
     if (allCompletedToday) {
-      return res.render("survey", { section: "completed" });
+      return res.render("survey", { section: "completed", userId });
     }
 
     const sectionTableMap = {
@@ -305,7 +312,7 @@ app.get("/survey", async (req, res) => {
       return res.redirect("/survey-choice");
     }
 
-    res.render("survey", { section });
+    res.render("survey", { section, userId });
   } catch (err) {
     console.error("Survey section check error:", err);
     res.status(500).send("Error checking survey status");
@@ -354,7 +361,6 @@ app.post("/submit-survey", async (req, res) => {
     }
     const avgScore = Math.round(total / entries.length);
     const dateKey = new Date().toLocaleDateString("en-CA");
-    // updateTimeline(dateKey, section, avgScore);
 
     const [generalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
