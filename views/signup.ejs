@@ -44,16 +44,38 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <select name="country" required class="input-field">
+                    <select name="country" id="country-select" required class="input-field">
                         <option value="" disabled selected>Select your country</option>
-                        <option value="United States">United States</option>
-                        <option value="Canada">Canada</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="India">India</option>
-                        <option value="Australia">Australia</option>
-                        <option value="Prefer not to answer">Prefer not to answer</option>
                     </select>
                 </div>
+                
+                <script>
+                    // utilize an API for country selection
+                    document.addEventListener("DOMContentLoaded", () => {
+                        fetch("https://restcountries.com/v3.1/all")
+                            .then(res => res.json())
+                            .then(data => {
+                                const select = document.getElementById("country-select");
+                
+                                data
+                                    .sort((a, b) => a.name.common.localeCompare(b.name.common))
+                                    .forEach(country => {
+                                        const option = document.createElement("option");
+                                        option.value = country.name.common;
+                                        option.textContent = country.name.common;
+                                        select.appendChild(option);
+                                    });
+                
+                                // add an option for preferring not to answer
+                                const opt = document.createElement("option");
+                                opt.value = "Prefer not to answer";
+                                opt.textContent = "Prefer not to answer";
+                                select.appendChild(opt);
+                            })
+                            .catch(err => console.error("Failed to load countries:", err));
+                    });
+                </script>
+                
                 
                 <button type="submit" class="btn">Sign Up</button>
             </form>

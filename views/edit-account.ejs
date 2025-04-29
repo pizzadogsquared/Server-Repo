@@ -50,17 +50,48 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="gender">Select your country</label>
-                    <select name="country" required>
-                        <option value="United States" <%= user.country === "United States" ? "selected" : "" %>>United States</option>
-                        <option value="Canada" <%= user.country === "Canada" ? "selected" : "" %>>Canada</option>
-                        <option value="United Kingdom" <%= user.country === "United Kingdom" ? "selected" : "" %>>United Kingdom</option>
-                        <option value="India" <%= user.country === "India" ? "selected" : "" %>>India</option>
-                        <option value="Australia" <%= user.country === "Australia" ? "selected" : "" %>>Australia</option>
-                        <option value="Prefer not to answer" <%= user.country === 'Prefer not to answer' ? 'selected' : '' %>>Prefer not to answer</option>
+                    <label for="country">Select your country</label>
+                    <select name="country" id="country-select" required>
+                        <option value="" disabled>Select your country</option>
                     </select>
                 </div>
 
+                <script>
+                    // utilize an api for country selection
+                    document.addEventListener("DOMContentLoaded", () => {
+                        const select = document.getElementById("country-select");
+                        const currentCountry = "<%= user.country %>";
+                
+                        fetch("https://restcountries.com/v3.1/all")
+                            .then(res => res.json())
+                            .then(data => {
+                                data
+                                    .sort((a, b) => a.name.common.localeCompare(b.name.common))
+                                    .forEach(country => {
+                                        const name = country.name.common;
+                                        const option = document.createElement("option");
+                                        option.value = name;
+                                        option.textContent = name;
+                                        if (name === currentCountry) {
+                                            option.selected = true;
+                                        }
+                                        select.appendChild(option);
+                                    });
+                
+                                // add "Prefer not to answer" as an option
+                                const opt = document.createElement("option");
+                                opt.value = "Prefer not to answer";
+                                opt.textContent = "Prefer not to answer";
+                                if (currentCountry === "Prefer not to answer") {
+                                    opt.selected = true;
+                                }
+                                select.appendChild(opt);
+                            })
+                            .catch(err => console.error("Failed to load countries:", err));
+                    });
+                </script>
+                
+                
                 <button type="submit" class="btn">Save Changes</button>
             </form>
 

@@ -56,8 +56,8 @@ export async function handleSignup(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await conn.query(
-      "INSERT INTO users (full_name, email, password, age, gender, country) VALUES (?, ?, ?, ?, ?, ?)",
-      [name, email, hashedPassword, age || null, gender, country]
+      "INSERT INTO users (full_name, email, password, age, gender, country, unsubscribed) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [name, email, hashedPassword, age || null, gender, country, false]
     );
 
     res.redirect("/login");
