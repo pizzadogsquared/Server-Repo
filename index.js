@@ -137,11 +137,11 @@ app.get("/edit-account", async (req, res) => {
 app.post("/edit-account", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
-  let { fullName, email } = req.body;
-  fullName = fullName?.trim();
+  let { full_name, email } = req.body;
+  full_name = full_name?.trim();
   email = email?.trim().toLowerCase();
 
-  if (!fullName || fullName.length < 2) {
+  if (!full_name || full_name.length < 2) {
     return res.render("edit-account", {
       user: req.session.user,
       error: "Full name must be at least 2 characters long."
@@ -156,8 +156,8 @@ app.post("/edit-account", async (req, res) => {
   }
 
   try {
-    await db.query("UPDATE users SET full_name = ?, email = ? WHERE id = ?", [fullName, email, req.session.user.id]);
-    req.session.user.full_name = fullName;
+    await db.query("UPDATE users SET full_name = ?, email = ? WHERE id = ?", [full_name, email, req.session.user.id]);
+    req.session.user.full_name = full_name;
     req.session.user.email = email;
     res.redirect("/edit-account");
   } catch (err) {
