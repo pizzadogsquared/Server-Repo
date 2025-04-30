@@ -19,6 +19,9 @@
           <th>Gender</th>
           <th>Age</th>
           <th>User Count</th>
+          <th>Avg Overall Score</th>
+          <th>Avg Mental Score</th>
+          <th>Avg Physical Score</th>
         </tr>
       </thead>
       <tbody>
@@ -28,9 +31,12 @@
             <td><%= stat.gender %></td>
             <td><%= stat.age %></td>
             <td><%= stat.userCount %></td>
+            <td><%= stat.avgOverall ?? 'N/A' %></td>
+            <td><%= stat.avgMental ?? 'N/A' %></td>
+            <td><%= stat.avgPhysical ?? 'N/A' %></td>
           </tr>
         <% }); %>
-      </tbody>
+      </tbody>      
     </table>
 
   </div>

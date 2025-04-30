@@ -96,10 +96,21 @@ app.get("/admin/data-analysis", async (req, res) => {
   try {
     // Query to get the user data categorized by country, gender, and age, excluding admin users
     const [userStats] = await db.query(`
-      SELECT country, gender, age, COUNT(*) AS userCount
-      FROM users
-      WHERE is_admin = 0  -- Exclude admin users
-      GROUP BY country, gender, age;
+      SELECT 
+        u.country,
+        u.gender,
+        u.age,
+        COUNT(DISTINCT u.id) AS userCount,
+        ROUND(AVG(gs.score), 2) AS avgOverall,
+        ROUND(AVG(ms.score), 2) AS avgMental,
+        ROUND(AVG(ps.score), 2) AS avgPhysical
+      FROM users u
+      LEFT JOIN general_survey gs ON u.id = gs.user_id
+      LEFT JOIN mental_survey ms ON u.id = ms.user_id
+      LEFT JOIN physical_survey ps ON u.id = ps.user_id
+      WHERE u.is_admin = 0
+      GROUP BY u.country, u.gender, u.age;
+
     `);
 
     // Render the admin-dashboard view with the user statistics
