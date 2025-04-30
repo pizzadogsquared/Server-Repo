@@ -117,26 +117,44 @@ app.get("/logout", (req, res) => {
 
 app.get("/edit-account", async (req, res) => {
   if (!req.session.user) {
-      return res.redirect("/login"); // Ensure user is logged in
+    return res.redirect("/login");
   }
 
   try {
-      const [user] = await db.query("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
+    const [user] = await db.query("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
 
-      if (!user) {
-          return res.redirect("/home"); // Redirect if user not found
-      }
+    if (!user || user.length === 0) {
+      return res.redirect("/home");
+    }
 
-      res.render("edit-account", { user: user[0], error: null }); // Always define error
+    res.render("edit-account", { user: user[0], error: null });
   } catch (err) {
-      console.error("Database error:", err);
-      res.render("edit-account", { user: req.session.user, error: "Failed to load account details" });
+    console.error("Database error:", err);
+    res.render("edit-account", { user: req.session.user, error: "Failed to load account details" });
   }
 });
 
 app.post("/edit-account", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
-  const { fullName, email } = req.body;
+
+  let { fullName, email } = req.body;
+  fullName = fullName?.trim();
+  email = email?.trim().toLowerCase();
+
+  if (!fullName || fullName.length < 2) {
+    return res.render("edit-account", {
+      user: req.session.user,
+      error: "Full name must be at least 2 characters long."
+    });
+  }
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.render("edit-account", {
+      user: req.session.user,
+      error: "Please enter a valid email address."
+    });
+  }
+
   try {
     await db.query("UPDATE users SET full_name = ?, email = ? WHERE id = ?", [fullName, email, req.session.user.id]);
     req.session.user.full_name = fullName;
@@ -147,6 +165,7 @@ app.post("/edit-account", async (req, res) => {
     res.render("edit-account", { user: req.session.user, error: "Failed to update account" });
   }
 });
+
 
 async function buildTimeline(userId, section) {
   const sectionKey = section === "general" ? "overall" : section;
