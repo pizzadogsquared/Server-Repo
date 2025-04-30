@@ -9,7 +9,7 @@ if (!process.env.KNOCK_API_KEY) {
 }
 
 const knock = new Knock(process.env.KNOCK_API_KEY);
-const anchorDate = new Date("2025-01-02");
+const anchorDate = new Date("2025-01-01");
 const msPerDay = 1000 * 60 * 60 * 24;
 const scheduleTime = "0 12 * * *"; // every day at 12:00 PM
 
