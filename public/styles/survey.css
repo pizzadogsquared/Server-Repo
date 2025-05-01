@@ -76,3 +76,13 @@ body {
 .btn:hover {
   background: #555;
 }
+
+.reward-message {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+}
