@@ -13,6 +13,11 @@
     <h1>Daily Survey</h1>
 
     <% if (section === "completed") { %>
+      <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
+        <div class="reward-message">
+          <h3>You earned <%= coinsEarned %> coins from your last survey!</h3>
+        </div>
+      <% } %>
       <h2>All surveys completed for today!</h2>
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
