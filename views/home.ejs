@@ -106,12 +106,19 @@
     </script>
 
     <script>
+      window.overallData = <%- JSON.stringify(overallData || []) %>;
+      window.mentalData = <%- JSON.stringify(mentalData || []) %>;
+      window.physicalData = <%- JSON.stringify(physicalData || []) %>;
+    </script>
+
+    <script>
       window.wellnessScores = [
         ...<%- JSON.stringify(overallData || []) %>,
         ...<%- JSON.stringify(mentalData || []) %>,
         ...<%- JSON.stringify(physicalData || []) %>
       ];
     </script>
+
     <script src="/js/beeAnimation.js"></script>
     <script>
       function showAdvice(id, prefix) {
