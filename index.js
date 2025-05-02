@@ -58,6 +58,16 @@ const calendarTimeline = {
   physical: []
 };
 
+function getLocalDateString() {
+  const now = new Date();
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Phoenix',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(now);
+}
+
 app.get("/", (req, res) => {
   res.redirect("/welcome");
 });
@@ -398,11 +408,7 @@ app.get("/survey-choice", async (req, res) => {
 
 app.post("/submit-survey", async (req, res) => {
   const { section, userId, ...responses } = req.body;
-
-  // Calculate local date string
-  const todayLocal = new Date();
-  const offsetMs = todayLocal.getTimezoneOffset() * 60 * 1000;
-  const localDate = new Date(todayLocal.getTime() - offsetMs).toISOString().split('T')[0];
+  const localDate = getLocalDateString();
 
   try {
     const tableMap = {
