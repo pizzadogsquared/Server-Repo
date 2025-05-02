@@ -398,8 +398,11 @@ app.get("/survey-choice", async (req, res) => {
 
 app.post("/submit-survey", async (req, res) => {
   const { section, userId, ...responses } = req.body;
-  const today = new Date().toISOString().split("T")[0];
-  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  // Calculate local date string
+  const todayLocal = new Date();
+  const offsetMs = todayLocal.getTimezoneOffset() * 60 * 1000;
+  const localDate = new Date(todayLocal.getTime() - offsetMs).toISOString().split('T')[0];
 
   try {
     const tableMap = {
@@ -412,22 +415,24 @@ app.post("/submit-survey", async (req, res) => {
     let total = 0;
     for (const [question, score] of entries) {
       total += parseInt(score);
-      await db.query(`INSERT INTO ${table} (user_id, question, score) VALUES (?, ?, ?)`, [userId, question, parseInt(score)]);
+      await db.query(
+        `INSERT INTO ${table} (user_id, question, score, created_at) VALUES (?, ?, ?, ?)`,
+        [userId, question, parseInt(score), localDate]
+      );
     }
     const avgScore = Math.round(total / entries.length);
-    const dateKey = new Date().toLocaleDateString("en-CA");
 
     const [generalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
-      [userId, today]
+      [userId, localDate]
     );
     const [mentalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM mental_survey WHERE user_id = ? AND DATE(created_at) = ?`,
-      [userId, today]
+      [userId, localDate]
     );
     const [physicalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM physical_survey WHERE user_id = ? AND DATE(created_at) = ?`,
-      [userId, today]
+      [userId, localDate]
     );
 
     const allCompleted =
