@@ -9,7 +9,7 @@ const images = {
   tree: new Image(),
   hive: new Image(),
   house: new Image(),
-  plantedFlowers: {} // store per-flower images here
+  plantedFlowers: {}
 };
 
 images.bee.src = "/images/bee.png";
@@ -19,7 +19,7 @@ images.hive.src = "/images/bee_hive.png";
 images.house.src = "/images/house.png";
 
 let loadedImages = 0;
-const totalImages = Object.keys(images).length - 1; // skip plantedFlowers
+const totalImages = Object.keys(images).length - 1;
 
 for (const key in images) {
   if (key === "plantedFlowers") continue;
@@ -29,16 +29,10 @@ for (const key in images) {
   };
 }
 
-const flowerSpots = [
-  { x: 100, y: canvas.height - 70 }, { x: 160, y: canvas.height - 70 },
-  { x: 220, y: canvas.height - 70 }, { x: 280, y: canvas.height - 70 },
-  { x: 340, y: canvas.height - 70 }, { x: 400, y: canvas.height - 70 },
-  { x: 460, y: canvas.height - 70 }, { x: 520, y: canvas.height - 70 },
-  { x: 580, y: canvas.height - 70 }, { x: 640, y: canvas.height - 70 },
-  { x: 700, y: canvas.height - 70 }, { x: 760, y: canvas.height - 70 },
-  { x: 820, y: canvas.height - 70 }, { x: 880, y: canvas.height - 70 },
-  { x: 940, y: canvas.height - 70 }
-];
+const flowerSpots = Array.from({ length: 15 }, (_, i) => ({
+  x: 100 + i * 60,
+  y: canvas.height - 70
+}));
 
 const plantedFlowerData = Array.isArray(window.plantedFlowers) ? window.plantedFlowers : [];
 
@@ -56,8 +50,8 @@ const hivePos = { x: canvas.width - 80, y: canvas.height - 180 };
 
 function getTodayScore(data) {
   const today = new Date().toISOString().split("T")[0];
-  const todayEntry = (data || []).find(entry => entry.date === today);
-  return todayEntry ? todayEntry.avgScore : null;
+  const entry = (data || []).find(e => e.date === today);
+  return entry ? entry.avgScore : null;
 }
 
 const todayScores = [
@@ -71,6 +65,7 @@ const averageTodayScore = todayScores.length
   : 5;
 
 const numBees = Math.min(10, Math.max(1, Math.floor(averageTodayScore)));
+const beeSpeed = 0.1 + (averageTodayScore / 10) * 0.4; // slower speed range: 0.1 - 0.5
 
 function getRandomFlower() {
   if (flowerPositions.length > 0) {
@@ -78,25 +73,25 @@ function getRandomFlower() {
   } else {
     return {
       x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height * 0.8 // stay in view
+      y: Math.random() * canvas.height * 0.8
     };
   }
 }
 
-const bees = [];
-for (let i = 0; i < numBees; i++) {
-  bees.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    state: "wandering",
-    speed: 0.2 + (averageTodayScore / 10) * 0.8,
-    target: getRandomFlower(),
-    timer: 0
-  });
-}
+const bees = Array.from({ length: numBees }, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  state: "wandering",
+  speed: beeSpeed,
+  target: getRandomFlower(),
+  timer: 0
+}));
 
 function updateBee(bee) {
-  const target = bee.state === "toFlower" ? bee.target : bee.state === "returning" ? hivePos : null;
+  const target =
+    bee.state === "toFlower" ? bee.target :
+    bee.state === "returning" ? hivePos :
+    null;
 
   if (target) {
     const dx = target.x - bee.x;
@@ -108,9 +103,8 @@ function updateBee(bee) {
       bee.timer = bee.state === "pollinating" ? 60 + Math.random() * 60 : 0;
       bee.target = bee.state === "wandering" ? getRandomFlower() : bee.target;
     } else {
-      const speed = bee.speed;
-      bee.x += (dx / dist) * speed;
-      bee.y += (dy / dist) * speed;
+      bee.x += (dx / dist) * bee.speed;
+      bee.y += (dy / dist) * bee.speed;
     }
   }
 
