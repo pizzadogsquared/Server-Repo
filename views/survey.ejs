@@ -72,7 +72,7 @@
         <% if (questions[section]) { %>
           <% questions[section].forEach((question, index) => { %>
             <div class="question">
-              <label for="q<%= index + 1 %>"><%= index + 1 %>. <%= question %></label>
+              <label for="q<%= index + 1 %>"><%= question %></label>
               <input type="range" id="q<%= index + 1 %>" name="q<%= index + 1 %>" min="1" max="10" step="1" required>
               <div class="scale-labels">
                 <span>1<br><small>Strongly Disagree</small></span>
