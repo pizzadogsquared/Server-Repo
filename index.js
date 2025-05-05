@@ -46,13 +46,6 @@ app.use((req, res, next) => {
   next();
 });
 
-let surveyResults = {
-  overall: [],
-  mental: [],
-  physical: [],
-  days: []
-};
-let allResponses = [];
 const calendarTimeline = {
   overall: [],
   mental: [],
@@ -216,7 +209,6 @@ app.post("/edit-account", async (req, res) => {
 });
 
 
-
 async function buildTimeline(userId, section) {
   const sectionKey = section === "general" ? "overall" : section;
   const table = {
@@ -264,104 +256,13 @@ app.get("/calendar", async (req, res) => {
 app.get("/home", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
-  const today = new Date().getDay();
-  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const calendarView = req.query.calendarView || "overall";
   const [planted] = await db.query(`
     SELECT pf.spot_index, f.image FROM planted_flowers pf
     JOIN flowers f ON f.id = pf.flower_id
     WHERE pf.user_id = ?
   `, [userId]);
 
-  if (surveyResults.days.length === 0 && allResponses.length === 0) {
-    while (surveyResults.days.length < today) {
-      surveyResults.days.push(weekdays[surveyResults.days.length]);
-      surveyResults.overall.push(5);
-      surveyResults.mental.push(5);
-      surveyResults.physical.push(5);
-    }
-  }
-
-  await buildTimeline(userId, "overall");
-  await buildTimeline(userId, "mental");
-  await buildTimeline(userId, "physical");
-
-  const [general] = await db.query("SELECT * FROM general_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
-  const [mental] = await db.query("SELECT * FROM mental_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
-  const [physical] = await db.query("SELECT * FROM physical_survey WHERE user_id = ? ORDER BY created_at DESC", [userId]);
-  
-  function getLowestFeedback(data, sectionName) {
-    const sectionQuestions = questionMap[sectionName];
-    const lowest = data
-      .map(entry => ({
-        question: sectionQuestions[entry.question] || entry.question,
-        avgScore: entry.score || 5,
-      }))
-      .sort((a, b) => a.avgScore - b.avgScore)[0];
-  
-    if (!lowest) return null;
-  
-    return {
-      question: lowest.question,
-      advice: adviceMap[lowest.question] || "No advice available.",
-    };
-  }
-  function getRecentSurveyScores(entries) {
-    const now = new Date();
-    const start = new Date(now);
-    start.setDate(now.getDate() - 13);
-
-    const dailyScores = {};
-
-    for (const entry of entries) {
-      const rawDate = entry.created_at instanceof Date
-        ? entry.created_at
-        : new Date(entry.created_at);
-
-      const dateObj = new Date(rawDate.getFullYear(), rawDate.getMonth(), rawDate.getDate());
-      const localDateStr = dateObj.toISOString().split("T")[0];
-
-      if (dateObj >= start && dateObj <= now) {
-        if (!dailyScores[localDateStr]) {
-          dailyScores[localDateStr] = [];
-        }
-        dailyScores[localDateStr].push(entry.score);
-      }
-    }
-
-    const recentData = Object.keys(dailyScores)
-      .sort()
-      .map(dateStr => {
-        const scores = dailyScores[dateStr];
-        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-        return {
-          date: dateStr,
-          avgScore: Math.round(avg * 100) / 100
-        };
-      });
-
-    return recentData;
-  }
-
-
-  const overallData = getRecentSurveyScores(general);
-  const mentalData = getRecentSurveyScores(mental);
-  const physicalData = getRecentSurveyScores(physical);
-
   res.render("home", {
-    overallData,
-    mentalData,
-    physicalData,
-    days: weekdays,
-    overallFeedback: getLowestFeedback(general, "general"),
-    mentalFeedback: getLowestFeedback(mental, "mental"),
-    physicalFeedback: getLowestFeedback(physical, "physical"),
-    timelineData: {
-      overall: calendarTimeline.overall.slice(),
-      mental: calendarTimeline.mental.slice(),
-      physical: calendarTimeline.physical.slice()
-    },
-    calendarView,
     plantedFlowers: planted
   });
 });
@@ -411,12 +312,23 @@ app.get("/chart", async (req, res) => {
   });
 });
 
+
 app.get("/survey", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const section = req.query.section;
   const userId = req.session.user.id;
   const today = getLocalDateString();
+
+    let advice = null;
+  const feedback = req.session.feedback || null;
+  if (feedback && feedback.question) {
+    advice = getAdviceFor(feedback.section, feedback.question);
+    if (advice) {
+      advice.section = feedback.section;
+    }
+  }
+  delete req.session.feedback;
 
   if (section === "completed") {
     const coinsEarned = req.session.coinsEarned || null;
@@ -446,9 +358,7 @@ app.get("/survey", async (req, res) => {
       physicalCount[0].count > 0;
 
     if (allCompletedToday) {
-      const coinsEarned = req.session.coinsEarned || null;
-      delete req.session.coinsEarned;
-      return res.render("survey", { section: "completed", userId, coinsEarned });
+      return res.render("survey", { section: "completed", userId, coinsEarned, advice });
     }
 
     const sectionTableMap = {
@@ -499,8 +409,6 @@ app.get("/survey-choice", async (req, res) => {
     }  
   }
   delete req.session.feedback;
-
-  console.log(advice.section)
 
   res.render("survey-choice", { userProgress: progress, coinsEarned, advice });
 });

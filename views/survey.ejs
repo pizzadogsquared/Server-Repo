@@ -20,6 +20,30 @@
         </div>
       <% } %>
       <h2>All surveys completed for today!</h2>
+
+      <% if (advice) { %>
+        <% if (advice.section == 'general') { %>
+          <div class="advice-box">
+            <p><strong>General Focus Area:</strong> <%= advice.question %></p>
+            <p><%= advice.advice %></p>
+          </div>
+        <% } else if (advice.section == 'mental') { %>
+          <div class="advice-box">
+            <p><strong>Mental Focus Area:</strong> <%= advice.question %></p>
+            <p><%= advice.advice %></p>
+          </div>
+        <% } else if (advice.section == 'physical') { %>
+          <div class="advice-box">
+            <p><strong>Physical Focus Area:</strong> <%= advice.question %></p>
+            <p><%= advice.advice %></p>
+          </div>
+        <% } %>
+      <% } else { %>
+        <div class="advice-box">
+          <p><strong>No advice available at this time.</strong></p>
+        </div>
+      <% } %>
+
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
 
