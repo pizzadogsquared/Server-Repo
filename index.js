@@ -428,15 +428,15 @@ app.post("/submit-survey", async (req, res) => {
     const avgScore = Math.round(total / entries.length);
 
     const [generalCount] = await db.query(
-      SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?,
+      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, localDate]
     );
     const [mentalCount] = await db.query(
-      SELECT COUNT(*) AS count FROM mental_survey WHERE user_id = ? AND DATE(created_at) = ?,
+      `SELECT COUNT(*) AS count FROM mental_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, localDate]
     );
     const [physicalCount] = await db.query(
-      SELECT COUNT(*) AS count FROM physical_survey WHERE user_id = ? AND DATE(created_at) = ?,
+      `SELECT COUNT(*) AS count FROM physical_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, localDate]
     );
 
