@@ -48,12 +48,21 @@
       <a href="/games" class="btn">Game</a>
 
     <% } else if (section === "choice") { %>
-      <h2>Select the next section</h2>
-      <a href="/survey?section=mental" class="btn">Mental</a>
-      <a href="/survey?section=physical" class="btn">Physical</a>
-      <a href="/home" class="btn">Home</a>
-      <a href="/games" class="btn">Game</a>
-
+      <div class="survey-choice">
+        <h2>Which survey would you like to take?</h2>
+    
+        <div class="btn-group">
+          <a href="/survey?section=general" class="btn">General</a>
+          <a href="/survey?section=mental" class="btn">Mental</a>
+          <a href="/survey?section=physical" class="btn">Physical</a>
+        </div>
+    
+        <h3 class="nav-heading">Or navigate somewhere else:</h3>
+        <div class="btn-group">
+          <a href="/home" class="btn">Home</a>
+          <a href="/games" class="btn">Game</a>
+        </div>
+      </div>
     <% } else if (section === "next") { %>
       <h2>Would you like to continue?</h2>
       <% if (!userProgress.mental) { %>

@@ -389,7 +389,7 @@ app.get("/survey", async (req, res) => {
     return res.render("survey", { section: "completed", userId, coinsEarned, advice });
   }
 
-  const surveySection = section || "general";
+  const surveySection = section || "choice";
 
   try {
     const [generalCount] = await db.query(

@@ -40,24 +40,25 @@
     
     <h1>Next Steps</h1>
 
-    <% if (!userProgress.mental && !userProgress.physical) { %>
-      <p>You have completed the General survey. Choose the next section:</p>
-      <a href="/survey?section=mental" class="btn">Mental</a>
-      <a href="/survey?section=physical" class="btn">Physical</a>
-      <a href="/home" class="btn">Home</a>
+    <% if (!userProgress.general || !userProgress.mental || !userProgress.physical) { %>
+      <p>Select a survey section to complete:</p>
     
-    <% } else if (!userProgress.mental) { %>
-      <p>You have completed one section. Would you like to continue?</p>
-      <a href="/survey?section=mental" class="btn">Mental</a>
-      <a href="/home" class="btn">Home</a>
-    <% } else if (!userProgress.physical) { %>
-      <p>You have completed one section. Would you like to continue?</p>
-      <a href="/survey?section=physical" class="btn">Physical</a>
+      <% if (!userProgress.general) { %>
+        <a href="/survey?section=general" class="btn">General</a>
+      <% } %>
+      <% if (!userProgress.mental) { %>
+        <a href="/survey?section=mental" class="btn">Mental</a>
+      <% } %>
+      <% if (!userProgress.physical) { %>
+        <a href="/survey?section=physical" class="btn">Physical</a>
+      <% } %>
+    
       <a href="/home" class="btn">Home</a>
     <% } else { %>
       <p>All surveys are completed for today!</p>
       <a href="/home" class="btn">Home</a>
     <% } %>
+    
   </div>
 </body>
 </html>
