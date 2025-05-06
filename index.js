@@ -347,7 +347,7 @@ app.get("/survey", async (req, res) => {
       [userId, today]
     );
     const [physicalCount] = await db.query(
-      SELECT COUNT(*) AS count FROM physical_survey WHERE user_id = ? AND DATE(created_at) = ?,
+      `SELECT COUNT(*) AS count FROM physical_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, today]
     );
 
