@@ -22,7 +22,6 @@
       <h2>All surveys completed for today!</h2>
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
-
     <% } else { %>
       <form action="/submit-survey" method="POST">
         <input type="hidden" name="section" value="<%= section %>">
@@ -51,7 +50,7 @@
             "I limit my intake of caffeinated drinks."
           ]
         }; %>
-
+    
         <% if (questions[section]) { %>
           <% questions[section].forEach((question, index) => { %>
             <div class="question">
@@ -72,7 +71,7 @@
             </div>
           <% }) %>
         <% } %>
-
+    
         <button type="submit" class="btn">Submit</button>
       </form>
     <% } %>
