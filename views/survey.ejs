@@ -3,6 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Choice</title>
+  <link rel="stylesheet" href="/styles/survey.css">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <div class="survey-container">
+    <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
+      <div class="reward-message">
+        <h2>You earned <%= coinsEarned %> coins from that survey!</h2>
+      </div>
+    <% } %>
+    <h1>Next Steps</h1>
+
+    <% if (!userProgress.mental && !userProgress.physical) { %>
+      <p>You have completed the General survey. Choose the next section:</p>
+      <a href="/survey?section=mental" class="btn">Mental</a>
+      <a href="/survey?section=physical" class="btn">Physical</a>
+      <a href="/home" class="btn">Home</a>
+    
+    <% } else if (!userProgress.mental) { %>
+      <p>You have completed one section. Would you like to continue?</p>
+      <a href="/survey?section=mental" class="btn">Mental</a>
+      <a href="/home" class="btn">Home</a>
+    <% } else if (!userProgress.physical) { %>
+      <p>You have completed one section. Would you like to continue?</p>
+      <a href="/survey?section=physical" class="btn">Physical</a>
+      <a href="/home" class="btn">Home</a>
+    <% } else { %>
+      <p>All surveys are completed for today!</p>
+      <a href="/home" class="btn">Home</a>
+    <% } %>
+  </div>
+</body>
+</html>
+
+survey.ejs
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey</title>
   <link rel="stylesheet" href="/styles/survey.css">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -22,11 +63,29 @@
       <h2>All surveys completed for today!</h2>
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
+
+    <% } else if (section === "choice") { %>
+      <h2>Select the next section</h2>
+      <a href="/survey?section=mental" class="btn">Mental</a>
+      <a href="/survey?section=physical" class="btn">Physical</a>
+      <a href="/home" class="btn">Home</a>
+      <a href="/games" class="btn">Game</a>
+
+    <% } else if (section === "next") { %>
+      <h2>Would you like to continue?</h2>
+      <% if (!userProgress.mental) { %>
+        <a href="/survey?section=mental" class="btn">Mental</a>
+      <% } %>
+      <% if (!userProgress.physical) { %>
+        <a href="/survey?section=physical" class="btn">Physical</a>
+      <% } %>
+      <a href="/home" class="btn">Home</a>
+      <a href="/games" class="btn">Game</a>
+
     <% } else { %>
       <form action="/submit-survey" method="POST">
         <input type="hidden" name="section" value="<%= section %>">
         <input type="hidden" name="userId" value="<%= userId %>">
-
         <% let questions = {
           general: [
             "I drink 8 glasses of water daily.",
@@ -50,7 +109,7 @@
             "I limit my intake of caffeinated drinks."
           ]
         }; %>
-    
+
         <% if (questions[section]) { %>
           <% questions[section].forEach((question, index) => { %>
             <div class="question">
@@ -71,7 +130,7 @@
             </div>
           <% }) %>
         <% } %>
-    
+
         <button type="submit" class="btn">Submit</button>
       </form>
     <% } %>
