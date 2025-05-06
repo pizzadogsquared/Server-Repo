@@ -13,6 +13,7 @@
     <h1>Choose a Spot to Plant Your Flower</h1>
     <p>You're planting: <strong><%= flower.name %></strong></p>
     <img src="<%= flower.image %>" alt="<%= flower.name %>" style="width: 80px; height: auto;">
+    <div id="infoBox" class="info-box"></div>
 
     <form id="plantForm" action="/plant" method="POST">
       <input type="hidden" name="flowerId" value="<%= flower.id %>">
@@ -35,10 +36,13 @@
   </div>
   <script>
   function selectSpot(index, filled) {
+    const infoBox = document.getElementById("infoBox");
+    infoBox.style.display = "block";
+  
     if (filled) {
-      if (!confirm("This spot already has a flower. Do you want to replace it?")) {
-        return;
-      }
+      infoBox.textContent = "This spot is already planted. Selecting it will replace the current flower.";
+    } else {
+      infoBox.textContent = "Nice! You're planting in a new empty spot.";
     }
   
     document.querySelectorAll(".plant-spot").forEach(spot => {
