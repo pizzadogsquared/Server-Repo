@@ -4,102 +4,90 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Account</title>
-  <link rel="stylesheet" href="/styles/edit-account.css">
+  <link rel="stylesheet" href="/styles/login_signup.css" />
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="/images/Distant_Lights_4K_Motion_Background_Loop.mp4" type="video/mp4">
-    </video>
-    <div class="form-section">
-        <div class="form-container">
-            <h2 class="form-title">Edit Your Account</h2>
+  <video autoplay muted loop id="background-video">
+    <source src="/images/Distant_Lights_4K_Motion_Background_Loop.mp4" type="video/mp4">
+  </video>
 
-            <% if (error) { %>
-                <div class="error-box"><%= error %></div>
-            <% } %>
+  <div class="form-section">
+    <div class="form-container">
+      <h2 class="form-title">Edit Your Account</h2>
 
-            <form action="/edit-account" method="POST">
-                <div class="input-group">
-                    <label for="full_name">Full Name:</label>
-                    <input type="text" name="full_name" id="full_name" value="<%= user.full_name %>" required>
-                </div>
+      <% if (error) { %>
+        <div class="error-box"><p><%= error %></p></div>
+      <% } %>
 
-                <div class="input-group">
-                    <label for="email">Email:</label>
-                    <input type="email" name="email" id="email" value="<%= user.email %>" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="password">New Password (leave blank to keep current password):</label>
-                    <input type="password" name="password" id="password">
-                </div>
-
-                <div class="input-group">
-                    <label for="age">Age:</label>
-                    <input type="number" name="age" id="age" value="<%= user.age !== null ? user.age : '' %>">
-                </div>
-
-                <div class="input-group">
-                    <label for="gender">Gender:</label>
-                    <select name="gender" id="gender">
-                        <option value="Male" <%= user.gender === 'Male' ? 'selected' : '' %>>Male</option>
-                        <option value="Female" <%= user.gender === 'Female' ? 'selected' : '' %>>Female</option>
-                        <option value="Other" <%= user.gender === 'Other' ? 'selected' : '' %>>Other</option>
-                        <option value="Prefer not to answer" <%= user.gender === 'Prefer not to answer' ? 'selected' : '' %>>Prefer not to answer</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="country">Select your country</label>
-                    <select name="country" id="country-select" required>
-                        <option value="" disabled>Select your country</option>
-                    </select>
-                </div>
-
-                <script>
-                    // utilize an api for country selection
-                    document.addEventListener("DOMContentLoaded", () => {
-                        const select = document.getElementById("country-select");
-                        const currentCountry = "<%= user.country %>";
-                
-                        fetch("https://restcountries.com/v3.1/all")
-                            .then(res => res.json())
-                            .then(data => {
-                                data
-                                    .sort((a, b) => a.name.common.localeCompare(b.name.common))
-                                    .forEach(country => {
-                                        const name = country.name.common;
-                                        const option = document.createElement("option");
-                                        option.value = name;
-                                        option.textContent = name;
-                                        if (name === currentCountry) {
-                                            option.selected = true;
-                                        }
-                                        select.appendChild(option);
-                                    });
-                
-                                // add "Prefer not to answer" as an option
-                                const opt = document.createElement("option");
-                                opt.value = "Prefer not to answer";
-                                opt.textContent = "Prefer not to answer";
-                                if (currentCountry === "Prefer not to answer") {
-                                    opt.selected = true;
-                                }
-                                select.appendChild(opt);
-                            })
-                            .catch(err => console.error("Failed to load countries:", err));
-                    });
-                </script>
-                
-                
-                <button type="submit" class="btn">Save Changes</button>
-            </form>
-
-            <div class="form-footer">
-                <p><a href="/home">Back to Home</a></p>
-            </div>
+      <form action="/edit-account" method="POST">
+        <div class="input-group">
+          <input type="text" name="full_name" placeholder="Full Name" value="<%= user.full_name %>" required />
         </div>
+        <div class="input-group">
+          <input type="email" name="email" placeholder="Email" value="<%= user.email %>" required />
+        </div>
+        <div class="input-group">
+          <input type="password" name="password" placeholder="New Password (leave blank to keep current)" />
+        </div>
+        <div class="input-group">
+          <input type="number" name="age" placeholder="Age (Optional)" value="<%= user.age !== null ? user.age : '' %>" />
+        </div>
+        <div class="input-group">
+          <select name="gender">
+            <option value="" disabled>Input Gender</option>
+            <option value="Male" <%= user.gender === 'Male' ? 'selected' : '' %>>Male</option>
+            <option value="Female" <%= user.gender === 'Female' ? 'selected' : '' %>>Female</option>
+            <option value="Other" <%= user.gender === 'Other' ? 'selected' : '' %>>Other</option>
+            <option value="Prefer not to answer" <%= user.gender === 'Prefer not to answer' ? 'selected' : '' %>>Prefer not to answer</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <select name="country" id="country-select" required>
+            <option value="" disabled>Select your country</option>
+          </select>
+        </div>
+
+        <script>
+          document.addEventListener("DOMContentLoaded", () => {
+            const select = document.getElementById("country-select");
+            const currentCountry = "<%= user.country %>";
+
+            fetch("https://restcountries.com/v3.1/all")
+              .then(res => res.json())
+              .then(data => {
+                data
+                  .sort((a, b) => a.name.common.localeCompare(b.name.common))
+                  .forEach(country => {
+                    const name = country.name.common;
+                    const option = document.createElement("option");
+                    option.value = name;
+                    option.textContent = name;
+                    if (name === currentCountry) {
+                      option.selected = true;
+                    }
+                    select.appendChild(option);
+                  });
+
+                const opt = document.createElement("option");
+                opt.value = "Prefer not to answer";
+                opt.textContent = "Prefer not to answer";
+                if (currentCountry === "Prefer not to answer") {
+                  opt.selected = true;
+                }
+                select.appendChild(opt);
+              })
+              .catch(err => console.error("Failed to load countries:", err));
+          });
+        </script>
+
+        <button type="submit" class="btn">Save Changes</button>
+      </form>
+
+      <div class="form-footer">
+        <p><a href="/home">Back to Home</a></p>
+      </div>
     </div>
+  </div>
 </body>
 </html>
