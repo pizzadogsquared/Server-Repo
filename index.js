@@ -345,45 +345,33 @@ app.get("/survey", async (req, res) => {
   }
 
   if (!validSections.includes(section)) {
-    console.error("Survey section check failed: Invalid section:", section);
     return res.status(400).send("Invalid survey section.");
   }
 
   try {
-    const [generalCount] = await db.query(
-      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
-      [userId, today]
-    );
-    const [mentalCount] = await db.query(
-      `SELECT COUNT(*) AS count FROM mental_survey WHERE user_id = ? AND DATE(created_at) = ?`,
-      [userId, today]
-    );
-    const [physicalCount] = await db.query(
-      `SELECT COUNT(*) AS count FROM physical_survey WHERE user_id = ? AND DATE(created_at) = ?`,
-      [userId, today]
-    );
+    const [[general]] = await db.query(`SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`, [userId, today]);
+    const [[mental]] = await db.query(`SELECT COUNT(*) AS count FROM mental_survey WHERE user_id = ? AND DATE(created_at) = ?`, [userId, today]);
+    const [[physical]] = await db.query(`SELECT COUNT(*) AS count FROM physical_survey WHERE user_id = ? AND DATE(created_at) = ?`, [userId, today]);
 
-    const allCompletedToday =
-      generalCount[0].count > 0 &&
-      mentalCount[0].count > 0 &&
-      physicalCount[0].count > 0;
+    const alreadyCompleted = {
+      general: general.count > 0,
+      mental: mental.count > 0,
+      physical: physical.count > 0
+    };
 
-    if (allCompletedToday) {
-      return res.redirect("/survey?section=completed");
-    }
+    const allDone = alreadyCompleted.general && alreadyCompleted.mental && alreadyCompleted.physical;
 
-    if (
-      (section === "general" && generalCount[0].count > 0) ||
-      (section === "mental" && mentalCount[0].count > 0) ||
-      (section === "physical" && physicalCount[0].count > 0)
-    ) {
-      return res.redirect("/survey-choice");
-    }
+    // If all 3 surveys done, send to completed
+    if (allDone) return res.redirect("/survey?section=completed");
 
+    // If selected survey is already done, send to choice screen
+    if (alreadyCompleted[section]) return res.redirect("/survey-choice");
+
+    // Otherwise show the survey
     res.render("survey", { section, userId });
   } catch (err) {
-    console.error("Survey section check error:", err);
-    res.status(500).send("Error checking survey status");
+    console.error("Survey check error:", err);
+    res.status(500).send("Error checking survey progress");
   }
 });
 
