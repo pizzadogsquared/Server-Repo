@@ -231,11 +231,11 @@ app.get("/home", async (req, res) => {
   const today = new Date().getDay();
   const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const calendarView = req.query.calendarView || "overall";
-  const [planted] = await db.query(
+  const [planted] = await db.query(`
     SELECT pf.spot_index, f.image FROM planted_flowers pf
     JOIN flowers f ON f.id = pf.flower_id
     WHERE pf.user_id = ?
-  , [userId]);
+  `, [userId]);
 
   if (surveyResults.days.length === 0 && allResponses.length === 0) {
     while (surveyResults.days.length < today) {
@@ -339,7 +339,7 @@ app.get("/survey", async (req, res) => {
   try {
     // Check completion status from DB
     const [generalCount] = await db.query(
-      SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?,
+      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, today]
     );
     const [mentalCount] = await db.query(
@@ -392,7 +392,7 @@ app.get("/survey-choice", async (req, res) => {
 
   for (const section of sections) {
     const [rows] = await db.query(
-      SELECT COUNT(*) AS count FROM ${section} WHERE user_id = ? AND DATE(created_at) = ?,
+      `SELECT COUNT(*) AS count FROM ${section} WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, today]
     );
     const shortName = section.split("_")[0];
@@ -421,7 +421,7 @@ app.post("/submit-survey", async (req, res) => {
     for (const [question, score] of entries) {
       total += parseInt(score);
       await db.query(
-        INSERT INTO ${table} (user_id, question, score, created_at) VALUES (?, ?, ?, ?),
+        `INSERT INTO ${table} (user_id, question, score, created_at) VALUES (?, ?, ?, ?)`,
         [userId, question, parseInt(score), localDate]
       );
     }
@@ -501,11 +501,11 @@ app.post("/plant", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
   const { flowerId, spotIndex } = req.body;
-  await db.query(
+  await db.query(`
     INSERT INTO planted_flowers (user_id, spot_index, flower_id)
     VALUES (?, ?, ?)
     ON DUPLICATE KEY UPDATE flower_id = VALUES(flower_id)
-  , [userId, spotIndex, flowerId]);
+  `, [userId, spotIndex, flowerId]);
   res.redirect("/home");
 });
 
