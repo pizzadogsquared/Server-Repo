@@ -335,7 +335,7 @@ app.get("/survey", async (req, res) => {
 
   const section = req.query.section;
   const userId = req.session.user.id;
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
 
   if (section === "completed") {
     const coinsEarned = req.session.coinsEarned || null;
@@ -391,7 +391,7 @@ app.get("/survey-choice", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const userId = req.session.user.id;
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
 
   const sections = ["general_survey", "mental_survey", "physical_survey"];
   const progress = { general: false, mental: false, physical: false };
