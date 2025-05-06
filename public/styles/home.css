@@ -505,3 +505,26 @@
   background-color: #c2f0c2;
   border-color: #37AE0F;
 }
+.advice-box {
+  background: #fffdf2;
+  border-left: 6px solid #ffd700;
+  padding: 20px;
+  margin: 30px auto;
+  max-width: 700px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  text-align: left;
+  animation: fadeIn 0.4s ease;
+}
+.advice-box h2 {
+  color: #222;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #ffd700;
+  padding-bottom: 5px;
+}
+.advice-box p {
+  margin-bottom: 10px;
+  color: #444;
+  font-size: 1em;
+}
