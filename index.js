@@ -8,13 +8,15 @@ import { handleSignup } from "./signup.js";
 import db from "./db.js";
 import cron from "node-cron";
 import { adviceMap, questionMap } from "./advice.js";
-import { scheduleReminderJob } from "./sendReminders.js";
+// import { scheduleReminderJob } from "./sendReminders.js";
 import { getAdviceFor } from './advice.js';
+import OpenAI from "openai";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 
@@ -91,6 +93,39 @@ app.post("/login", handleLogin);
 
 app.get("/signup", (req, res) => res.render("signup"));
 app.post("/signup", handleSignup);
+
+app.get("/chatbot", (req, res) => {
+  res.render("chatbot");
+});
+
+// OpenAI client
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// OpenAI API
+app.post("/api/chatbot", async (req, res) => {
+  const { messages } = req.body;
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: "messages array is required" });
+  }
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  const stream = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages,
+    stream: true,
+  });
+
+  for await (const part of stream) {
+    const chunk = part.choices[0]?.delta?.content || "";
+    if (chunk) res.write(`data: ${chunk}\n\n`);
+  }
+
+  res.write("data: [DONE]\n\n");
+  res.end();
+});
 
 // unsubscribe from email notifications
 app.get("/unsubscribe", async (req, res) => {
@@ -261,6 +296,7 @@ app.get("/calendar", async (req, res) => {
   });
 });
 
+/*
 app.get("/home", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
@@ -271,6 +307,70 @@ app.get("/home", async (req, res) => {
   `, [userId]);
 
   res.render("home", {
+    plantedFlowers: planted
+  });
+});
+*/
+
+app.get("/home", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  const userId = req.session.user.id;
+
+  let petMood = "neutral";
+  let petThirsty = false;
+
+  try {
+    const [moodRows] = await db.query(
+      `SELECT score 
+       FROM mental_survey 
+       WHERE user_id = ? AND question = ? 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+      [userId, "q5"]
+    );
+
+    if (moodRows.length > 0) {
+      const score = moodRows[0].score;
+      if (score >= 8) {
+        petMood = "happy";
+      } else if (score <= 4) {
+        petMood = "sad";
+      } else {
+        petMood = "neutral";
+      }
+    }
+
+    const [waterRows] = await db.query(
+      `SELECT score 
+       FROM general_survey 
+       WHERE user_id = ? AND question = ? 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+      [userId, "q1"]
+    );
+
+    if (waterRows.length > 0) {
+      const waterScore = waterRows[0].score;
+      if (waterScore <= 4) {
+        petThirsty = true;
+      }
+    }
+  } catch (err) {
+    console.error("Error loading pet state:", err);
+  }
+
+  const [planted] = await db.query(`
+    SELECT pf.spot_index, f.image 
+    FROM planted_flowers pf
+    JOIN flowers f ON f.id = pf.flower_id
+    WHERE pf.user_id = ?
+  `, [userId]);
+
+  res.render("home", {
+    user: req.session.user,
+    petMood,
+    petThirsty,
     plantedFlowers: planted
   });
 });
@@ -600,10 +700,13 @@ cron.schedule("0 1 * * *", async () => {
     await db.execute("DELETE FROM mental_survey WHERE created_at < NOW() - INTERVAL 3 MONTH");
     await db.execute("DELETE FROM physical_survey WHERE created_at < NOW() - INTERVAL 3 MONTH");
 
-    console.log("✅ Old surveys cleaned up successfully.");
+    console.log("Old surveys cleaned up successfully.");
   } catch (error) {
-    console.error("❌ Error cleaning up old surveys:", error.message);
+    console.error("Error cleaning up old surveys:", error.message);
   }
 });
 
-app.listen(PORT, () => {console.log(`Listening on port ${PORT}`), scheduleReminderJob();});
+app.listen(PORT, () => {
+    console.log(`Listening on port ${PORT}`);
+//  scheduleReminderJob();
+});

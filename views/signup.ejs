@@ -53,7 +53,7 @@
                 <script>
                     // utilize an API for country selection
                     document.addEventListener("DOMContentLoaded", () => {
-                        fetch("https://restcountries.com/v3.1/all")
+                        fetch("https://restcountries.com/v3.1/all?fields=name")
                             .then(res => res.json())
                             .then(data => {
                                 const select = document.getElementById("country-select");

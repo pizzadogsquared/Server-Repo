@@ -565,3 +565,34 @@
   display: none;
   animation: fadeIn 0.3s ease;
 }
+
+#pet-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+#pet-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+#pet-sprite {
+  width: 128px;
+  image-rendering: pixelated;
+}
+
+#thirsty-icon {
+  position: absolute;
+  right: -10px;
+  top: -10px;
+  width: 32px;
+  image-rendering: pixelated;
+}
+
+#thirsty-icon.hidden {
+  display: none;
+}
+
+#thirsty-icon.visible {
+  display: block;
+}
