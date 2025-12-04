@@ -312,6 +312,40 @@ app.get("/home", async (req, res) => {
 });
 */
 
+async function getTodaySurveyContext(userId) {
+  const today = getLocalDateString();
+
+  const tables = ["general_survey", "mental_survey", "physical_survey"];
+  const context = {};
+
+  for (const table of tables) {
+    const [rows] = await db.query(
+      `SELECT question, score
+         FROM ${table}
+        WHERE user_id = ?
+          AND DATE(created_at) = ?`,
+      [userId, today]
+    );
+
+    if (!rows.length) continue;
+
+    const short = table.split("_")[0]; // "general", "mental", "physical"
+
+    context[short] = rows.map((r) => {
+      // questionMap.general.q1, questionMap.mental.q3, etc.
+      const text =
+        (questionMap[short] && questionMap[short][r.question]) || r.question;
+      return {
+        id: r.question,   // q1, q2, etc.
+        text,             // full question string
+        score: r.score,   // 1–10
+      };
+    });
+  }
+
+  return context;
+}
+
 app.get("/home", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
@@ -322,56 +356,51 @@ app.get("/home", async (req, res) => {
 
   try {
     const [moodRows] = await db.query(
-      `SELECT score 
-       FROM mental_survey 
-       WHERE user_id = ? AND question = ? 
-       ORDER BY created_at DESC 
-       LIMIT 1`,
-      [userId, "q5"]
+      "SELECT score FROM mental_survey WHERE user_id = ? AND question = ? ORDER BY created_at DESC LIMIT 1",
+      [userId, "q5"]     // q5 = "I generally feel happy and emotionally balanced."
     );
 
     if (moodRows.length > 0) {
-      const score = moodRows[0].score;
-      if (score >= 8) {
-        petMood = "happy";
-      } else if (score <= 4) {
-        petMood = "sad";
-      } else {
-        petMood = "neutral";
-      }
+      const score = moodRows[0].score; // 1–10
+      if (score >= 8) petMood = "happy";
+      else if (score <= 3) petMood = "sad";
+      else petMood = "neutral";
     }
 
     const [waterRows] = await db.query(
-      `SELECT score 
-       FROM general_survey 
-       WHERE user_id = ? AND question = ? 
-       ORDER BY created_at DESC 
-       LIMIT 1`,
-      [userId, "q1"]
+      "SELECT score FROM general_survey WHERE user_id = ? AND question = ? ORDER BY created_at DESC LIMIT 1",
+      [userId, "q1"]     // q1 = "I drink 8 glasses of water daily."
     );
 
     if (waterRows.length > 0) {
-      const waterScore = waterRows[0].score;
-      if (waterScore <= 4) {
-        petThirsty = true;
-      }
+      const waterScore = waterRows[0].score; // 1–10
+      if (waterScore <= 6) petThirsty = true;
     }
   } catch (err) {
     console.error("Error loading pet state:", err);
   }
 
-  const [planted] = await db.query(`
-    SELECT pf.spot_index, f.image 
-    FROM planted_flowers pf
-    JOIN flowers f ON f.id = pf.flower_id
-    WHERE pf.user_id = ?
-  `, [userId]);
+  let surveyContext = {};
+  try {
+    surveyContext = await getTodaySurveyContext(userId);
+  } catch (err) {
+    console.error("Error building survey context:", err);
+  }
+
+  const [planted] = await db.query(
+    `SELECT pf.spot_index, f.image
+       FROM planted_flowers pf
+       JOIN flowers f ON f.id = pf.flower_id
+      WHERE pf.user_id = ?`,
+    [userId]
+  );
 
   res.render("home", {
     user: req.session.user,
     petMood,
     petThirsty,
-    plantedFlowers: planted
+    plantedFlowers: planted,
+    surveyContext,
   });
 });
 
