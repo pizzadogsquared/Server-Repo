@@ -596,3 +596,67 @@
 #thirsty-icon.visible {
   display: block;
 }
+
+.home-main-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 24px;
+}
+
+#pet-container {
+  flex: 0 0 260px;
+  text-align: center;
+}
+
+#pet-chat-container {
+  flex: 1;
+}
+
+.pet-messages-box {
+  width: 100%;
+  max-width: 600px;
+  height: 260px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.pet-input-row {
+  margin-top: 10px;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  gap: 8px;
+}
+
+.pet-input-row input {
+  flex: 1;
+  padding: 6px 8px;
+}
+
+.pet-loading {
+  font-size: 0.8rem;
+  color: #555;
+  visibility: hidden;
+  margin-top: auto;
+}
+
+.dots::after {
+  content: "";
+  animation: dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: ""; }
+  40% { content: "."; }
+  60% { content: ".."; }
+  80%, 100% { content: "..."; }
+}
