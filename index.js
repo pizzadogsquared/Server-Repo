@@ -296,6 +296,7 @@ app.get("/calendar", async (req, res) => {
   });
 });
 
+/*
 app.get("/home", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
@@ -306,6 +307,70 @@ app.get("/home", async (req, res) => {
   `, [userId]);
 
   res.render("home", {
+    plantedFlowers: planted
+  });
+});
+*/
+
+app.get("/home", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  const userId = req.session.user.id;
+
+  let petMood = "neutral";
+  let petThirsty = false;
+
+  try {
+    const [moodRows] = await db.query(
+      `SELECT score 
+       FROM mental_survey 
+       WHERE user_id = ? AND question = ? 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+      [userId, "q5"]
+    );
+
+    if (moodRows.length > 0) {
+      const score = moodRows[0].score;
+      if (score >= 8) {
+        petMood = "happy";
+      } else if (score <= 4) {
+        petMood = "sad";
+      } else {
+        petMood = "neutral";
+      }
+    }
+
+    const [waterRows] = await db.query(
+      `SELECT score 
+       FROM general_survey 
+       WHERE user_id = ? AND question = ? 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+      [userId, "q1"]
+    );
+
+    if (waterRows.length > 0) {
+      const waterScore = waterRows[0].score;
+      if (waterScore <= 4) {
+        petThirsty = true;
+      }
+    }
+  } catch (err) {
+    console.error("Error loading pet state:", err);
+  }
+
+  const [planted] = await db.query(`
+    SELECT pf.spot_index, f.image 
+    FROM planted_flowers pf
+    JOIN flowers f ON f.id = pf.flower_id
+    WHERE pf.user_id = ?
+  `, [userId]);
+
+  res.render("home", {
+    user: req.session.user,
+    petMood,
+    petThirsty,
     plantedFlowers: planted
   });
 });

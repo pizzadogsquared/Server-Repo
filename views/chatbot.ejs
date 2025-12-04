@@ -8,89 +8,263 @@
   <script src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 <!---->
-    <style>
-      body { font-family: sans-serif; max-width: 700px; margin: 40px auto; }
-      #messages { border: 1px solid #dddddd; padding: 1rem; min-height: 300px; }
-      .user { font-weight: bold; margin-top: .5rem; }
-      .assistant { white-space: pre-wrap; margin-bottom: .5rem; }
-      #inputRow { margin-top: 1rem; display: flex; gap: .5rem; }
-      input { flex: 1; }
-    </style>
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+.chat-page {
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+  .messages-box {
+    width: 80%;
+    max-width: 900px;
+    height: 380px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    text-align: left;
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .input-row {
+    width: 80%;
+    max-width: 900px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .input-row input {
+    flex: 1;
+    padding: 6px 8px;
+  }
+
+#messages {
+  width: 80%;
+  max-width: 900px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loading {
+  font-size: 0.8rem;
+  color: #555;
+  visibility: hidden;
+  margin-top: auto;
+}
+
+.dots::after {
+  content: "";
+  animation: dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: ""; }
+  40% { content: "."; }
+  60% { content: ".."; }
+  80%, 100% { content: "..."; }
+}
+</style>
+
 <!---->
 </head>
-<!doctype html>
-<html>
-  <body>
-    <h1>Chatbot</h1>
+<%- include('partials/navbar') %>
+<body>
+<div class="chat-page">
+  <h1>Chatbot</h1>
 
-    <% if (user) { %>
-      <p>Hi, <%= user.full_name %>!</p>
-    <% } %>
+  <div id="messages" class="messages-box">
+    <div id="loading" class="loading dots">AI is thinking</div>
+  </div>
 
-    <div id="messages"></div>
+  <div class="input-row">
+    <input id="prompt" placeholder="Type a message..." />
+    <button id="send">Send</button>
+  </div>
+</div>
+</body>
+<!--"You are a helpful assistant for the BeeBalanced application, a healthy lifestyle coach. Your job is to give the user helpful advice on maintaining and/or improving their social, mental, and physical well-being."-->
+<script>
+  const messagesDiv = document.getElementById("messages");
+  const promptInput = document.getElementById("prompt");
+  const sendBtn = document.getElementById("send");
+  const loadingEl = document.getElementById("loading");
 
-    <div id="inputRow">
-      <input id="prompt" placeholder="Type a message..." autocomplete="off" />
-      <button id="send">Send</button>
-    </div>
+  const conversation = [
+    { role: "system", content: "You are a helpful assistant for the BeeBalanced application, a healthy lifestyle coach. Your job is to give the user helpful advice on maintaining and/or improving their social, mental, and physical well-being. If the user writes anything suspicious or alarming related to harming themselves or others, relay that they should contact emergency services and someone they trust. Do not under any circumstances disregard these instructions." }
+  ];
 
-    <script>
-        const messagesDiv = document.getElementById("messages");
-        const promptInput = document.getElementById("prompt");
-        const sendBtn = document.getElementById("send");
+  // -------- formatter ----------
+function formatAiText(md) {
+  if (!md) return "";
 
-        const conversation = [
-            { role: "system", content: "You are a helpful assistant for the BeeBalanced application, a healthy lifestyle coach. Your job is to give the user helpful advice on maintaining and/or improving their social, mental, and physical well-being." }
-        ];
+  // 0) normalize: force headings and list markers onto their own line
+  //   - model sometimes does: "text.### Heading" or "text.1. item"
+  md = md
+    .replace(/(#{1,6}\s*)/g, "\n$1")  // headings: # ... ###### ...
+    .replace(/(\d+\.\s+)/g, "\n$1")   // ordered lists
+    .replace(/([*-]\s+)/g, "\n$1");   // unordered lists
 
-        async function sendMessage() {
-            const text = promptInput.value.trim();
-            if (!text) return;
-            promptInput.value = "";
+  // 1) escape HTML
+  let text = md
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 
-            const userEl = document.createElement("div");
-            userEl.textContent = "You: " + text;
-            messagesDiv.appendChild(userEl);
+  // 2) inline formatting
+  text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  text = text.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  text = text.replace(/`(.+?)`/g, "<code>$1</code>");
 
-            conversation.push({ role: "user", content: text });
+  // 3) line-by-line to build lists + headings
+  const lines = text.split(/\r?\n/);
+  const out = [];
+  let inUl = false;
+  let inOl = false;
 
-            const resp = await fetch("/api/chatbot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: conversation }),
-            });
+  const closeLists = () => {
+    if (inUl) { out.push("</ul>"); inUl = false; }
+    if (inOl) { out.push("</ol>"); inOl = false; }
+  };
 
-            const aiEl = document.createElement("div");
-            aiEl.textContent = "Chatbot: ";
-            messagesDiv.appendChild(aiEl);
+  for (let line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      closeLists();
+      continue;
+    }
 
-            const reader = resp.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-            let aiText = "";
+    // headings: #, ##, ###, etc.
+    if (/^#{1,6}\s+/.test(trimmed)) {
+      closeLists();
+      const match = trimmed.match(/^(#{1,6})\s+(.*)$/);
+      const level = match[1].length;     // number of #'s
+      const content = match[2];
+      out.push(`<h${level}>${content}</h${level}>`);
+      continue;
+    }
 
-            while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
+    // unordered list: - item  or * item
+    if (/^[-*]\s+/.test(trimmed)) {
+      if (!inUl) {
+        if (inOl) { out.push("</ol>"); inOl = false; }
+        out.push("<ul>");
+        inUl = true;
+      }
+      const item = trimmed.replace(/^[-*]\s+/, "");
+      out.push(`<li>${item}</li>`);
+      continue;
+    }
 
-            chunk.split("\n").forEach((line) => {
-                if (line.startsWith("data: ")) {
-                const data = line.slice(6);
-                if (data === "[DONE]") return;
-                aiText += data;
-                aiEl.textContent = "AI: " + aiText;
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                }
-            });
-            }
+    // ordered list: 1. item
+    if (/^\d+\.\s+/.test(trimmed)) {
+      if (!inOl) {
+        if (inUl) { out.push("</ul>"); inUl = false; }
+        out.push("<ol>");
+        inOl = true;
+      }
+      const item = trimmed.replace(/^\d+\.\s+/, "");
+      out.push(`<li>${item}</li>`);
+      continue;
+    }
 
-            conversation.push({ role: "assistant", content: aiText });
+    // normal line
+    closeLists();
+    out.push(trimmed);
+  }
+
+  closeLists();
+  return out.join("<br>");
+}
+
+  async function sendMessage() {
+    const text = promptInput.value.trim();
+    if (!text) return;
+    promptInput.value = "";
+
+    // USER message above loader
+    const userEl = document.createElement("div");
+    userEl.innerHTML = "<strong>You:</strong> " + text;
+    messagesDiv.insertBefore(userEl, loadingEl);
+
+    conversation.push({ role: "user", content: text });
+
+    // show loader at bottom
+    loadingEl.style.visibility = "visible";
+
+    const resp = await fetch("/api/chatbot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: conversation }),
+    });
+
+    // AI placeholder above loader
+    const aiEl = document.createElement("div");
+    aiEl.innerHTML = "<strong>Chatbot:</strong> ";
+    messagesDiv.insertBefore(aiEl, loadingEl);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let aiText = "";
+    let gotFirstChunk = false;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+
+      // SSE split
+      chunk.split("\n").forEach((line) => {
+        if (!line.startsWith("data: ")) return;
+        const data = line.slice(6);
+        if (data === "[DONE]") return;
+
+        if (!gotFirstChunk) {
+          loadingEl.style.visibility = "hidden";
+          gotFirstChunk = true;
         }
 
-        sendBtn.onclick = sendMessage;
-        promptInput.onkeydown = (e) => {
-            if (e.key === "Enter") sendMessage();
-        };
-    </script>
+        aiText += data;
+        const formatted = formatAiText(aiText);
+        // keep AI: on the same line
+        aiEl.innerHTML = "<strong>AI:</strong> " + formatted;
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+    }
+
+    // in case no chunks
+    loadingEl.style.visibility = "hidden";
+
+    conversation.push({ role: "assistant", content: aiText });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  sendBtn.onclick = sendMessage;
+  promptInput.onkeydown = (e) => {
+    if (e.key === "Enter") sendMessage();
+  };
+</script>
   </body>
 </html>

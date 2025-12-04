@@ -19,6 +19,7 @@
     </div>
 
     <!-- Bee Garden Virtual Pet Window -->
+<!--
     <div id="bee-garden-container">
       <div id="hive-scene">
         <canvas id="bee-animation-canvas"></canvas>
@@ -33,12 +34,63 @@
     </script>
 
     <script src="/js/beeAnimation.js"></script>
+-->
 
+  
+<div id="pet-container">
+  <h2>Your Wellness Buddy</h2>
+
+  <div id="pet-wrapper">
+    <img
+      id="pet-sprite"
+      src="/images/sprites/dog_neutral.png"
+      alt="Virtual Pet"
+    />
+
+    <img
+      id="thirsty-icon"
+      src="/images/sprites/thirsty.png"
+      alt="Thirsty"
+      class="<%= petThirsty ? 'visible' : 'hidden' %>"
+    />
   </div>
+
+  <p id="pet-caption">
+    <span id="pet-mood-text"></span>
+  </p>
+</div>
+    </div>
   <footer class="home-footer">
     <p>If you have any questions, please contact <strong>Davis Yi</strong> at 
       <a href="mailto:davisdaehanyi@gmail.com">davisdaehanyi@gmail.com</a>.
     </p>
   </footer>
 </body>
+<script>
+  const petMood = "<%= petMood %>";
+  const petThirsty = <%= petThirsty ? "true" : "false" %>;
+
+  const petImg = document.getElementById("pet-sprite");
+  const petMoodText = document.getElementById("pet-mood-text");
+
+  const spriteMap = {
+    happy: "/images/sprites/dog_happy.png",
+    neutral: "/images/sprites/dog_neutral.png",
+    sad: "/images/sprites/dog_sad.png",
+  };
+
+  petImg.src = spriteMap[petMood] || spriteMap.neutral;
+
+  if (petMood === "happy") {
+    petMoodText.textContent = "Your pet is feeling really good today!";
+  } else if (petMood === "sad") {
+    petMoodText.textContent = "Your pet seems a bit down. Maybe some self-care would help.";
+  } else {
+    petMoodText.textContent = "Your pet is feeling okay. Keep up your habits!";
+  }
+
+  if (petThirsty) {
+    petMoodText.textContent += " And they're a little thirsty—have you had enough water?";
+  }
+</script>
 </html>
