@@ -63,7 +63,9 @@
         <h2>Chat with Your Buddy</h2>
 
         <div id="pet-messages" class="pet-messages-box">
-          <div id="pet-loading" class="pet-loading dots">Buddy is thinking</div>
+          <div id="pet-loading" class="pet-loading dots">
+            Buddy is thinking
+          </div>
         </div>
 
         <div class="pet-input-row">
@@ -143,7 +145,7 @@
     {
       role: "system",
       content:
-        "You are Bee Balanced's virtual pet dog named Buddy. Speak in a warm, encouraging tone, occasionally using dog-like expressions (e.g., 'woof', 'wag', 'tail wagging'). You are here to react to the user's wellbeing, listen to how they're doing, and gently encourage healthy habits related to hydration, sleep, exercise, and mental health. Keep responses short and friendly.",
+        "You are Bee Balanced's virtual pet dog named Buddy. Speak in a warm, encouraging tone, occasionally using dog-like expressions (e.g., 'woof', 'wag', 'tail wagging'). You are here to react to the user's wellbeing, listen to how they're doing, and gently encourage healthy habits related to hydration, sleep, exercise, and mental health. Keep responses short and friendly. Do not answer political or historical questions, remind users what you are meant to help them with.",
     },
   ];
 
@@ -236,7 +238,12 @@
     petPromptInput.value = "";
 
     const userEl = document.createElement("div");
-    userEl.innerHTML = "<strong>You:</strong> " + text;
+    userEl.classList.add("message", "user-message")
+    // userEl.innerHTML = "<strong>You:</strong> " + text;
+    const userElContent = document.createElement("div");
+    userElContent.classList.add("message-content");
+    userElContent.textContent = text;
+    userEl.appendChild(userElContent);
     petMessagesDiv.insertBefore(userEl, petLoadingEl);
 
     petConversation.push({ role: "user", content: text });
@@ -250,7 +257,11 @@
     });
 
     const aiEl = document.createElement("div");
-    aiEl.innerHTML = "<strong>Buddy:</strong> ";
+    aiEl.classList.add("message", "ai-message");
+
+    const aiElContent = document.createElement("div");
+    aiElContent.classList.add("message", "ai-message-content");
+
     petMessagesDiv.insertBefore(aiEl, petLoadingEl);
 
     const reader = resp.body.getReader();
@@ -275,11 +286,11 @@
 
         aiText += data;
         const formatted = formatAiText(aiText);
-        aiEl.innerHTML = "<strong>Buddy:</strong> " + formatted;
-        petMessagesDiv.scrollTop = petMessagesDiv.scrollHeight;
+        // aiEl.innerHTML = "<strong>Buddy:</strong> " + formatted;
+        aiElContent.textContent = formatted;
+        aiEl.appendChild(aiElContent);
       });
     }
-
     petLoadingEl.style.visibility = "hidden";
     petConversation.push({ role: "assistant", content: aiText });
     petMessagesDiv.scrollTop = petMessagesDiv.scrollHeight;
