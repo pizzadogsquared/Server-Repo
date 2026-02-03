@@ -611,7 +611,7 @@ app.get("/survey-choice", async (req, res) => {
 });
 
 app.post("/submit-survey", async (req, res) => {
-  const { section, userId, ...responses } = req.body;
+  const { section, userId, clientCoinDelta, ...responses } = req.body;
   const localDate = getLocalDateString();
 
   try {
@@ -652,6 +652,11 @@ app.post("/submit-survey", async (req, res) => {
 
     const coinsEarned = avgScore >= 8 ? 10 : avgScore >= 5 ? 5 : 2;
     await db.query("UPDATE users SET coins = coins + ? WHERE id = ?", [coinsEarned, userId]);
+    // add any client-side accumulated coins (clientCoinDelta) to user's coins in DB
+    const delta = parseInt(clientCoinDelta, 10) || 0;
+    if (delta > 0) {
+      await db.query("UPDATE users SET coins = coins + ? WHERE id = ?", [delta, userId]);
+    }
     await db.query("UPDATE users SET survey_count = survey_count + 1 WHERE id = ?", [userId]);
     req.session.coinsEarned = coinsEarned;
 
@@ -669,6 +674,14 @@ app.post("/submit-survey", async (req, res) => {
     };
     
 
+    // refresh user's coins in session if available
+    try {
+      const [[userRow]] = await db.query('SELECT coins FROM users WHERE id = ?', [userId]);
+      if (req.session.user) req.session.user.coins = userRow.coins;
+    } catch (e) {
+      console.error('Failed to refresh session coins:', e);
+    }
+
     req.session.save((err) => {
       if (err) {
         console.error("Session Save Error:", err);
@@ -683,6 +696,24 @@ app.post("/submit-survey", async (req, res) => {
   } catch (err) {
     console.error("Survey Submit DB Error:", err);
     res.status(500).send("Failed to save survey");
+  }
+});
+
+// Increment user's coins (DB) — called from client when user first selects a question
+app.post('/api/increment-coin', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Not authenticated' });
+  const userId = req.session.user.id;
+  try {
+    await db.query('UPDATE users SET coins = coins + 1 WHERE id = ?', [userId]);
+    const [[userRow]] = await db.query('SELECT coins FROM users WHERE id = ?', [userId]);
+    // update session copy
+    req.session.user.coins = userRow.coins;
+    req.session.save(() => {
+      return res.json({ coins: userRow.coins });
+    });
+  } catch (err) {
+    console.error('Error incrementing coins:', err);
+    res.status(500).json({ error: 'Failed to increment coins' });
   }
 });
 

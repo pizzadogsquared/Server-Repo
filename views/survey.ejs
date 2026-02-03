@@ -12,14 +12,14 @@
 
   <div class="survey-container">
     <div class="coins-display">
-      <p><%= coins ?? 0 %> 🪙</p>
+      <p><span id="coin-count"><%= coins ?? 0 %></span> 🪙</p>
     </div>
     <h1>Daily Survey</h1>
 
     <% if (section === "completed") { %>
       <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
         <div class="reward-message">
-          <h3>You earned <%= coinsEarned %> coins from your last survey!</h3>
+          <h3>You earned <%= coinsEarned %> extra coins from your last survey!</h3>
         </div>
       <% } %>
       <h2>All surveys completed for today!</h2>
@@ -84,6 +84,7 @@
       <form action="/submit-survey" method="POST">
         <input type="hidden" name="section" value="<%= section %>">
         <input type="hidden" name="userId" value="<%= userId %>">
+        <input type="hidden" id="clientCoinDelta" name="clientCoinDelta" value="0">
         <% let questions = {
           general: [
             "I drink 8 glasses of water daily.",
@@ -154,5 +155,33 @@
       </form>
     <% } %>
   </div>
+      <script>
+    // Track first-time selections per question, increment on-page coin display and a hidden counter.
+    document.addEventListener('DOMContentLoaded', () => {
+      const coinSpan = document.getElementById('coin-count');
+      const hiddenInput = document.getElementById('clientCoinDelta');
+      if (!coinSpan || !hiddenInput) return;
+
+      let coins = parseInt(coinSpan.textContent, 10) || 0;
+      let hidden = parseInt(hiddenInput.value, 10) || 0;
+      const counted = new Set();
+
+      // Select radio inputs that are part of survey questions (names like q1, q2...)
+      const radios = document.querySelectorAll('form input[type="radio"][name^="q"]');
+      radios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          const qName = e.target.name;
+          if (!counted.has(qName)) {
+            counted.add(qName);
+            // increment on-page immediately
+            coins += 1;
+            hidden += 1;
+            coinSpan.textContent = coins;
+            hiddenInput.value = hidden;
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
