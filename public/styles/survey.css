@@ -114,6 +114,26 @@ body {
   border: 0 !important;
 }
 
+/* Coin emoji bounce animation */
+#coin-emoji {
+  display: inline-block;
+  margin-left: 6px;
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+#coin-emoji.bounce {
+  animation: coin-bounce 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes coin-bounce {
+  0% { transform: translateY(0px) scale(1); }
+  30% { transform: translateY(-10px) scale(1.30); }
+  50% { transform: translateY(0px) scale(0.90); }
+  65% { transform: translateY(-4px) scale(1.10); }
+  100% { transform: translateY(0px) scale(1); }
+}
+
 
 .btn-radio .radio-dot {
   display: inline-block;
