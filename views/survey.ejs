@@ -184,6 +184,11 @@
       let hidden = parseInt(hiddenInput.value, 10) || 0;
       const counted = new Set();
 
+      // Create audio element for coin collection sound
+      const coinSound = new Audio('/sounds/coin_collect.mp3');
+      coinSound.volume = 0.35;
+      coinSound.playbackRate = 2.5;
+
       // Select radio inputs that are part of survey questions (names like q1, q2...)
       const radios = document.querySelectorAll('form input[type="radio"][name^="q"]');
       radios.forEach(radio => {
@@ -197,6 +202,11 @@
             coinSpan.textContent = coins;
             hiddenInput.value = hidden;
             animateCoin();
+            // Play coin collect sound
+            coinSound.currentTime = 0;
+            coinSound.play().catch(() => {
+              // Silently fail if sound can't play (e.g., autoplay policy)
+            });
           }
         });
       });
