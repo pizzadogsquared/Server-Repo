@@ -11,6 +11,9 @@
   <%- include('partials/navbar') %>
 
   <div class="survey-container">
+    <div class="coins-display">
+      <p><%= coins ?? 0 %> 🪙</p>
+    </div>
     <h1>Daily Survey</h1>
 
     <% if (section === "completed") { %>
@@ -46,6 +49,7 @@
 
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
+      <a href="/shop" class="btn">Shop</a>
 
     <% } else if (section === "choice") { %>
       <div class="survey-choice">
@@ -61,6 +65,7 @@
         <div class="btn-group">
           <a href="/home" class="btn">Home</a>
           <a href="/games" class="btn">Game</a>
+          <a href="/shop" class="btn">Shop</a>
         </div>
       </div>
     <% } else if (section === "next") { %>
@@ -73,6 +78,7 @@
       <% } %>
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
+      <a href="/shop" class="btn">Shop</a>
 
     <% } else { %>
       <form action="/submit-survey" method="POST">
@@ -106,18 +112,39 @@
           <% questions[section].forEach((question, index) => { %>
             <div class="question">
               <label for="q<%= index + 1 %>"><%= question %></label>
-              <input type="range" id="q<%= index + 1 %>" name="q<%= index + 1 %>" min="1" max="10" step="1" required>
+              <div class="response-buttons">
+                <label class="btn-radio opt-1">
+                  <input type="radio" name="q<%= index + 1 %>" value="1" aria-label="Strongly Disagree" required>
+                  <span class="radio-dot" aria-hidden="true"></span>
+                  <span class="sr-only">Strongly Disagree</span>
+                </label>
+                <label class="btn-radio opt-3">
+                  <input type="radio" name="q<%= index + 1 %>" value="3" aria-label="Disagree">
+                  <span class="radio-dot" aria-hidden="true"></span>
+                  <span class="sr-only">Disagree</span>
+                </label>
+                <label class="btn-radio opt-5">
+                  <input type="radio" name="q<%= index + 1 %>" value="5" aria-label="Neutral">
+                  <span class="radio-dot" aria-hidden="true"></span>
+                  <span class="sr-only">Neutral</span>
+                </label>
+                <label class="btn-radio opt-7">
+                  <input type="radio" name="q<%= index + 1 %>" value="7" aria-label="Agree">
+                  <span class="radio-dot" aria-hidden="true"></span>
+                  <span class="sr-only">Agree</span>
+                </label>
+                <label class="btn-radio opt-9">
+                  <input type="radio" name="q<%= index + 1 %>" value="9" aria-label="Strongly Agree">
+                  <span class="radio-dot" aria-hidden="true"></span>
+                  <span class="sr-only">Strongly Agree</span>
+                </label>
+              </div>
               <div class="scale-labels">
-                <span>1<br><small>Strongly Disagree</small></span>
-                <span>2</span>
-                <span>3</span>
-                <span>4</span>
-                <span>5</span>
-                <span>6</span>
-                <span>7</span>
-                <span>8</span>
-                <span>9</span>
-                <span>10<br><small>Strongly Agree</small></span>
+                <span><small>Strongly Disagree</small></span>
+                <span><small>Disagree</small></span>
+                <span><small>Neutral</small></span>
+                <span><small>Agree</small></span>
+                <span><small>Strongly Agree</small></span>
               </div>
             </div>
           <% }) %>

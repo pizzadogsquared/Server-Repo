@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "reminders": "node sendReminders.js"
+    "reminders": "node sendReminders.js",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",

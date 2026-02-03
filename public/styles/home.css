@@ -660,3 +660,21 @@
   60% { content: ".."; }
   80%, 100% { content: "..."; }
 }
+
+#pet-chat-container h2 {
+  text-align: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.pet-messages-box {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pet-input-row {
+  width: 100%;
+  max-width: 800px;
+  margin: 10px auto;
+}
