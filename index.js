@@ -20,15 +20,17 @@ app.use(express.json());
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 
+app.set("trust proxy", 1);
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
+	cookie: {
+		secure: process.env.NODE_ENV === "production",
+		httpOnly: true,
+		sameSite: "lax",
+		maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
@@ -502,25 +504,28 @@ app.get("/survey", async (req, res) => {
   const userId = req.session.user.id;
   const today = getLocalDateString();
 
-  let advice = null;
-  const feedback = req.session.feedback || null;
-  if (feedback && feedback.question) {
-    advice = getAdviceFor(feedback.section, feedback.question);
-    if (advice) {
-      advice.section = feedback.section;
-    }
-  }
-  delete req.session.feedback;
-
-  if (section === "completed") {
-    const coinsEarned = req.session.coinsEarned || null;
-    delete req.session.coinsEarned;
-    return res.render("survey", { section: "completed", userId, coinsEarned, advice });
-  }
-
-  const surveySection = section || "choice";
-
   try {
+    const [[user]] = await db.query("SELECT coins FROM users WHERE id = ?", [userId]);
+    const coins = user?.coins || 0;
+
+    let advice = null;
+    const feedback = req.session.feedback || null;
+    if (feedback && feedback.question) {
+      advice = getAdviceFor(feedback.section, feedback.question);
+      if (advice) {
+        advice.section = feedback.section;
+      }
+    }
+    delete req.session.feedback;
+
+    if (section === "completed") {
+      const coinsEarned = req.session.coinsEarned || null;
+      delete req.session.coinsEarned;
+      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice });
+    }
+
+    const surveySection = section || "choice";
+
     const [generalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, today]
@@ -542,7 +547,7 @@ app.get("/survey", async (req, res) => {
     if (allCompletedToday) {
       const coinsEarned = req.session.coinsEarned || null;
       delete req.session.coinsEarned;
-      return res.render("survey", { section: "completed", userId, coinsEarned, advice });
+      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice });
     }
 
     const sectionTableMap = {
@@ -555,7 +560,7 @@ app.get("/survey", async (req, res) => {
       return res.redirect("/survey-choice");
     }
 
-    res.render("survey", { section: surveySection, userId, advice });
+    res.render("survey", { section: surveySection, userId, coins, advice });
   } catch (err) {
     console.error("Survey section check error:", err);
     res.status(500).send("Error checking survey status");
@@ -568,33 +573,41 @@ app.get("/survey-choice", async (req, res) => {
   const userId = req.session.user.id;
   const today = getLocalDateString();
 
-  const sections = ["general_survey", "mental_survey", "physical_survey"];
-  const progress = { general: false, mental: false, physical: false };
+  try {
+    const [[user]] = await db.query("SELECT coins FROM users WHERE id = ?", [userId]);
+    const coins = user?.coins || 0;
 
-  for (const section of sections) {
-    const [rows] = await db.query(
-      `SELECT COUNT(*) AS count FROM ${section} WHERE user_id = ? AND DATE(created_at) = ?`,
-      [userId, today]
-    );
-    const shortName = section.split("_")[0];
-    progress[shortName] = rows[0].count > 0;
+    const sections = ["general_survey", "mental_survey", "physical_survey"];
+    const progress = { general: false, mental: false, physical: false };
+
+    for (const section of sections) {
+      const [rows] = await db.query(
+        `SELECT COUNT(*) AS count FROM ${section} WHERE user_id = ? AND DATE(created_at) = ?`,
+        [userId, today]
+      );
+      const shortName = section.split("_")[0];
+      progress[shortName] = rows[0].count > 0;
+    }
+
+    const coinsEarned = req.session.coinsEarned || null;
+    delete req.session.coinsEarned;
+
+    const feedback = req.session.feedback || null;
+    let advice = null;
+
+    if (feedback && feedback.question) {
+      advice = getAdviceFor(feedback.section, feedback.question);
+      if (advice) {
+        advice.section = feedback.section;
+      }  
+    }
+    delete req.session.feedback;
+
+    res.render("survey-choice", { userProgress: progress, coinsEarned, coins, advice });
+  } catch (err) {
+    console.error("Survey-choice error:", err);
+    res.status(500).send("Error loading survey choice page");
   }
-
-  const coinsEarned = req.session.coinsEarned || null;
-  delete req.session.coinsEarned;
-
-  const feedback = req.session.feedback || null;
-  let advice = null;
-
-  if (feedback && feedback.question) {
-    advice = getAdviceFor(feedback.section, feedback.question);
-    if (advice) {
-      advice.section = feedback.section;
-    }  
-  }
-  delete req.session.feedback;
-
-  res.render("survey-choice", { userProgress: progress, coinsEarned, advice });
 });
 
 app.post("/submit-survey", async (req, res) => {

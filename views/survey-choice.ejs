@@ -9,6 +9,9 @@
 </head>
 <body>
   <div class="survey-container">
+    <div class="coins-display">
+      <p><%= coins ?? 0 %> 🪙</p>
+    </div>
     <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
       <div class="reward-message">
         <h2>You earned <%= coinsEarned %> coins from that survey!</h2>
