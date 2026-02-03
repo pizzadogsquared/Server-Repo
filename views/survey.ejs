@@ -12,7 +12,10 @@
 
   <div class="survey-container">
     <div class="coins-display">
-      <p><span id="coin-count"><%= coins ?? 0 %></span> 🪙</p>
+      <p>
+        <span id="coin-count"><%= coins ?? 0 %></span>
+        <span id="coin-emoji" class="coin-emoji" aria-hidden="true">🪙</span>
+      </p>
     </div>
     <h1>Daily Survey</h1>
 
@@ -160,6 +163,21 @@
     document.addEventListener('DOMContentLoaded', () => {
       const coinSpan = document.getElementById('coin-count');
       const hiddenInput = document.getElementById('clientCoinDelta');
+      const coinEmoji = document.getElementById('coin-emoji');
+
+      function animateCoin() {
+        if (!coinEmoji) return;
+        coinEmoji.classList.remove('bounce');
+        // Force a reflow to allow animation to restart
+        setTimeout(() => {
+          coinEmoji.classList.add('bounce');
+        }, 10);
+      }
+
+      // animate on initial load
+      setTimeout(() => animateCoin(), 100);
+
+      // Only set up tracking if we're on the actual survey form (with questions)
       if (!coinSpan || !hiddenInput) return;
 
       let coins = parseInt(coinSpan.textContent, 10) || 0;
@@ -178,6 +196,7 @@
             hidden += 1;
             coinSpan.textContent = coins;
             hiddenInput.value = hidden;
+            animateCoin();
           }
         });
       });
