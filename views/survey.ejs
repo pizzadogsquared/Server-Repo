@@ -6,19 +6,20 @@
   <title>Survey</title>
   <link rel="stylesheet" href="/styles/survey.css">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+    crossorigin="anonymous"
+    >
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
 </head>
 <body>
   <%- include('partials/navbar') %>
 
   <div class="survey-container">
-    <div class="coins-display">
-      <p>
-        <span id="coin-count"><%= coins ?? 0 %></span>
-        <span id="coin-emoji" class="coin-emoji" aria-hidden="true">🪙</span>
-      </p>
-    </div>
-    <h1>Daily Survey</h1>
-
     <% if (section === "completed") { %>
       <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
         <div class="reward-message">
@@ -55,22 +56,53 @@
       <a href="/shop" class="btn">Shop</a>
 
     <% } else if (section === "choice") { %>
-      <div class="survey-choice">
-        <h2>Which survey would you like to take?</h2>
-    
-        <div class="btn-group">
-          <a href="/survey?section=general" class="btn">General</a>
-          <a href="/survey?section=mental" class="btn">Mental</a>
-          <a href="/survey?section=physical" class="btn">Physical</a>
+      <div class="container py-5">
+        <!-- Header -->
+        <div class="container mb-5">
+            <h1 class="fw-semibold">Daily Check-In</h1>
+            <p class="text-muted fs-5">Hello! Where would you like to start today?</p>
         </div>
-    
-        <h3 class="nav-heading">Or navigate somewhere else:</h3>
-        <div class="btn-group">
-          <a href="/home" class="btn">Home</a>
-          <a href="/games" class="btn">Game</a>
-          <a href="/shop" class="btn">Shop</a>
+
+        <!-- Cards -->
+        <div class="row g-4 justify-content-center">
+            <!-- General Component -->
+            <div class="col-md-3">
+                <a href="/survey/?section=general" class="text-decoration-none text-body">
+                    <div class="card checkin-card h-100">
+                        <div class="card-body">
+                            <p class="fw-semibold">🪙 5 Coins</p>
+                            <h3 class="mt-3">General</h3>
+                            <p class="text-muted">How are your daily habits shaping up? Let's take a look at your hyrdation, nutrition, and overall outlook on life.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Mental Component -->
+            <div class="col-md-3">
+                <a href="/survey/?section=mental" class="text-decoration-none text-body">
+                    <div class="card checkin-card h-100">
+                        <div class="card-body">
+                            <p class="fw-semibold">🪙 5 Coins</p>
+                            <h3 class="mt-3">Mental</h3>
+                            <p class="text-muted">What was going on in your mind today? Take a deep breath and let's journey into your mind.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Physical Component -->
+            <div class="col-md-3">
+                <a href="/survey/?section=physical" class="text-decoration-none text-body">
+                    <div class="card checkin-card h-100">
+                        <div class="card-body">
+                            <p class="fw-semibold">🪙 5 Coins</p>
+                            <h3 class="mt-3">Physical</h3>
+                            <p class="text-muted">How did your body feel today? Let's take a moment to reflect on your current energy.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
-      </div>
+    </div>
     <% } else if (section === "next") { %>
       <h2>Would you like to continue?</h2>
       <% if (!userProgress.mental) { %>
@@ -83,133 +115,172 @@
       <a href="/games" class="btn">Game</a>
       <a href="/shop" class="btn">Shop</a>
 
-    <% } else { %>
-      <form action="/submit-survey" method="POST">
-        <input type="hidden" name="section" value="<%= section %>">
-        <input type="hidden" name="userId" value="<%= userId %>">
-        <input type="hidden" id="clientCoinDelta" name="clientCoinDelta" value="0">
-        <% let questions = {
-          general: [
-            "I drink 8 glasses of water daily.",
-            "I eat meals regularly.",
-            "I feel energized and well-rested throughout the day.",
-            "I am hopeful about the future.",
-            "I am satisfied with my daily life."
-          ],
-          mental: [
-            "I am able to concentrate and stay focused.",
-            "I feel connected to others and supported.",
-            "I know I'm not alone in my struggles and challenges.",
-            "I believe I am just as capable as everyone else.",
-            "I generally feel happy and emotionally balanced."
-          ],
-          physical: [
-            "I avoid using electronic devices after midnight.",
-            "I exercise for 30 minutes or more every day.",
-            "I go outside for the sun at least 10 minutes a day.",
-            "I sleep for 7 to 8 hours.",
-            "I limit my intake of caffeinated drinks."
-          ]
-        }; %>
-
-        <% if (questions[section]) { %>
-          <% questions[section].forEach((question, index) => { %>
-            <div class="question">
-              <label for="q<%= index + 1 %>"><%= question %></label>
-              <div class="response-buttons">
-                <label class="btn-radio opt-1">
-                  <input type="radio" name="q<%= index + 1 %>" value="1" aria-label="Strongly Disagree" required>
-                  <span class="radio-dot" aria-hidden="true"></span>
-                  <span class="sr-only">Strongly Disagree</span>
-                </label>
-                <label class="btn-radio opt-3">
-                  <input type="radio" name="q<%= index + 1 %>" value="3" aria-label="Disagree">
-                  <span class="radio-dot" aria-hidden="true"></span>
-                  <span class="sr-only">Disagree</span>
-                </label>
-                <label class="btn-radio opt-5">
-                  <input type="radio" name="q<%= index + 1 %>" value="5" aria-label="Neutral">
-                  <span class="radio-dot" aria-hidden="true"></span>
-                  <span class="sr-only">Neutral</span>
-                </label>
-                <label class="btn-radio opt-7">
-                  <input type="radio" name="q<%= index + 1 %>" value="7" aria-label="Agree">
-                  <span class="radio-dot" aria-hidden="true"></span>
-                  <span class="sr-only">Agree</span>
-                </label>
-                <label class="btn-radio opt-9">
-                  <input type="radio" name="q<%= index + 1 %>" value="9" aria-label="Strongly Agree">
-                  <span class="radio-dot" aria-hidden="true"></span>
-                  <span class="sr-only">Strongly Agree</span>
-                </label>
-              </div>
-              <div class="scale-labels">
-                <span><small>Strongly Disagree</small></span>
-                <span><small>Disagree</small></span>
-                <span><small>Neutral</small></span>
-                <span><small>Agree</small></span>
-                <span><small>Strongly Agree</small></span>
-              </div>
+    <%}%> <% if (section !== "choice" && section !== "completed" && typeof questions !== 'undefined') { %>
+      <div class="container py-5" id="surveyFormContainer">
+        <div class="coins-display">
+          <p>
+            <span id="coin-count"><%= coins ?? 0 %></span>
+            <span id="coin-emoji" class="coin-emoji" aria-hidden="true">🪙</span>
+          </p>
+        </div>
+        <div class="mb-3">
+            <h3 class="fw-semibold"><%= section.charAt(0).toUpperCase() + section.slice(1) %> Check-In</h3>
+                        <div class="small text-muted mt-2">
+                <span id="progressText">Question 1 of <%= questions.length %></span>
             </div>
-          <% }) %>
-        <% } %>
+            <div class="progress" role="progressbar" aria-label="Progress">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
 
-        <button type="submit" class="btn">Submit</button>
-      </form>
+        </div>
+
+        <form id="progressForm" method="POST" action="/submit-survey">
+          <input type="hidden" name="section" value="<%= section %>">
+          <input type="hidden" name="userId" value="<%= userId %>">
+          <input type="hidden" id="clientCoinDelta" name="clientCoinDelta" value="0">
+          
+          <input type="hidden" name="surveyResults" id="surveyResults">
+
+          <div class="border rounded-4 p-4" id="iconContainer">
+            <% questions.forEach((q, index) => { %>
+              <section class="step <%= index === 0 ? 'active' : '' %>" data-step="<%= index + 1 %>">
+                <h2 class="h5 fw-semibold mb-3"><%= q.question %></h2>
+                <div class="row g-3">
+                  <% q.responses.forEach((response) => { %>
+                    <div class="col text-center">
+                      <label class="card circular-card">
+                        <input type="radio" name="<%= q.id %>" value="<%= response.value %>" class="hidden-radio">
+                        <div>
+                          <i class="bi <%= response.icon %>"></i>
+                          <div class="fs-12"><%= response.label %></div>
+                        </div>
+                      </label>
+                    </div>
+                  <% }) %>
+                </div>
+              </section>
+            <% }) %>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-outline-secondary" id="backButton">Back</button>
+            <button type="button" class="btn btn-primary" id="nextButton">Next ></button>
+          </div>
+        </form>
+      </div>
     <% } %>
   </div>
-      <script>
+  <script>
     // Track first-time selections per question, increment on-page coin display and a hidden counter.
     document.addEventListener('DOMContentLoaded', () => {
-      const coinSpan = document.getElementById('coin-count');
-      const hiddenInput = document.getElementById('clientCoinDelta');
-      const coinEmoji = document.getElementById('coin-emoji');
+        const coinSpan = document.getElementById('coin-count');
+        const hiddenInput = document.getElementById('clientCoinDelta');
+        const coinEmoji = document.getElementById('coin-emoji');
 
-      function animateCoin() {
-        if (!coinEmoji) return;
-        coinEmoji.classList.remove('bounce');
-        // Force a reflow to allow animation to restart
-        setTimeout(() => {
-          coinEmoji.classList.add('bounce');
-        }, 10);
-      }
+        function animateCoin() {
+            if (!coinEmoji) return;
+            coinEmoji.classList.remove('bounce');
+            // Force a reflow to allow animation to restart
+            setTimeout(() => {
+                coinEmoji.classList.add('bounce');
+            }, 10);
+        }
 
-      // animate on initial load
-      setTimeout(() => animateCoin(), 100);
+        // animate on initial load
+        setTimeout(() => animateCoin(), 100);
 
-      // Only set up tracking if we're on the actual survey form (with questions)
-      if (!coinSpan || !hiddenInput) return;
+        // Create audio element for coin collection sound
+        const coinSound = new Audio('/sounds/coin_collect.mp3');
+        coinSound.volume = 0.35;
+        coinSound.playbackRate = 2.5;
 
-      let coins = parseInt(coinSpan.textContent, 10) || 0;
-      let hidden = parseInt(hiddenInput.value, 10) || 0;
-      const counted = new Set();
+        // Form logic starting here:
+        const totalSteps = document.querySelectorAll('.step').length;
+        let currentStep = 1;
+        const userResponses = {};
+        const counted = new Set();
+        
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const steps = document.querySelectorAll('.step');
+        const backButton = document.getElementById('backButton');
+        const nextButton = document.getElementById('nextButton');
+        const form = document.getElementById('progressForm');
 
-      // Create audio element for coin collection sound
-      const coinSound = new Audio('/sounds/coin_collect.mp3');
-      coinSound.volume = 0.35;
-      coinSound.playbackRate = 2.5;
+        function updateFormProgress(stepNumber) {
+            // display current question
+            steps.forEach((step) => {
+                step.classList.remove('active');
+            })
+            document.querySelector(`.step[data-step="${stepNumber}"]`).classList.add('active');
 
-      // Select radio inputs that are part of survey questions (names like q1, q2...)
-      const radios = document.querySelectorAll('form input[type="radio"][name^="q"]');
-      radios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-          const qName = e.target.name;
-          if (!counted.has(qName)) {
-            counted.add(qName);
-            // increment on-page immediately
-            coins += 1;
-            hidden += 1;
-            coinSpan.textContent = coins;
-            hiddenInput.value = hidden;
-            animateCoin();
-            // Play coin collect sound
-            coinSound.currentTime = 0;
-            coinSound.play().catch(() => {
-              // Silently fail if sound can't play (e.g., autoplay policy)
+            // update progress bar
+            const progressCompleted = (stepNumber / totalSteps) * 100;
+            if (progressBar) progressBar.style.width = `${progressCompleted}%`;
+            
+            // update question progress text 
+            if (progressText) progressText.textContent = `Question ${stepNumber} of ${totalSteps}`;
+
+            backButton.disabled = (stepNumber === 1);
+            nextButton.textContent = (stepNumber === totalSteps) ? "Submit" : "Next >";
+        }
+
+        function getSelectedValue(stepNumber) {
+            const currentStepEl = document.querySelector(`.step[data-step="${stepNumber}"]`);
+            const checked = currentStepEl.querySelector(`input[type="radio"]:checked`);
+            return checked ? checked.value : "";
+        }
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                userResponses[e.target.name] = e.target.value;
+
+                // If it's the first time they answer this specific question
+                const qName = e.target.name;
+                if (!counted.has(qName)) {
+                    counted.add(qName);
+
+                    // Update their on-page coin count display
+                    let currentCoins = parseInt(coinSpan.textContent, 10) || 0;
+                    let hiddenDelta = parseInt(hiddenInput.value, 10) || 0;
+                    
+                    coinSpan.textContent = currentCoins + 1;
+                    hiddenInput.value = hiddenDelta + 1;
+
+                    // Play their animation and sound
+                    animateCoin();
+                    coinSound.currentTime = 0;
+                    coinSound.play().catch(() => { /* Silently fail if blocked */ });
+                }
             });
-          }
         });
-      });
+
+        backButton.addEventListener("click", () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateFormProgress(currentStep);
+            }
+        });
+
+        nextButton.addEventListener("click", () => {
+            const selection = getSelectedValue(currentStep);
+            if (!selection) {
+                alert("Please pick an option before continuing.");
+                return;
+            }
+
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateFormProgress(currentStep);
+            } else {
+                // Package your JSON results before submitting to their backend
+                document.getElementById('surveyResults').value = JSON.stringify(userResponses);
+                form.submit();
+            }
+        });
+
+        // Initialize display
+        updateFormProgress(currentStep);
     });
   </script>
 </body>
