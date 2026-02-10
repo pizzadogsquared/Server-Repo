@@ -17,6 +17,7 @@
    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
  }
  
+
  .home-container h1 {
    font-size: 2em;
    margin-bottom: 10px;
@@ -522,6 +523,41 @@
   text-align: left;
   animation: fadeIn 0.4s ease;
 }
+
+.resource-box {
+  background: rgba(255, 255, 255, 0.5);
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 700px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  text-align: center;
+  animation: fadeIn 0.5 ease;
+}
+
+.resource-box h2 {
+  color: #222;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  padding-bottom: 5px;
+}
+
+.resource-box h3 {
+  color: #222;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  padding-bottom: 5px;
+}
+
+.resource-box a {
+  font-size: 1rem;
+}
+
+.resource-box a:hover{
+  font-size: 1.1rem;
+  transition: all 0.5 ease;
+}
+
 .advice-box h2 {
   color: #222;
   margin-bottom: 15px;

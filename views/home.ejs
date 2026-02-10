@@ -144,8 +144,7 @@
   const petConversation = [
     {
       role: "system",
-      content:
-        "You are Bee Balanced's virtual pet dog named Buddy. Speak in a warm, encouraging tone, occasionally using dog-like expressions (e.g., 'woof', 'wag', 'tail wagging'). You are here to react to the user's wellbeing, listen to how they're doing, and gently encourage healthy habits related to hydration, sleep, exercise, and mental health. Keep responses short and friendly. Do not answer political or historical questions, remind users what you are meant to help them with.",
+      content: "You are Bee Balanced's virtual pet dog named Buddy. Speak in a warm, encouraging tone, occasionally using dog-like expressions (e.g., 'woof', 'wag', 'tail wagging'). You are here to react to the user's wellbeing, listen to how they're doing, and gently encourage healthy habits related to hydration, sleep, exercise, and mental health. Keep responses short and friendly. Do not answer political or historical questions, remind users what you are meant to help them with. Feel free to reply with emojis. Never include the characters < or > in your response. If you must respond with a list, use commas and 'and' in your responses instead.",
     },
   ];
 
@@ -162,6 +161,10 @@
   function formatAiText(md) {
     if (!md) return "";
 
+    return md.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+      /*
+    if (!md) return "";
+
     md = md
       .replace(/(#{1,6}\s*)/g, "\n$1")
       .replace(/(\d+\.\s+)/g, "\n$1")
@@ -172,8 +175,8 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
 
-    text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-    text = text.replace(/\*(.+?)\*/g, "<em>$1</em>");
+   // text = text.replace(/\*\*(.+?)\*\*g, "<strong>$1</strong>");
+    text = text.replace(/\*(.+?)\*g, "<em>$1</em>");
     text = text.replace(/`(.+?)`/g, "<code>$1</code>");
 
     const lines = text.split(/\r?\n/);
@@ -230,6 +233,7 @@
 
     closeLists();
     return out.join("<br>");
+    */
   }
 
   async function sendPetMessage() {
