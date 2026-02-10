@@ -635,14 +635,14 @@ app.post("/submit-survey", async (req, res) => {
     for (const [question, score] of entries) {
       total += parseInt(score);
       await db.query(
-        `INSERT INTO ${table} (user_id, question, score) VALUES (?, ?, ?)`, // add created_at and extra ?
+        `INSERT INTO ${table} (user_id, question, score, created_at) VALUES (?, ?, ?, ?)`, // add created_at and extra ?
         [userId, question, parseInt(score), localDate]
       );
     }
     const avgScore = Math.round(total / entries.length);
 
     const [generalCount] = await db.query(
-      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ?`, // add AND DATE(created_at = ?)
+      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at = ?)`, // add AND DATE(created_at = ?)
       [userId, localDate]
     );
     const [mentalCount] = await db.query(
