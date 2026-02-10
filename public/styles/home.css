@@ -555,7 +555,7 @@
 
 .resource-box a:hover{
   font-size: 1.1rem;
-  transition: all 0.5 ease;
+  transition: all 1.5 ease-out;
 }
 
 .advice-box h2 {
