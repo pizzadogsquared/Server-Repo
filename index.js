@@ -9,6 +9,7 @@ import db from "./db.js";
 import cron from "node-cron";
 import { adviceMap, questionMap } from "./advice.js";
 // import { scheduleReminderJob } from "./sendReminders.js";
+import { markDayComplete, getCurrentStreak } from "./streak.js";
 import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
 dotenv.config();
@@ -397,12 +398,15 @@ app.get("/home", async (req, res) => {
     [userId]
   );
 
+  const streak = await getCurrentStreak(userId);
+
   res.render("home", {
     user: req.session.user,
     petMood,
     petThirsty,
     plantedFlowers: planted,
     surveyContext,
+    streak,
   });
 });
 
@@ -520,8 +524,12 @@ app.get("/survey", async (req, res) => {
 
     if (section === "completed") {
       const coinsEarned = req.session.coinsEarned || null;
+      const calcTime = req.session.insightCalcTime || null;
+
       delete req.session.coinsEarned;
-      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice });
+      delete req.session.insightCalcTime;
+
+      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice, calcTime });
     }
 
     const surveySection = section || "choice";
@@ -611,6 +619,7 @@ app.get("/survey-choice", async (req, res) => {
 });
 
 app.post("/submit-survey", async (req, res) => {
+  const startTime = Date.now();
   const { section, userId, clientCoinDelta, ...responses } = req.body;
   const localDate = getLocalDateString();
 
@@ -650,6 +659,10 @@ app.post("/submit-survey", async (req, res) => {
       mentalCount[0].count > 0 &&
       physicalCount[0].count > 0;
 
+    if (allCompleted) {
+      await markDayComplete(userId, localDate);
+    }
+
     const coinsEarned = avgScore >= 8 ? 10 : avgScore >= 5 ? 5 : 2;
     await db.query("UPDATE users SET coins = coins + ? WHERE id = ?", [coinsEarned, userId]);
     // add any client-side accumulated coins (clientCoinDelta) to user's coins in DB
@@ -681,6 +694,12 @@ app.post("/submit-survey", async (req, res) => {
     } catch (e) {
       console.error('Failed to refresh session coins:', e);
     }
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    req.session.insightCalcTime = duration;
+
+    console.log('Wellness insight processing time:', duration, 'ms');
 
     req.session.save((err) => {
       if (err) {

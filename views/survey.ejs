@@ -50,6 +50,12 @@
         </div>
       <% } %>
 
+      <% if (typeof calcTime !== 'undefined' && calcTime !== null) { %>
+        <div class="insight-timing">
+          Wellness insights calculated in <strong><%= calcTime %> ms</strong>
+        </div>
+      <% } %>
+
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
       <a href="/shop" class="btn">Shop</a>
