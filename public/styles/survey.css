@@ -24,9 +24,14 @@ body {
   color: #333;
   margin: 0;
   line-height: 1;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  padding: 20px;
 }
 
-.survey-container {
+
+
+.survey-choice-container{
   background: rgba(255, 255, 255, 0.8);
   padding: 20px;
   margin: 50px auto;
@@ -35,55 +40,145 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
-
-.survey-container h1 {
+.survey-choice-container h1 {
   font-size: 2em;
   margin-bottom: 10px;
   clear: both;
 }
 
-.survey-container p {
+.survey-choice-container p {
   margin-bottom: 20px;
   font-size: 1.2em;
 }
 
-/* Question Style */
-.question {
-  margin-bottom: 20px;
+.progress {
+    height: 20px !important;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;;
+}
+
+#progressBar {
+    height: 100%;
+    background-color: #ffaa00 !important;
+    transition: width 0.4s ease;
+}
+
+
+
+.row.g-3 {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.circular-card {
+    width: 100px;
+    height: 100px;
+    aspect-ratio: 1/1;
+    border-radius: 50% !important;
+    border: 3px solid #ddd; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0 auto;
+    padding: 10px;
+    text-align: center;
+    box-sizing: border-box;
+        }
+.circular-card:hover{
+            transform: translateY(-3px);
+            box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
+            background-color: #F0F0F0;
+}
+
+.hidden-radio{
+  display: none;
+}
+
+.step {
+  display: none;
+}
+
+.step.active{
+  display: block;
+}
+
+.circular-card:has(input[value="1"]){
+  border-color: #8c0438; background: #f6ccdc;
+}
+        
+.circular-card:has(input[value="1"]:checked){
+  background: #8c0438; border-color: #000000; color: white;;
+}
+
+.circular-card:has(input[value="2"]){
+  border-color: #d65a6f; background: #f0d8dc;
+}
+        
+.circular-card:has(input[value="2"]:checked){
+  background: #d65a6f; border-color: #000000; color: white;
+}
+        
+.circular-card:has(input[value="3"]){
+  border-color: #f7c277; background: #f4e1c6;
+        }
+
+.circular-card:has(input[value="3"]:checked){
+  background: #f7c277; border-color: #000000; color: white;
+}
+
+.circular-card:has(input[value="4"]){
+  border-color: #7aa613; background: #e6f0cb;
+}
+
+.circular-card:has(input[value="4"]:checked){
+  background: #7aa613; border-color: #000000; color: white; 
+}
+        
+.circular-card:has(input[value="5"]){
+  border-color: #21570e; background: #aecba4;
+}
+        
+.circular-card:has(input[value="5"]:checked){
+  background: #21570e; border-color: #000000; color: white;
+}
+                
+#iconContainer{
+   background-color: rgba(255, 255, 255, 0.6);
+}
+
+#nextButton{
+  background-color: #333;
+  color: #ffd700;
+  border-color: #333;
+}
+
+/* Form Selection Styling*/
+.survey-container{
+  background: rgba(255, 255, 255, 0.8);
+  padding: 20px;
+  margin: 45px auto;
+  max-width: 75%;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
 
-.question label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: bold;
-  font-size: 1.1em;
+.checkin-card {
+  background-color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.question input[type="range"] {
-  width: 80%;
-  display: block;
-  margin: 10px auto;
-}
-
-/* Response button group for survey (five options) */
-.response-group {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin: 15px auto;
-  max-width: 500px;
-}
-
-.response-buttons {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-}
-
-.response-buttons input[type="radio"] {
-  display: none;
+.checkin-card:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
 }
 
 .scale-labels {
@@ -132,78 +227,6 @@ body {
   50% { transform: translateY(0px) scale(0.90); }
   65% { transform: translateY(-4px) scale(1.10); }
   100% { transform: translateY(0px) scale(1); }
-}
-
-
-.btn-radio .radio-dot {
-  display: inline-block;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 3px solid #666;
-  background: #fff;
-  margin: 0 8px;
-  vertical-align: middle;
-}
-.btn-radio input[type="radio"]:checked + .radio-dot {
-  background: #333;
-  border-color: #333;
-}
-.btn-radio .radio-dot:hover {
-  background: #ddd;
-}
-
-/* Per-option outline colors and fill colors when selected */
-.btn-radio.opt-1 .radio-dot { border-color: #8c0438; background: #f6ccdc; }
-.btn-radio.opt-1 input[type="radio"]:checked + .radio-dot { background: #8c0438; border-color: #000000; }
-
-.btn-radio.opt-3 .radio-dot { border-color: #d65a6f; background: #f0d8dc; }
-.btn-radio.opt-3 input[type="radio"]:checked + .radio-dot { background: #d65a6f; border-color: #000000; }
-
-.btn-radio.opt-5 .radio-dot { border-color: #f7c277; background: #f4e1c6; }
-.btn-radio.opt-5 input[type="radio"]:checked + .radio-dot { background: #f7c277; border-color: #000000; }
-
-.btn-radio.opt-7 .radio-dot { border-color: #7aa613; background: #e6f0cb; }
-.btn-radio.opt-7 input[type="radio"]:checked + .radio-dot { background: #7aa613; border-color: #000000; }
-
-.btn-radio.opt-9 .radio-dot { border-color: #21570e; background: #aecba4; }
-.btn-radio.opt-9 input[type="radio"]:checked + .radio-dot { background: #21570e; border-color: #000000; }
-
-/* Slightly larger clickable area */
-.btn-radio {
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-}
-
-.btn-radio input[type="radio"] {
-  /* visually hide the native radio but keep it accessible */
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  padding: 0;
-  clip: rect(0 0 0 0);
-  border: 0;
-}
-
-.btn-radio .radio-dot {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid #666;
-  background: #fff;
-  margin: 0 8px;
-  vertical-align: middle;
-  box-sizing: border-box;
-  transition: background .12s ease, border-color .12s ease, transform .08s ease;
-}
-
-.btn-radio input[type="radio"]:checked + .radio-dot {
-  transform: scale(0.98);
 }
 
 /* Button Styling */
