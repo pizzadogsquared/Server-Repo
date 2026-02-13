@@ -9,8 +9,10 @@ import db from "./db.js";
 import cron from "node-cron";
 import { adviceMap, questionMap } from "./advice.js";
 // import { scheduleReminderJob } from "./sendReminders.js";
+import { markDayComplete, getCurrentStreak } from "./streak.js";
 import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
+import surveyData from "./surveyData.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -55,6 +57,12 @@ const calendarTimeline = {
   overall: [],
   mental: [],
   physical: []
+};
+
+const tableMap = {
+  general: 'general_survey',
+  mental: 'mental_survey',
+  physical: 'physical_survey'
 };
 
 function getLocalDateString() {
@@ -397,12 +405,15 @@ app.get("/home", async (req, res) => {
     [userId]
   );
 
+  const streak = await getCurrentStreak(userId);
+
   res.render("home", {
     user: req.session.user,
     petMood,
     petThirsty,
     plantedFlowers: planted,
     surveyContext,
+    streak,
   });
 });
 
@@ -520,12 +531,16 @@ app.get("/survey", async (req, res) => {
 
     if (section === "completed") {
       const coinsEarned = req.session.coinsEarned || null;
+      const calcTime = req.session.insightCalcTime || null;
+
       delete req.session.coinsEarned;
-      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice });
+      delete req.session.insightCalcTime;
+
+      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice, calcTime });
     }
 
     const surveySection = section || "choice";
-
+    const questions = surveyData[surveySection];
     const [generalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, today]
@@ -560,7 +575,7 @@ app.get("/survey", async (req, res) => {
       return res.redirect("/survey-choice");
     }
 
-    res.render("survey", { section: surveySection, userId, coins, advice });
+    res.render("survey", { section: surveySection, userId, coins, advice, questions: questions });
   } catch (err) {
     console.error("Survey section check error:", err);
     res.status(500).send("Error checking survey status");
@@ -611,29 +626,32 @@ app.get("/survey-choice", async (req, res) => {
 });
 
 app.post("/submit-survey", async (req, res) => {
+  const startTime = Date.now();
   const { section, userId, clientCoinDelta, ...responses } = req.body;
   const localDate = getLocalDateString();
+  let responses;
+  try{
+    responses = JSON.parse(surveyResults);
+  } catch (err){
+    return res.status(400).send("Invalid survey data format");
+  }
 
   try {
-    const tableMap = {
-      general: "general_survey",
-      mental: "mental_survey",
-      physical: "physical_survey",
-    };
     const table = tableMap[section];
     const entries = Object.entries(responses);
     let total = 0;
+
     for (const [question, score] of entries) {
       total += parseInt(score);
       await db.query(
-        `INSERT INTO ${table} (user_id, question, score, created_at) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO ${table} (user_id, question, score, created_at) VALUES (?, ?, ?, ?)`, // add created_at and extra ?
         [userId, question, parseInt(score), localDate]
       );
     }
     const avgScore = Math.round(total / entries.length);
 
     const [generalCount] = await db.query(
-      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
+      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at = ?)`, // add AND DATE(created_at = ?)
       [userId, localDate]
     );
     const [mentalCount] = await db.query(
@@ -649,6 +667,10 @@ app.post("/submit-survey", async (req, res) => {
       generalCount[0].count > 0 &&
       mentalCount[0].count > 0 &&
       physicalCount[0].count > 0;
+
+    if (allCompleted) {
+      await markDayComplete(userId, localDate);
+    }
 
     const coinsEarned = avgScore >= 8 ? 10 : avgScore >= 5 ? 5 : 2;
     await db.query("UPDATE users SET coins = coins + ? WHERE id = ?", [coinsEarned, userId]);
@@ -681,6 +703,12 @@ app.post("/submit-survey", async (req, res) => {
     } catch (e) {
       console.error('Failed to refresh session coins:', e);
     }
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    req.session.insightCalcTime = duration;
+
+    console.log('Wellness insight processing time:', duration, 'ms');
 
     req.session.save((err) => {
       if (err) {
