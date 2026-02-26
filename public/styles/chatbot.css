@@ -1,0 +1,135 @@
+html, body {
+  /*height: 100%;*/
+  margin: 0;
+  background: linear-gradient(
+    135deg,
+    #FFFFFF, 
+    #8099AD,
+    #D99CCA
+  );
+  /* remove this: overflow: hidden; */
+  font-family: Arial, sans-serif;
+}
+
+.chat-page {
+  /* instead of strict height with no room for the navbar  */
+  /* height: calc(100vh - 60px); */
+
+  min-height: calc(100vh - 60px);   /* leave room for navbar */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;      /* start at top instead of dead center */
+  gap: 20px;
+  padding-top: 80px;                /* pushes chat below navbar */
+  padding-bottom: 20px;
+}
+
+.messages-box {
+  width: 80%;
+  max-width: 900px;
+  height: 380px;
+  background: rgba(255,255, 255, 0.5);
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  animation: page-load 1s ease-out forwards;
+}
+
+.input-row {
+  width: 80%;
+  max-width: 900px;
+  display: flex;
+  gap: 8px;
+  animation: page-load 1s ease-out forwards;
+}
+
+.input-row input {
+  flex: 1;
+  border-radius: 10px;
+  border: white;
+  padding: 6px 8px;
+}
+
+#messages {
+  width: 80%;
+  max-width: 900px;
+  background: rgba(255,255, 255, 0.5);
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loading {
+  font-size: 0.8rem;
+  color: #555;
+  visibility: hidden;
+  margin-top: auto;
+}
+
+.dots::after {
+  content: "";
+  animation: dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: ""; }
+  40% { content: "."; }
+  60% { content: ".."; }
+  80%, 100% { content: "..."; }
+}
+
+@keyframes page-load {
+    from {
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+}
+
+
+
+#send{
+  border-radius: 12px;
+  background-color: white;
+  color: black;
+  animation: page-load 1s ease-out forwards;
+}
+
+.two-my-ai-message{
+  display: flex;
+  align-items: start;
+}
+
+.two-user-message{
+    display: flex;
+    align-self: end;
+    background-color: #6595F0;
+    padding: 8px 12px;
+}
+
+.two-ai-message-content{
+    text-align: left;
+    background-color: #6ACA7F;
+    padding: 8px 12px;
+}
+
+.ai-icon{
+  display: flex;
+  padding-right: 15px;
+  width: 3vh;
+  height: 3vh;
+  
+}

@@ -629,16 +629,16 @@ app.post("/submit-survey", async (req, res) => {
   const startTime = Date.now();
   const { section, userId, clientCoinDelta, ...responses } = req.body;
   const localDate = getLocalDateString();
-  let responses;
+  let responses2;
   try{
-    responses = JSON.parse(surveyResults);
+    responses2 = JSON.parse(surveyResults);
   } catch (err){
     return res.status(400).send("Invalid survey data format");
   }
 
   try {
     const table = tableMap[section];
-    const entries = Object.entries(responses);
+    const entries = Object.entries(responses2);
     let total = 0;
 
     for (const [question, score] of entries) {
