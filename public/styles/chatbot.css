@@ -133,3 +133,19 @@ html, body {
   height: 3vh;
   
 }
+
+.chatbot-user-message {
+  align-self: flex-end;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 80%;
+  opacity: 100%;
+}
+
+.chatbot-ai-message {
+  align-self: flex-start;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 90%;
+  opacity: 100%;
+}
