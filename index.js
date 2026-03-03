@@ -29,7 +29,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
 	cookie: {
-		secure: false, // CHANGE THIS
+		secure: process.env.NODE_ENV === "production",
 		httpOnly: true,
 		sameSite: "lax",
 		maxAge: 1000 * 60 * 60 * 24,
@@ -648,11 +648,16 @@ app.post("/submit-survey", async (req, res) => {
         [userId, question, parseInt(score), localDate]
       );
     }
+    await db.query(
+        `INSERT IGNORE INTO daily_checkins (user_id, checkin_date)
+        VALUES (?, ?)`,
+        [userId, localDate]
+    );
     const avgScore = Math.round(total / entries.length);
 
     const [generalCount] = await db.query(
-      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at = ?)`, // add AND DATE(created_at = ?)
-      [userId, localDate]
+        `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
+        [userId, localDate]
     );
     const [mentalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM mental_survey WHERE user_id = ? AND DATE(created_at) = ?`,
