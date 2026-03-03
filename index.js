@@ -29,7 +29,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
 	cookie: {
-		secure: true,
+		secure: process.env.NODE_ENV === "production",
 		httpOnly: true,
 		sameSite: "lax",
 		maxAge: 1000 * 60 * 60 * 24,
@@ -626,13 +626,21 @@ app.get("/survey-choice", async (req, res) => {
 });
 
 app.post("/submit-survey", async (req, res) => {
-  const startTime = Date.now();
-  const { section, userId, clientCoinDelta, ...responses } = req.body;
-  const localDate = getLocalDateString();
-  let responses;
-  try{
-    responses = JSON.parse(surveyResults);
-  } catch (err){
+	const startTime = Date.now();
+	const localDate = getLocalDateString();
+
+	const { section, userId, clientCoinDelta, surveyResults } = req.body;
+
+	let responses;
+	try {
+		if (typeof surveyResults === "string") {
+			responses = JSON.parse(surveyResults);
+		} else if (surveyResults && typeof surveyResults === "object") {
+			responses = surveyResults;
+		} else {
+			return res.status(400).send("Missing surveyResults");
+		}
+	} catch (err) {
     return res.status(400).send("Invalid survey data format");
   }
 
@@ -648,11 +656,16 @@ app.post("/submit-survey", async (req, res) => {
         [userId, question, parseInt(score), localDate]
       );
     }
+    await db.query(
+        `INSERT IGNORE INTO daily_checkins (user_id, checkin_date)
+        VALUES (?, ?)`,
+        [userId, localDate]
+    );
     const avgScore = Math.round(total / entries.length);
 
     const [generalCount] = await db.query(
-      `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at = ?)`, // add AND DATE(created_at = ?)
-      [userId, localDate]
+        `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
+        [userId, localDate]
     );
     const [mentalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM mental_survey WHERE user_id = ? AND DATE(created_at) = ?`,
