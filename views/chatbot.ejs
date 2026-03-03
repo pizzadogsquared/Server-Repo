@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chatbot</title>
   <link rel="stylesheet" href="/styles/home.css">
+  <link rel="stylesheet" href="/styles/chatbot.css">
   <script src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
-<!---->
+<!--
 <style>
 html, body {
   height: 100%;
@@ -92,7 +93,7 @@ html, body {
   80%, 100% { content: "..."; }
 }
 </style>
-
+-->
 <!---->
 </head>
 <body>
@@ -212,7 +213,12 @@ function formatAiText(md) {
 
     // USER message above loader
     const userEl = document.createElement("div");
-    userEl.innerHTML = "<strong>You:</strong> " + text;
+    userEl.classList.add("message", "chatbot-user-message");
+    // userEl.innerHTML = "<strong>You:</strong> " + text;
+    const userElContent = document.createElement("div");
+    userElContent.classList.add("two-user-message");
+    userElContent.textContent = text;
+    userEl.appendChild(userElContent);
     messagesDiv.insertBefore(userEl, loadingEl);
 
     conversation.push({ role: "user", content: text });
@@ -228,8 +234,19 @@ function formatAiText(md) {
 
     // AI placeholder above loader
     const aiEl = document.createElement("div");
-    aiEl.innerHTML = "<strong>Chatbot:</strong> ";
+    aiEl.classList.add("chatbot-ai-message");
+    //aiEl.innerHTML = "<strong>Chatbot:</strong> ";
+    const aiElContent = document.createElement("div");
+    const aiIcon = document.createElement("img");
+    aiIcon.src = "/images/robot-emoji.png";
+    
+    aiIcon.classList.add("ai-icon");
+    aiElContent.classList.add("chatbot-ai-message", "two-ai-message-content");
+
     messagesDiv.insertBefore(aiEl, loadingEl);
+    aiEl.appendChild(aiIcon);
+    aiEl.appendChild(aiElContent);
+
 
     const reader = resp.body.getReader();
     const decoder = new TextDecoder("utf-8");
@@ -255,8 +272,9 @@ function formatAiText(md) {
         aiText += data;
         const formatted = formatAiText(aiText);
         // keep AI: on the same line
-        aiEl.innerHTML = "<strong>AI:</strong> " + formatted;
+        aiElContent.innerHTML = formatted;
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
       });
     }
 
