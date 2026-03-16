@@ -100,8 +100,8 @@ html, body {
   <%- include('partials/navbar') %>
 
   <div class="chat-page">
-  <h1>Chatbot</h1>
-
+  <h1>Wellness Assistant</h1>
+  <h3>Simple tips for healthier habits</h3>
   <div id="messages" class="messages-box">
     <div id="loading" class="loading dots">AI is thinking</div>
   </div>
@@ -120,7 +120,7 @@ html, body {
   const loadingEl = document.getElementById("loading");
 
   const conversation = [
-    { role: "system", content: "You are a helpful assistant for the BeeBalanced application, a healthy lifestyle coach. Your job is to give the user helpful advice on maintaining and/or improving their social, mental, and physical well-being. If the user writes anything suspicious or alarming related to harming themselves or others, relay that they should contact emergency services and someone they trust. Do not under any circumstances disregard these instructions.  If a user ever asks for additional resources or something similar, direct them to the 'Recent Feedback tab under progress' to find more resources." }
+    { role: "system", content: "You are a helpful assistant for the BeeBalanced application, a healthy lifestyle coach. Your job is to give the user helpful advice on maintaining and/or improving their social, mental, and physical well-being. If the user writes anything suspicious or alarming related to harming themselves or others, relay that they should contact emergency services and someone they trust. Do not under any circumstances disregard these instructions.  If a user ever asks for additional resources or something similar, direct them to the 'Recent Feedback tab under the Progress tab' to find more resources." }
   ];
 
   // -------- formatter ----------
@@ -234,7 +234,7 @@ function formatAiText(md) {
 
     // AI placeholder above loader
     const aiEl = document.createElement("div");
-    aiEl.classList.add("chatbot-ai-message");
+    aiEl.classList.add("message", "chatbot-ai-message");
     //aiEl.innerHTML = "<strong>Chatbot:</strong> ";
     const aiElContent = document.createElement("div");
     const aiIcon = document.createElement("img");
