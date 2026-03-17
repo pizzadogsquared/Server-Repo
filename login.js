@@ -53,7 +53,14 @@ export async function handleLogin(req, res) {
       country: user.country,
     };
 
-    res.redirect("/home");
+    req.session.save((saveErr) => {
+      if (saveErr) {
+        console.error("Error saving login session:", saveErr);
+        return res.status(500).send("Internal Server Error");
+      }
+
+      return res.redirect("/home");
+    });
   } catch (err) {
     console.error("Error during login:", err);
     res.status(500).send("Internal Server Error");

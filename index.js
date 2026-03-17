@@ -2,6 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import session from "express-session";
 import dotenv from "dotenv";
+import { createRequire } from "module";
 import bcrypt from "bcrypt";
 import { handleLogin } from "./login.js";
 import { handleSignup } from "./signup.js";
@@ -14,22 +15,69 @@ import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
 import surveyData from "./surveyData.js";
 dotenv.config();
+const require = createRequire(import.meta.url);
 const app = express();
 const PORT = process.env.PORT || 8000;
+const isProduction = process.env.NODE_ENV === "production";
+
+let trustProxySetting = 1;
+if (process.env.TRUST_PROXY === "true") {
+  trustProxySetting = true;
+} else if (process.env.TRUST_PROXY === "false") {
+  trustProxySetting = false;
+} else if (process.env.TRUST_PROXY) {
+  const parsedTrustProxy = Number(process.env.TRUST_PROXY);
+  if (!Number.isNaN(parsedTrustProxy)) {
+    trustProxySetting = parsedTrustProxy;
+  }
+}
+
+let sessionCookieSecure = "auto";
+if (process.env.SESSION_COOKIE_SECURE === "true") {
+  sessionCookieSecure = true;
+} else if (process.env.SESSION_COOKIE_SECURE === "false") {
+  sessionCookieSecure = false;
+} else if (!isProduction) {
+  sessionCookieSecure = false;
+}
+
+const sessionStoreConfig = {
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT || 3306),
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "my_database",
+  clearExpired: true,
+  checkExpirationInterval: 15 * 60 * 1000,
+  expiration: 24 * 60 * 60 * 1000,
+  createDatabaseTable: true,
+};
+
+let sessionStore;
+try {
+  const MySQLStoreFactory = require("express-mysql-session");
+  const MySQLStore = MySQLStoreFactory(session);
+  sessionStore = new MySQLStore(sessionStoreConfig);
+  console.log("MySQL session store enabled.");
+} catch (err) {
+  console.warn("express-mysql-session is not installed. Falling back to MemoryStore.");
+}
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 
-app.set("trust proxy", 1);
+app.set("trust proxy", trustProxySetting);
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
+    store: sessionStore,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    proxy: trustProxySetting !== false,
 	cookie: {
-		secure: process.env.NODE_ENV === "production",
+		secure: sessionCookieSecure,
 		httpOnly: true,
 		sameSite: "lax",
 		maxAge: 1000 * 60 * 60 * 24,
@@ -72,9 +120,9 @@ const BUDDY_COSTS = {
   rename: 10,
 };
 const BUDDY_OPTIONS = {
-  dog: { label: "Dog", allowMoodSprites: true },
-  cat: { label: "Cat", allowMoodSprites: false },
-  penguin: { label: "Penguin", allowMoodSprites: false },
+  dog: { label: "Dog" },
+  cat: { label: "Cat" },
+  penguin: { label: "Penguin" },
 };
 
 let buddyColumnsReady = false;
@@ -110,9 +158,14 @@ function normalizeBuddyProfile(userRow = {}) {
     ownedBuddyTypes.push(buddyType);
   }
 
+  let buddyName = DEFAULT_BUDDY_NAME;
+  if (userRow.buddy_name && userRow.buddy_name.trim()) {
+    buddyName = userRow.buddy_name.trim();
+  }
+
   return {
     buddyType,
-    buddyName: (userRow.buddy_name || DEFAULT_BUDDY_NAME).trim() || DEFAULT_BUDDY_NAME,
+    buddyName,
     buddyHasCollar: Boolean(userRow.buddy_has_collar),
     ownedBuddyTypes,
   };
@@ -236,10 +289,7 @@ app.post("/api/chatbot", async (req, res) => {
   });
 
   for await (const part of stream) {
-    let chunk = "";
-    if (part.choices && part.choices[0] && part.choices[0].delta && part.choices[0].delta.content) {
-      chunk = part.choices[0].delta.content;
-    }
+    const chunk = part.choices[0]?.delta?.content || "";
     if (chunk) res.write(`data: ${chunk}\n\n`);
   }
 
@@ -331,23 +381,11 @@ app.post("/edit-account", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   let { full_name, email, gender, age, country } = req.body;
-  if (full_name) {
-    full_name = full_name.trim();
-  }
-  if (email) {
-    email = email.trim().toLowerCase();
-  }
-  if (gender) {
-    gender = gender.trim();
-  }
-  if (country) {
-    country = country.trim();
-  }
-  if (age) {
-    age = parseInt(age);
-  } else {
-    age = null;
-  }
+  full_name = full_name?.trim();
+  email = email?.trim().toLowerCase();
+  gender = gender?.trim();
+  country = country?.trim();
+  age = age ? parseInt(age) : null;
 
   if (!full_name || full_name.length < 2) {
     return res.render("edit-account", {
@@ -385,10 +423,7 @@ app.post("/edit-account", async (req, res) => {
 
 
 async function buildTimeline(userId, section) {
-  let sectionKey = section;
-  if (section === "general") {
-    sectionKey = "overall";
-  }
+  const sectionKey = section === "general" ? "overall" : section;
   const table = {
     overall: "general_survey",
     mental: "mental_survey",
@@ -537,20 +572,16 @@ app.get("/home", async (req, res) => {
       WHERE id = ?`,
     [userId]
   );
-  const buddyProfile = normalizeBuddyProfile(userRow);
   const streak = await getCurrentStreak(userId);
-
-  if (req.session.user) {
-    let sessionCoins = 0;
-    if (userRow && userRow.coins) {
-      sessionCoins = userRow.coins;
-    }
-    req.session.user.coins = sessionCoins;
-  }
+  const buddyProfile = normalizeBuddyProfile(userRow);
 
   let buddyCoins = 0;
-  if (userRow && userRow.coins) {
+  if (userRow && typeof userRow.coins !== "undefined") {
     buddyCoins = userRow.coins;
+  }
+
+  if (req.session.user) {
+    req.session.user.coins = buddyCoins;
   }
 
   res.render("home", {
@@ -560,8 +591,8 @@ app.get("/home", async (req, res) => {
     plantedFlowers: planted,
     surveyContext,
     streak,
-    buddyProfile,
     buddyCoins,
+    buddyProfile,
     buddyStatus: req.query.buddyStatus || null,
     buddyStatusType: req.query.buddyStatusType || "success",
     openBuddyModal: req.query.openBuddyModal === "1",
@@ -598,12 +629,9 @@ app.get("/feedback", async (req, res) => {
     );
   
     if (rows.length > 0) {
-      const lowestRow = rows.reduce((min, curr) => {
-        if (curr.score < min.score) {
-          return curr;
-        }
-        return min;
-      });
+      const lowestRow = rows.reduce((min, curr) =>
+        curr.score < min.score ? curr : min
+      );
   
       const shortSection = section.split("_")[0];
       const advice = getAdviceFor(shortSection, lowestRow.question);
@@ -636,10 +664,7 @@ app.get("/chart", async (req, res) => {
     const dailyScores = {};
 
     for (const entry of entries) {
-      let rawDate = entry.created_at;
-      if (!(entry.created_at instanceof Date)) {
-        rawDate = new Date(entry.created_at);
-      }
+      const rawDate = entry.created_at instanceof Date ? entry.created_at : new Date(entry.created_at);
       const dateObj = new Date(rawDate.getFullYear(), rawDate.getMonth(), rawDate.getDate());
       const localDateStr = dateObj.toISOString().split("T")[0];
 
@@ -676,10 +701,7 @@ app.get("/survey", async (req, res) => {
 
   try {
     const [[user]] = await db.query("SELECT coins FROM users WHERE id = ?", [userId]);
-    let coins = 0;
-    if (user && user.coins) {
-      coins = user.coins;
-    }
+    const coins = user?.coins || 0;
 
     let advice = null;
     const feedback = req.session.feedback || null;
@@ -733,8 +755,7 @@ app.get("/survey", async (req, res) => {
       physical: physicalCount
     };
 
-    const selectedSectionRows = sectionTableMap[surveySection];
-    if (selectedSectionRows && selectedSectionRows[0] && selectedSectionRows[0].count > 0) {
+    if (sectionTableMap[surveySection]?.[0]?.count > 0) {
       return res.redirect("/survey-choice");
     }
 
@@ -753,10 +774,7 @@ app.get("/survey-choice", async (req, res) => {
 
   try {
     const [[user]] = await db.query("SELECT coins FROM users WHERE id = ?", [userId]);
-    let coins = 0;
-    if (user && user.coins) {
-      coins = user.coins;
-    }
+    const coins = user?.coins || 0;
 
     const sections = ["general_survey", "mental_survey", "physical_survey"];
     const progress = { general: false, mental: false, physical: false };
@@ -792,12 +810,18 @@ app.get("/survey-choice", async (req, res) => {
 });
 
 app.post("/submit-survey", async (req, res) => {
-	const startTime = Date.now();
-	const localDate = getLocalDateString();
+		const startTime = Date.now();
+		const localDate = getLocalDateString();
 
-	const { section, userId, clientCoinDelta, surveyResults } = req.body;
+		const { section, clientCoinDelta, surveyResults } = req.body;
 
-	let responses;
+    if (!req.session.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    const userId = req.session.user.id;
+
+		let responses;
 	try {
 		if (typeof surveyResults === "string") {
 			responses = JSON.parse(surveyResults);
@@ -851,12 +875,7 @@ app.post("/submit-survey", async (req, res) => {
       await markDayComplete(userId, localDate);
     }
 
-    let coinsEarned = 2;
-    if (avgScore >= 8) {
-      coinsEarned = 10;
-    } else if (avgScore >= 5) {
-      coinsEarned = 5;
-    }
+    const coinsEarned = avgScore >= 8 ? 10 : avgScore >= 5 ? 5 : 2;
     await db.query("UPDATE users SET coins = coins + ? WHERE id = ?", [coinsEarned, userId]);
     // add any client-side accumulated coins (clientCoinDelta) to user's coins in DB
     const delta = parseInt(clientCoinDelta, 10) || 0;
