@@ -3,6 +3,9 @@ import bcrypt from "bcrypt";
 import db from "./db.js";
 
 const INVALID_LOGIN_MSG = "Invalid email or password. Please try again.";
+// Valid bcrypt hash for a throwaway string used to normalize timing on missing users.
+const DUMMY_BCRYPT_HASH =
+  "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
 
 export async function handleLogin(req, res) {
   const { email, password } = req.body;
@@ -24,7 +27,7 @@ export async function handleLogin(req, res) {
 
     if (rows.length === 0) {
       // Fake hash check for security
-      await bcrypt.compare(password, "$2b$10$invalidsalt12345678901234567890");
+      await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
       return res.render("login", { error: INVALID_LOGIN_MSG });
     }
 
