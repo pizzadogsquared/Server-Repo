@@ -1,7 +1,18 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  background: linear-gradient(
+    135deg,
+    #B8C6FF 0%, 
+    #FFD6C9 100%
+  );
+  /* remove this: overflow: hidden; */
+  font-family: Arial, sans-serif;
+}
+
 /* General Styles */
 body {
   font-family: Arial, sans-serif;
-  background: url('/images/background.jpg') no-repeat center center fixed;
   background-size: cover;
   color: #333;
 }

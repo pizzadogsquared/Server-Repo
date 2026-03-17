@@ -3,9 +3,8 @@ html, body {
   margin: 0;
   background: linear-gradient(
     135deg,
-    #FFFFFF, 
-    #8099AD,
-    #D99CCA
+    #B8C6FF 0%, 
+    #FFD6C9 100%
   );
   /* remove this: overflow: hidden; */
   font-family: Arial, sans-serif;
@@ -29,7 +28,7 @@ html, body {
   width: 80%;
   max-width: 900px;
   height: 380px;
-  background: rgba(255,255, 255, 0.5);
+  background: rgba(255,255, 255, 0.35);
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 15px 20px;
@@ -99,8 +98,6 @@ html, body {
     }
 }
 
-
-
 #send{
   border-radius: 12px;
   background-color: white;
@@ -116,18 +113,18 @@ html, body {
 .two-user-message{
     display: flex;
     align-self: end;
-    background-color: #6595F0;
+    background-color: #F4A261;
     padding: 8px 12px;
 }
 
 .two-ai-message-content{
-    text-align: left;
-    background-color: #6ACA7F;
+    display: flex;
+    background-color: #6FAF9B;
     padding: 8px 12px;
 }
 
 .ai-icon{
-  display: flex;
+  text-align: left;
   padding-right: 15px;
   width: 3vh;
   height: 3vh;
@@ -143,9 +140,17 @@ html, body {
 }
 
 .chatbot-ai-message {
-  align-self: flex-start;
-  padding: 8px 12px;
-  border-radius: 12px;
-  max-width: 90%;
-  opacity: 100%;
+  display: flex;
+  align-items: start;
+}
+
+h1 {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+h3 {
+  font-weight: 600;
+  margin-top: 2px;
+  margin-bottom: 6px;
 }

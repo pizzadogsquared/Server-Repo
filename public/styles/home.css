@@ -1,7 +1,18 @@
+html, body {
+  /*height: 100%;*/
+  margin: 0;
+  background: linear-gradient(
+    135deg,
+    #B8C6FF 0%, 
+    #FFD6C9 100%
+  );
+  /* remove this: overflow: hidden; */
+  font-family: Arial, sans-serif;
+}
+
 /* General Styles */
  body {
    font-family: Arial, sans-serif;
-   background: url('/images/background.jpg') no-repeat center center fixed;
    background-size: cover;
    color: #333;
    text-align: center;
@@ -33,7 +44,7 @@
    margin-top: 40px;
    padding: 20px;
    text-align: center;
-   background-color: #f0f4f8;
+   background-color: rgba(255, 255, 255, .35);
    color: #333;
    font-size: 14px;
  }
@@ -667,7 +678,7 @@
 
 .user-message {
   align-self: flex-end;
-  background-color: #73b7ff;
+  background-color: #F4A261;
   padding: 8px 12px;
   border-radius: 12px;
   max-width: 80%;
@@ -676,7 +687,7 @@
 
 .ai-message {
   align-self: flex-start;
-  background-color: #34b556;
+  background-color: #6FAF9B;
   padding: 8px 12px;
   border-radius: 12px;
   max-width: 90%;
