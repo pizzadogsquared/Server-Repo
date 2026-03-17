@@ -628,12 +628,47 @@ html, body {
   image-rendering: pixelated;
 }
 
+#pet-collar {
+  position: absolute;
+  left: 50%;
+  bottom: 32px;
+  width: 72px;
+  transform: translateX(-50%);
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#pet-collar.pet-collar-dog {
+  bottom: 20px;
+  width: 68px;
+}
+
+#pet-collar.pet-collar-cat {
+  bottom: 50px;
+  width: 60px;
+}
+
+#pet-collar.pet-collar-penguin {
+  bottom: 45px;
+  width: 80px;
+}
+
+#pet-collar.hidden {
+  display: none;
+}
+
+#pet-collar.visible {
+  display: block;
+}
+
 #thirsty-icon {
   position: absolute;
   right: -10px;
   top: -10px;
   width: 32px;
   image-rendering: pixelated;
+  z-index: 3;
 }
 
 #thirsty-icon.hidden {
@@ -744,4 +779,232 @@ html, body {
   width: 100%;
   max-width: 800px;
   margin: 10px auto;
+}
+
+.buddy-toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 24px 0 10px;
+}
+
+.buddy-coins-card {
+  min-width: 150px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff7d6, #ffe090);
+  box-shadow: 0 10px 25px rgba(177, 129, 17, 0.18);
+  color: #6b4b00;
+}
+
+.buddy-coins-card strong {
+  display: block;
+  font-size: 1.6rem;
+  margin-top: 4px;
+}
+
+.buddy-coins-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.buddy-status {
+  max-width: 720px;
+  margin: 16px auto 0;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 1rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.buddy-status-success {
+  background: #effaf1;
+  color: #1c6a36;
+  border: 1px solid #bfe6c9;
+}
+
+.buddy-status-error {
+  background: #fff1ef;
+  color: #9c2f25;
+  border: 1px solid #efc1bb;
+}
+
+.buddy-nameplate {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.buddy-accessory-tag {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: #222;
+  color: #ffd700;
+}
+
+.buddy-modal.hidden {
+  display: none;
+}
+
+.buddy-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.buddy-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(22, 18, 14, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.buddy-modal-panel {
+  position: relative;
+  width: min(920px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  margin: 20px auto;
+  padding: 28px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #fffdf7 0%, #fef5e8 100%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+.buddy-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: #222;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.buddy-modal-subtitle {
+  max-width: 620px;
+  margin: 0 auto 20px;
+}
+
+.buddy-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.buddy-option-card {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #f1deba;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 12px 24px rgba(117, 90, 34, 0.08);
+}
+
+.buddy-option-card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.buddy-pet-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.buddy-pet-form {
+  margin: 0;
+}
+
+.buddy-pet-tile {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #ead7b3;
+  border-radius: 14px;
+  background: #fffdfa;
+  text-align: left;
+  cursor: pointer;
+}
+
+.buddy-pet-tile.active {
+  border-color: #e0ae1a;
+  background: #fff3c8;
+}
+
+.buddy-pet-tile img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.buddy-pet-label,
+.buddy-pet-meta {
+  display: block;
+}
+
+.buddy-pet-label {
+  font-weight: 700;
+  color: #2f2517;
+}
+
+.buddy-pet-meta {
+  font-size: 0.9rem;
+  color: #69553a;
+}
+
+.buddy-action-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.buddy-name-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #d8c4a0;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+body.buddy-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .home-main-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #pet-container,
+  #pet-chat-container {
+    width: 100%;
+  }
+
+  .buddy-modal-panel {
+    padding: 22px 18px;
+  }
 }

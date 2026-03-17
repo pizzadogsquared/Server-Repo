@@ -65,6 +65,113 @@ const tableMap = {
   physical: 'physical_survey'
 };
 
+const DEFAULT_BUDDY_NAME = "Buddy";
+const BUDDY_COSTS = {
+  pet: 30,
+  collar: 20,
+  rename: 10,
+};
+const BUDDY_OPTIONS = {
+  dog: { label: "Dog", allowMoodSprites: true },
+  cat: { label: "Cat", allowMoodSprites: false },
+  penguin: { label: "Penguin", allowMoodSprites: false },
+};
+
+let buddyColumnsReady = false;
+let buddyColumnsPromise = null;
+
+function parseOwnedBuddyTypes(value) {
+  if (!value) return ["dog"];
+
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      const cleaned = parsed.filter((type) => BUDDY_OPTIONS[type]);
+      if (cleaned.includes("dog")) {
+        return cleaned;
+      }
+      return ["dog", ...cleaned];
+    }
+  } catch (err) {
+    console.warn("Could not parse owned buddy types:", err.message);
+  }
+
+  return ["dog"];
+}
+
+function normalizeBuddyProfile(userRow = {}) {
+  const ownedBuddyTypes = parseOwnedBuddyTypes(userRow.owned_buddy_types);
+  let buddyType = "dog";
+  if (BUDDY_OPTIONS[userRow.buddy_type]) {
+    buddyType = userRow.buddy_type;
+  }
+
+  if (!ownedBuddyTypes.includes(buddyType)) {
+    ownedBuddyTypes.push(buddyType);
+  }
+
+  return {
+    buddyType,
+    buddyName: (userRow.buddy_name || DEFAULT_BUDDY_NAME).trim() || DEFAULT_BUDDY_NAME,
+    buddyHasCollar: Boolean(userRow.buddy_has_collar),
+    ownedBuddyTypes,
+  };
+}
+
+function buildBuddyStatusRedirect(message, status = "success", openModal = false) {
+  const params = new URLSearchParams({
+    buddyStatus: message,
+    buddyStatusType: status,
+  });
+
+  if (openModal) {
+    params.set("openBuddyModal", "1");
+  }
+
+  return `/home?${params.toString()}`;
+}
+
+async function ensureBuddyCustomizationColumns() {
+  if (buddyColumnsReady) return;
+  if (buddyColumnsPromise) return buddyColumnsPromise;
+
+  const requiredColumns = [
+    {
+      name: "buddy_type",
+      sql: "ADD COLUMN buddy_type VARCHAR(20) NOT NULL DEFAULT 'dog'",
+    },
+    {
+      name: "buddy_name",
+      sql: `ADD COLUMN buddy_name VARCHAR(100) NOT NULL DEFAULT '${DEFAULT_BUDDY_NAME}'`,
+    },
+    {
+      name: "buddy_has_collar",
+      sql: "ADD COLUMN buddy_has_collar TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "owned_buddy_types",
+      sql: "ADD COLUMN owned_buddy_types TEXT NULL",
+    },
+  ];
+
+  buddyColumnsPromise = (async () => {
+    for (const column of requiredColumns) {
+      const [rows] = await db.query("SHOW COLUMNS FROM users LIKE ?", [column.name]);
+      if (!rows.length) {
+        await db.query(`ALTER TABLE users ${column.sql}`);
+      }
+    }
+    buddyColumnsReady = true;
+  })();
+
+  try {
+    await buddyColumnsPromise;
+  } catch (err) {
+    buddyColumnsPromise = null;
+    throw err;
+  }
+}
+
 function getLocalDateString() {
   const now = new Date();
   return new Intl.DateTimeFormat('en-CA', {
@@ -129,7 +236,10 @@ app.post("/api/chatbot", async (req, res) => {
   });
 
   for await (const part of stream) {
-    const chunk = part.choices[0]?.delta?.content || "";
+    let chunk = "";
+    if (part.choices && part.choices[0] && part.choices[0].delta && part.choices[0].delta.content) {
+      chunk = part.choices[0].delta.content;
+    }
     if (chunk) res.write(`data: ${chunk}\n\n`);
   }
 
@@ -221,11 +331,23 @@ app.post("/edit-account", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   let { full_name, email, gender, age, country } = req.body;
-  full_name = full_name?.trim();
-  email = email?.trim().toLowerCase();
-  gender = gender?.trim();
-  country = country?.trim();
-  age = age ? parseInt(age) : null;
+  if (full_name) {
+    full_name = full_name.trim();
+  }
+  if (email) {
+    email = email.trim().toLowerCase();
+  }
+  if (gender) {
+    gender = gender.trim();
+  }
+  if (country) {
+    country = country.trim();
+  }
+  if (age) {
+    age = parseInt(age);
+  } else {
+    age = null;
+  }
 
   if (!full_name || full_name.length < 2) {
     return res.render("edit-account", {
@@ -263,7 +385,10 @@ app.post("/edit-account", async (req, res) => {
 
 
 async function buildTimeline(userId, section) {
-  const sectionKey = section === "general" ? "overall" : section;
+  let sectionKey = section;
+  if (section === "general") {
+    sectionKey = "overall";
+  }
   const table = {
     overall: "general_survey",
     mental: "mental_survey",
@@ -360,6 +485,7 @@ app.get("/home", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const userId = req.session.user.id;
+  await ensureBuddyCustomizationColumns();
 
   let petMood = "neutral";
   let petThirsty = false;
@@ -405,7 +531,27 @@ app.get("/home", async (req, res) => {
     [userId]
   );
 
+  const [[userRow]] = await db.query(
+    `SELECT coins, buddy_type, buddy_name, buddy_has_collar, owned_buddy_types
+       FROM users
+      WHERE id = ?`,
+    [userId]
+  );
+  const buddyProfile = normalizeBuddyProfile(userRow);
   const streak = await getCurrentStreak(userId);
+
+  if (req.session.user) {
+    let sessionCoins = 0;
+    if (userRow && userRow.coins) {
+      sessionCoins = userRow.coins;
+    }
+    req.session.user.coins = sessionCoins;
+  }
+
+  let buddyCoins = 0;
+  if (userRow && userRow.coins) {
+    buddyCoins = userRow.coins;
+  }
 
   res.render("home", {
     user: req.session.user,
@@ -414,6 +560,13 @@ app.get("/home", async (req, res) => {
     plantedFlowers: planted,
     surveyContext,
     streak,
+    buddyProfile,
+    buddyCoins,
+    buddyStatus: req.query.buddyStatus || null,
+    buddyStatusType: req.query.buddyStatusType || "success",
+    openBuddyModal: req.query.openBuddyModal === "1",
+    buddyCosts: BUDDY_COSTS,
+    buddyOptions: BUDDY_OPTIONS,
   });
 });
 
@@ -445,9 +598,12 @@ app.get("/feedback", async (req, res) => {
     );
   
     if (rows.length > 0) {
-      const lowestRow = rows.reduce((min, curr) =>
-        curr.score < min.score ? curr : min
-      );
+      const lowestRow = rows.reduce((min, curr) => {
+        if (curr.score < min.score) {
+          return curr;
+        }
+        return min;
+      });
   
       const shortSection = section.split("_")[0];
       const advice = getAdviceFor(shortSection, lowestRow.question);
@@ -480,7 +636,10 @@ app.get("/chart", async (req, res) => {
     const dailyScores = {};
 
     for (const entry of entries) {
-      const rawDate = entry.created_at instanceof Date ? entry.created_at : new Date(entry.created_at);
+      let rawDate = entry.created_at;
+      if (!(entry.created_at instanceof Date)) {
+        rawDate = new Date(entry.created_at);
+      }
       const dateObj = new Date(rawDate.getFullYear(), rawDate.getMonth(), rawDate.getDate());
       const localDateStr = dateObj.toISOString().split("T")[0];
 
@@ -517,7 +676,10 @@ app.get("/survey", async (req, res) => {
 
   try {
     const [[user]] = await db.query("SELECT coins FROM users WHERE id = ?", [userId]);
-    const coins = user?.coins || 0;
+    let coins = 0;
+    if (user && user.coins) {
+      coins = user.coins;
+    }
 
     let advice = null;
     const feedback = req.session.feedback || null;
@@ -571,7 +733,8 @@ app.get("/survey", async (req, res) => {
       physical: physicalCount
     };
 
-    if (sectionTableMap[surveySection]?.[0]?.count > 0) {
+    const selectedSectionRows = sectionTableMap[surveySection];
+    if (selectedSectionRows && selectedSectionRows[0] && selectedSectionRows[0].count > 0) {
       return res.redirect("/survey-choice");
     }
 
@@ -590,7 +753,10 @@ app.get("/survey-choice", async (req, res) => {
 
   try {
     const [[user]] = await db.query("SELECT coins FROM users WHERE id = ?", [userId]);
-    const coins = user?.coins || 0;
+    let coins = 0;
+    if (user && user.coins) {
+      coins = user.coins;
+    }
 
     const sections = ["general_survey", "mental_survey", "physical_survey"];
     const progress = { general: false, mental: false, physical: false };
@@ -685,7 +851,12 @@ app.post("/submit-survey", async (req, res) => {
       await markDayComplete(userId, localDate);
     }
 
-    const coinsEarned = avgScore >= 8 ? 10 : avgScore >= 5 ? 5 : 2;
+    let coinsEarned = 2;
+    if (avgScore >= 8) {
+      coinsEarned = 10;
+    } else if (avgScore >= 5) {
+      coinsEarned = 5;
+    }
     await db.query("UPDATE users SET coins = coins + ? WHERE id = ?", [coinsEarned, userId]);
     // add any client-side accumulated coins (clientCoinDelta) to user's coins in DB
     const delta = parseInt(clientCoinDelta, 10) || 0;
@@ -805,6 +976,105 @@ app.post("/plant", async (req, res) => {
     ON DUPLICATE KEY UPDATE flower_id = VALUES(flower_id)
   `, [userId, spotIndex, flowerId]);
   res.redirect("/home");
+});
+
+app.post("/customize-buddy", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  const userId = req.session.user.id;
+  const { customAction, petType, buddyName } = req.body;
+
+  try {
+    await ensureBuddyCustomizationColumns();
+
+    const [[userRow]] = await db.query(
+      `SELECT coins, buddy_type, buddy_name, buddy_has_collar, owned_buddy_types
+         FROM users
+        WHERE id = ?`,
+      [userId]
+    );
+
+    if (!userRow) {
+      return res.redirect(buildBuddyStatusRedirect("Could not load your buddy profile.", "error", true));
+    }
+
+    const buddyProfile = normalizeBuddyProfile(userRow);
+
+    if (customAction === "pet") {
+      if (!BUDDY_OPTIONS[petType]) {
+        return res.redirect(buildBuddyStatusRedirect("That buddy option is not available.", "error", true));
+      }
+
+      if (buddyProfile.ownedBuddyTypes.includes(petType)) {
+        await db.query("UPDATE users SET buddy_type = ? WHERE id = ?", [petType, userId]);
+        return res.redirect(buildBuddyStatusRedirect(`${BUDDY_OPTIONS[petType].label} equipped.`));
+      }
+
+      if ((userRow.coins || 0) < BUDDY_COSTS.pet) {
+        return res.redirect(buildBuddyStatusRedirect("You need 30 coins to unlock that buddy.", "error", true));
+      }
+
+      const nextOwned = [...buddyProfile.ownedBuddyTypes, petType];
+      await db.query(
+        `UPDATE users
+            SET coins = coins - ?,
+                buddy_type = ?,
+                owned_buddy_types = ?
+          WHERE id = ?`,
+        [BUDDY_COSTS.pet, petType, JSON.stringify(nextOwned), userId]
+      );
+
+      req.session.user.coins = (userRow.coins || 0) - BUDDY_COSTS.pet;
+      return res.redirect(buildBuddyStatusRedirect(`${BUDDY_OPTIONS[petType].label} unlocked and equipped.`));
+    }
+
+    if (customAction === "collar") {
+      if (buddyProfile.buddyHasCollar) {
+        return res.redirect(buildBuddyStatusRedirect("Your buddy already has a collar.", "error", true));
+      }
+
+      if ((userRow.coins || 0) < BUDDY_COSTS.collar) {
+        return res.redirect(buildBuddyStatusRedirect("You need 20 coins to buy a collar.", "error", true));
+      }
+
+      await db.query(
+        "UPDATE users SET coins = coins - ?, buddy_has_collar = 1 WHERE id = ?",
+        [BUDDY_COSTS.collar, userId]
+      );
+
+      req.session.user.coins = (userRow.coins || 0) - BUDDY_COSTS.collar;
+      return res.redirect(buildBuddyStatusRedirect("Collar purchased for your buddy."));
+    }
+
+    if (customAction === "name") {
+      const trimmedName = (buddyName || "").trim();
+
+      if (trimmedName.length < 2 || trimmedName.length > 30) {
+        return res.redirect(buildBuddyStatusRedirect("Buddy names must be between 2 and 30 characters.", "error", true));
+      }
+
+      if (trimmedName === buddyProfile.buddyName) {
+        return res.redirect(buildBuddyStatusRedirect("Pick a new name to rename your buddy.", "error", true));
+      }
+
+      if ((userRow.coins || 0) < BUDDY_COSTS.rename) {
+        return res.redirect(buildBuddyStatusRedirect("You need 10 coins to rename your buddy.", "error", true));
+      }
+
+      await db.query(
+        "UPDATE users SET coins = coins - ?, buddy_name = ? WHERE id = ?",
+        [BUDDY_COSTS.rename, trimmedName, userId]
+      );
+
+      req.session.user.coins = (userRow.coins || 0) - BUDDY_COSTS.rename;
+      return res.redirect(buildBuddyStatusRedirect(`${trimmedName} is ready to hang out.`));
+    }
+
+    return res.redirect(buildBuddyStatusRedirect("Unknown buddy customization request.", "error", true));
+  } catch (err) {
+    console.error("Error customizing buddy:", err);
+    return res.redirect(buildBuddyStatusRedirect("Buddy customization failed. Please try again.", "error", true));
+  }
 });
 
 // Run every night at 1 AM
