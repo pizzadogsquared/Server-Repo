@@ -120,6 +120,11 @@
       flex-direction: column;
     }
 
+
+    .custom-navbar {
+        flex-direction: row;
+    }
+
     .hamburger-menu {
       display: block;
     }

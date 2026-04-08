@@ -107,11 +107,22 @@ body {
     box-sizing: border-box;
 } */
 
-.circular-card{
-  width: 75%;
+.circular-card {
+  width: 110px;
+  height: 70px;
+  padding: 10px;
   display: flex;
-  flex-wrap: wrap;
-  padding: 10px
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+
+.circular-card div {
+  width: 100%;
+  word-wrap: break-word;
+  font-style: italic;
 }
 
 .circular-card:hover{
@@ -173,7 +184,7 @@ body {
 }
                 
 #iconContainer{
-   background-color: rgba(255, 255, 255, 0.6);
+   background-color: #ffffff99;
 }
 
 #nextButton{
@@ -188,6 +199,7 @@ body {
   padding: 20px;
   margin: 45px auto;
   max-width: 75%;
+  max-height: 100%;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
@@ -278,4 +290,51 @@ body {
   border-radius: 8px;
   margin-bottom: 15px;
   text-align: center;
+}
+
+@media screen and (max-width: 970px){
+  #iconResponse {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #iconResponse > * {
+    width: 50%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+  
+  .survey-container {
+    max-height: 970px;
+  }
+
+  .coins-display p {
+    padding: 10px;
+    font-size: 1rem;
+  }
+
+  #surveyTitle {
+    font-size: 1.2rem;
+  }
+
+  #progressText {
+    font-size: 0.75rem;
+  }
+
+  #questionText {
+    font-size: 1rem;
+  }
+
+  .circular-card {
+    width: 90px;
+    height: 50px;
+  }
+
+  .circular-card div {
+    font-size: 10px;
+  }
+
+  #backButton, #nextButton {
+    font-size: 0.75rem;
+  }
 }
