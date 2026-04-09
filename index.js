@@ -14,6 +14,14 @@ import { markDayComplete, getCurrentStreak } from "./streak.js";
 import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
 import surveyData from "./surveyData.js";
+import {
+  DEFAULT_BUDDY_NAME,
+  BUDDY_COSTS,
+  BUDDY_OPTIONS,
+  normalizeBuddyProfile,
+  buildBuddyStatusRedirect,
+} from "./utils/buddy.js";
+import { getLowestScoringQuestion } from "./utils/survey.js";
 dotenv.config();
 const require = createRequire(import.meta.url);
 const app = express();
@@ -113,76 +121,8 @@ const tableMap = {
   physical: 'physical_survey'
 };
 
-const DEFAULT_BUDDY_NAME = "Buddy";
-const BUDDY_COSTS = {
-  pet: 30,
-  collar: 20,
-  rename: 10,
-};
-const BUDDY_OPTIONS = {
-  dog: { label: "Dog" },
-  cat: { label: "Cat" },
-  penguin: { label: "Penguin" },
-};
-
 let buddyColumnsReady = false;
 let buddyColumnsPromise = null;
-
-function parseOwnedBuddyTypes(value) {
-  if (!value) return ["dog"];
-
-  try {
-    const parsed = JSON.parse(value);
-    if (Array.isArray(parsed)) {
-      const cleaned = parsed.filter((type) => BUDDY_OPTIONS[type]);
-      if (cleaned.includes("dog")) {
-        return cleaned;
-      }
-      return ["dog", ...cleaned];
-    }
-  } catch (err) {
-    console.warn("Could not parse owned buddy types:", err.message);
-  }
-
-  return ["dog"];
-}
-
-function normalizeBuddyProfile(userRow = {}) {
-  const ownedBuddyTypes = parseOwnedBuddyTypes(userRow.owned_buddy_types);
-  let buddyType = "dog";
-  if (BUDDY_OPTIONS[userRow.buddy_type]) {
-    buddyType = userRow.buddy_type;
-  }
-
-  if (!ownedBuddyTypes.includes(buddyType)) {
-    ownedBuddyTypes.push(buddyType);
-  }
-
-  let buddyName = DEFAULT_BUDDY_NAME;
-  if (userRow.buddy_name && userRow.buddy_name.trim()) {
-    buddyName = userRow.buddy_name.trim();
-  }
-
-  return {
-    buddyType,
-    buddyName,
-    buddyHasCollar: Boolean(userRow.buddy_has_collar),
-    ownedBuddyTypes,
-  };
-}
-
-function buildBuddyStatusRedirect(message, status = "success", openModal = false) {
-  const params = new URLSearchParams({
-    buddyStatus: message,
-    buddyStatusType: status,
-  });
-
-  if (openModal) {
-    params.set("openBuddyModal", "1");
-  }
-
-  return `/home?${params.toString()}`;
-}
 
 async function ensureBuddyCustomizationColumns() {
   if (buddyColumnsReady) return;
@@ -234,21 +174,6 @@ function getLocalDateString() {
     day: '2-digit'
   }).format(now);
 }
-
-function getLowestScoringQuestion(scores) {
-  const entries = Object.entries(scores);
-  const values = entries.map(([, val]) => val);
-  const avg = values.reduce((a, b) => a + b, 0) / values.length;
-
-  const threshold = avg - 2;
-  const standout = entries.find(([, val]) => val <= threshold);
-  if (standout) return { key: standout[0], value: standout[1], reason: 'standout' };
-
-  const minVal = Math.min(...values);
-  const lowest = entries.find(([, val]) => val === minVal);
-  return { key: lowest[0], value: lowest[1], reason: 'low' };
-}
-
 
 app.get("/", (req, res) => {
   res.redirect("/welcome");
