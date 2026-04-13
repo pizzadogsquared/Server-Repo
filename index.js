@@ -692,7 +692,7 @@ app.get("/chart", async (req, res) => {
   });
 });
 
-app.get("/survey", async (req, res) => {
+app.get("/check-in", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const section = req.query.section;
@@ -720,7 +720,7 @@ app.get("/survey", async (req, res) => {
       delete req.session.coinsEarned;
       delete req.session.insightCalcTime;
 
-      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice, calcTime });
+      return res.render("check-in", { section: "completed", userId, coins, coinsEarned, advice, calcTime });
     }
 
     const surveySection = section || "choice";
@@ -746,7 +746,7 @@ app.get("/survey", async (req, res) => {
     if (allCompletedToday) {
       const coinsEarned = req.session.coinsEarned || null;
       delete req.session.coinsEarned;
-      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice });
+      return res.render("check-in", { section: "completed", userId, coins, coinsEarned, advice });
     }
 
     const sectionTableMap = {
@@ -759,10 +759,10 @@ app.get("/survey", async (req, res) => {
       return res.redirect("/survey-choice");
     }
 
-    res.render("survey", { section: surveySection, userId, coins, advice, questions: questions });
+    res.render("check-in", { section: surveySection, userId, coins, advice, questions: questions });
   } catch (err) {
     console.error("Survey section check error:", err);
-    res.status(500).send("Error checking survey status");
+    res.status(500).send("Error checking check-in status");
   }
 });
 
@@ -805,7 +805,7 @@ app.get("/survey-choice", async (req, res) => {
     res.render("survey-choice", { userProgress: progress, coinsEarned, coins, advice });
   } catch (err) {
     console.error("Survey-choice error:", err);
-    res.status(500).send("Error loading survey choice page");
+    res.status(500).send("Error loading check-in choice page");
   }
 });
 
@@ -920,7 +920,7 @@ app.post("/submit-survey", async (req, res) => {
       }
   
       if (allCompleted) {
-        return res.redirect("/survey?section=completed");
+        return res.redirect("/check-in?section=completed");
       }
       return res.redirect("/survey-choice");
     });

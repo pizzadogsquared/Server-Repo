@@ -23,10 +23,10 @@
     <% if (section === "completed") { %>
       <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
         <div class="reward-message">
-          <h3>You earned <%= coinsEarned %> extra coins from your last survey!</h3>
+          <h3>You earned <%= coinsEarned %> extra coins for doing your check-in!</h3>
         </div>
       <% } %>
-      <h2>All surveys completed for today!</h2>
+      <h2>All check-ins completed for today!</h2>
 
       <% if (advice) { %>
         <% if (advice.section == 'general') { %>

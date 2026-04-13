@@ -14,7 +14,7 @@
     </div>
     <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
       <div class="reward-message">
-        <h2>You earned <%= coinsEarned %> extra coins from that survey!</h2>
+        <h2>You earned <%= coinsEarned %> extra coins for doing your check-in!</h2>
       </div>
     <% } %>
 
@@ -44,7 +44,7 @@
     <h1>Next Steps</h1>
 
     <% if (!userProgress.general || !userProgress.mental || !userProgress.physical) { %>
-      <p>Select a survey section to complete:</p>
+      <p>Select a check-in section to complete:</p>
     
       <% if (!userProgress.general) { %>
         <a href="/survey?section=general" class="btn">General</a>
@@ -58,7 +58,7 @@
     
       <a href="/home" class="btn">Home</a>
     <% } else { %>
-      <p>All surveys are completed for today!</p>
+      <p>All check-ins are completed for today!</p>
       <a href="/home" class="btn">Home</a>
     <% } %>
     
