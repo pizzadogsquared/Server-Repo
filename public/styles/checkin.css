@@ -42,7 +42,7 @@ body {
 
 
 
-.survey-choice-container{
+.checkin-choice-container{
   background: rgba(255, 255, 255, 0.8);
   padding: 20px;
   margin: 50px auto;
@@ -51,13 +51,13 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
-.survey-choice-container h1 {
+.checkin-choice-container h1 {
   font-size: 2em;
   margin-bottom: 10px;
   clear: both;
 }
 
-.survey-choice-container p {
+.checkin-choice-container p {
   margin-bottom: 20px;
   font-size: 1.2em;
 }
@@ -171,7 +171,7 @@ body {
 }
 
 /* Form Selection Styling*/
-.survey-container{
+.checkin-container{
   background: rgba(255, 255, 255, 0.8);
   padding: 20px;
   margin: 45px auto;

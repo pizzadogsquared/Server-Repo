@@ -20,7 +20,7 @@
           <div id="<%= section %>Chart" class="chart"></div>
           <div class="chart-button">
             <a 
-              href="<%= section === 'overall' ? '/survey' : `/survey?section=${section}` %>" 
+              href="<%= section === 'overall' ? '/checkin' : `/checkin?section=${section}` %>" 
               class="btn">
               Take <%= section.charAt(0).toUpperCase() + section.slice(1) %> Survey
             </a>

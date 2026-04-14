@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey</title>
-  <link rel="stylesheet" href="/styles/survey.css">
+  <link rel="stylesheet" href="/styles/checkin.css">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
@@ -19,7 +19,7 @@
 <body>
   <%- include('partials/navbar') %>
 
-  <div class="survey-container">
+  <div class="checkin-container">
     <% if (section === "completed") { %>
       <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
         <div class="reward-message">
@@ -73,7 +73,7 @@
         <div class="row g-4 justify-content-center">
             <!-- General Component -->
             <div class="col-md-3">
-                <a href="/survey/?section=general" class="text-decoration-none text-body">
+                <a href="/checkin/?section=general" class="text-decoration-none text-body">
                     <div class="card checkin-card h-100">
                         <div class="card-body">
                             <p class="fw-semibold">🪙 5 Coins</p>
@@ -85,7 +85,7 @@
             </div>
             <!-- Mental Component -->
             <div class="col-md-3">
-                <a href="/survey/?section=mental" class="text-decoration-none text-body">
+                <a href="/checkin/?section=mental" class="text-decoration-none text-body">
                     <div class="card checkin-card h-100">
                         <div class="card-body">
                             <p class="fw-semibold">🪙 5 Coins</p>
@@ -97,7 +97,7 @@
             </div>
             <!-- Physical Component -->
             <div class="col-md-3">
-                <a href="/survey/?section=physical" class="text-decoration-none text-body">
+                <a href="/checkin/?section=physical" class="text-decoration-none text-body">
                     <div class="card checkin-card h-100">
                         <div class="card-body">
                             <p class="fw-semibold">🪙 5 Coins</p>
@@ -112,17 +112,17 @@
     <% } else if (section === "next") { %>
       <h2>Would you like to continue?</h2>
       <% if (!userProgress.mental) { %>
-        <a href="/survey?section=mental" class="btn">Mental</a>
+        <a href="/checkin?section=mental" class="btn">Mental</a>
       <% } %>
       <% if (!userProgress.physical) { %>
-        <a href="/survey?section=physical" class="btn">Physical</a>
+        <a href="/checkin?section=physical" class="btn">Physical</a>
       <% } %>
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
       <a href="/shop" class="btn">Shop</a>
 
     <%}%> <% if (section !== "choice" && section !== "completed" && typeof questions !== 'undefined') { %>
-      <div class="container py-5" id="surveyFormContainer">
+      <div class="container py-5" id="checkinFormContainer">
         <div class="coins-display">
           <p>
             <span id="coin-count"><%= coins ?? 0 %></span>
@@ -140,12 +140,12 @@
 
         </div>
 
-        <form id="progressForm" method="POST" action="/submit-survey">
+        <form id="progressForm" method="POST" action="/submit-checkin">
           <input type="hidden" name="section" value="<%= section %>">
           <input type="hidden" name="userId" value="<%= userId %>">
           <input type="hidden" id="clientCoinDelta" name="clientCoinDelta" value="0">
           
-          <input type="hidden" name="surveyResults" id="surveyResults">
+          <input type="hidden" name="checkinResults" id="checkinResults">
 
           <div class="border rounded-4 p-4" id="iconContainer">
             <% questions.forEach((q, index) => { %>
@@ -280,7 +280,7 @@
                 updateFormProgress(currentStep);
             } else {
                 // Package your JSON results before submitting to their backend
-                document.getElementById('surveyResults').value = JSON.stringify(userResponses);
+                document.getElementById('checkinResults').value = JSON.stringify(userResponses);
                 form.submit();
             }
         });
