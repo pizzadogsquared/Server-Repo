@@ -6,15 +6,16 @@
   <title>Survey</title>
   <link rel="stylesheet" href="/styles/checkin.css">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/styles/navbar.css">
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
     rel="stylesheet"
     integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
     crossorigin="anonymous"
     >
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
 </head>
 <body>
   <%- include('partials/navbar') %>
@@ -130,7 +131,7 @@
           </p>
         </div>
         <div class="mb-3">
-            <h3 class="fw-semibold"><%= section.charAt(0).toUpperCase() + section.slice(1) %> Check-In</h3>
+            <h3 class="fw-semibold" id="checkinTitle"><%= section.charAt(0).toUpperCase() + section.slice(1) %> Check-In</h3>
                         <div class="small text-muted mt-2">
                 <span id="progressText">Question 1 of <%= questions.length %></span>
             </div>
@@ -150,15 +151,15 @@
           <div class="border rounded-4 p-4" id="iconContainer">
             <% questions.forEach((q, index) => { %>
               <section class="step <%= index === 0 ? 'active' : '' %>" data-step="<%= index + 1 %>">
-                <h2 class="h5 fw-semibold mb-3"><%= q.question %></h2>
-                <div class="row g-3">
+                <h2 class="h5 fw-semibold mb-3" id="questionText"><%= q.question %></h2>
+                <div class="col row row-cols-1 row-cols-sm-5 g-4" id="iconResponse">
                   <% q.responses.forEach((response) => { %>
-                    <div class="col text-center">
-                      <label class="card circular-card">
+                    <div class="col text-center d-flex flex-column align-items-center">
+                      <label class="circular-card">
                         <input type="radio" name="<%= q.id %>" value="<%= response.value %>" class="hidden-radio">
                         <div>
                           <i class="bi <%= response.icon %>"></i>
-                          <div class="fs-12"><%= response.label %></div>
+                          <div class="fs-12" id="responseText"><%= response.label %></div>
                         </div>
                       </label>
                     </div>

@@ -10,6 +10,9 @@ html, body {
   font-family: Arial, sans-serif;
 }
 
+html {
+  overflow-y: scroll;
+}
 /* General Styles */
  body {
    font-family: Arial, sans-serif;
@@ -159,7 +162,7 @@ html, body {
    font-style: italic;
  }
  
- /* Navigation Bar */
+ /* Navigation Bar
  .navbar {
    display: flex;
    flex-wrap: wrap;
@@ -191,7 +194,7 @@ html, body {
  .navbar a:hover {
    background-color: #444;
    border-radius: 5px;
- }
+ } */
  
  /* Select */
  select {
@@ -1013,5 +1016,6 @@ body.buddy-modal-open {
   .buddy-modal-panel {
     padding: 22px 18px;
   }
+
 }
 
