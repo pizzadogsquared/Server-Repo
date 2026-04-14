@@ -1,17 +1,20 @@
-<nav class="navbar">
+<nav class="custom-navbar">
   <div class="logo">
-    <img src="/images/MeBalanced8.png" alt="Bee Logo" class="bee-icon">
-    <span class="logo-text"></span>
+    <img src="/images/MeBalanced.png" alt="Bee Logo" class="bee-icon" width="50px" height="50px">
   </div>
 
-  <div class="nav-links">
+  <button class="hamburger-menu" id="hamburgerButton">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="custom-nav-links" id="navLinks">
     <a href="/home">Home</a>
     <a href="/chatbot">Chatbot</a>
     <a href="/survey">Survey</a>
 
-    <div class="dropdown">
-      <a href="#" class="dropbtn">Progress</a>
-      <div class="dropdown-content">
+    <div class="custom-dropdown">
+      <a href="#" class="custom-dropbtn">Progress</a>
+      <div class="custom-dropdown-content">
         <a href="/chart">Weekly Progress</a>
         <a href="/calendar">Monthly Progress</a>
         <a href="/feedback">Recent Feedback</a>
@@ -20,9 +23,9 @@
 
     <a href="/games">Games</a>
 
-    <div class="dropdown">
-      <a href="#" class="dropbtn">Account</a>
-      <div class="dropdown-content">
+    <div class="custom-dropdown">
+      <a href="#" class="custom-dropbtn">Account</a>
+      <div class="custom-dropdown-content">
         <a href="/edit-account">Edit Account</a>
         <a href="/logout">Logout</a>
       </div>
@@ -34,108 +37,11 @@
   </div>
 </nav>
 
-<style>
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(90deg, #1f1f1f 0%, #2a2a2a 100%);
-    padding: 14px 32px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.12);
-    position: relative;
-    z-index: 1000;
-  }
+<script>
+  const hamburgerButton = document.getElementById("hamburgerButton");
+  const navLinks = document.getElementById("navLinks");
 
-  .navbar .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .navbar .bee-icon {
-    width: 200px;
-    height: 125px;
-    margin: 0px;
-    padding: 0px;
-    float: inline-start;
-    object-fit: cover;
-  }
-
-  .logo-text {
-    font-size: 2rem;
-    font-weight: 800;
-    letter-spacing: 0.4px;
-    color: #ffd700;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-  }
-
-  .navbar .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .navbar a,
-  .dropbtn {
-    color: #f5f5f5;
-    text-decoration: none;
-    font-size: 1.05rem;
-    font-weight: 600;
-    padding: 10px 16px;
-    border-radius: 10px;
-    transition: all 0.25s ease;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-family: Arial, sans-serif;
-    display: inline-block;
-    line-height: 1.2;
-  }
-
-  .navbar a:hover,
-  .dropdown:hover .dropbtn {
-    background: rgba(255, 215, 0, 0.12);
-    color: #ffd700;
-    transform: translateY(-1px);
-  }
-
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    left: auto;
-    min-width: 210px;
-    background: #2f2f2f;
-    border-radius: 12px;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
-    border: 1px solid rgba(255, 215, 0, 0.12);
-    overflow: hidden;
-    z-index: 1001;
-  }
-
-  .dropdown-content a {
-    display: block;
-    padding: 14px 16px;
-    font-size: 0.98rem;
-    font-weight: 500;
-    color: #f5f5f5;
-    border-radius: 0;
-  }
-
-  .dropdown-content a:hover {
-    background: rgba(255, 215, 0, 0.12);
-    color: #ffd700;
-    transform: none;
-  }
-
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
-</style>
+  hamburgerButton.addEventListener("click", () => {
+    navLinks.classList.toggle('active');
+  });
+</script>
