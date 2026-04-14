@@ -16,9 +16,15 @@
         <div class="form-container">
             <h2 class="form-title">Log in</h2>
             
-            <% if (typeof error !== 'undefined') { %>
+            <% if (typeof error !== 'undefined' && error) { %>
                 <div class="error-box">
                     <p><%= error %></p>
+                </div>
+            <% } %>
+
+            <% if (typeof message !== 'undefined' && message) { %>
+                <div class="success-box">
+                    <p><%= message %></p>
                 </div>
             <% } %>
 
@@ -31,6 +37,13 @@
                 </div>
                 <button type="submit" class="btn" id="login-btn">Login</button>
             </form>
+
+            <% if (typeof verificationEmail !== 'undefined' && verificationEmail) { %>
+                <form action="/resend-verification" method="POST" class="resend-form">
+                    <input type="hidden" name="email" value="<%= verificationEmail %>" />
+                    <button type="submit" class="btn secondary-btn">Resend Verification Email</button>
+                </form>
+            <% } %>
 
             <div class="form-footer">
                 <p>Don't have an account? <a href="/signup">Sign Up</a></p>

@@ -99,3 +99,25 @@ body{
     margin-bottom: 20px;
     border-radius: 5px;
 }
+
+.success-box{
+    background-color: #d4edda;
+    color:#155724;
+    border:1px solid #c3e6cb;
+    padding:10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.resend-form {
+    margin-top: 15px;
+}
+
+.secondary-btn {
+    background-color: #fff2b3;
+    color: #333;
+}
+
+.secondary-btn:hover {
+    background-color: #ffe27a;
+}

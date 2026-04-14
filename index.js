@@ -15,6 +15,12 @@ import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
 import surveyData from "./surveyData.js";
 import {
+  createEmailVerificationToken,
+  ensureEmailVerificationColumns,
+  getEmailVerificationExpiryDate,
+  sendVerificationEmail,
+} from "./verification.js";
+import {
   DEFAULT_BUDDY_NAME,
   BUDDY_COSTS,
   BUDDY_OPTIONS,
@@ -183,11 +189,154 @@ app.get("/welcome", (req, res) => {
   res.render("welcome");
 });
 
-app.get("/login", (req, res) => res.render("login"));
+app.get("/login", (req, res) => {
+  res.render("login", {
+    error: null,
+    message: req.query.message || null,
+    verificationEmail: req.query.verificationEmail || null,
+  });
+});
 app.post("/login", handleLogin);
 
 app.get("/signup", (req, res) => res.render("signup"));
 app.post("/signup", handleSignup);
+
+app.get("/verify-email", async (req, res) => {
+  const { token } = req.query;
+
+  if (!token || typeof token !== "string") {
+    return res.render("login", {
+      error: "Verification link is invalid.",
+      message: null,
+      verificationEmail: null,
+    });
+  }
+
+  try {
+    await ensureEmailVerificationColumns();
+
+    const [[user]] = await db.query(
+      `SELECT email, email_verification_expires_at, email_verified
+         FROM users
+        WHERE email_verification_token = ?`,
+      [token]
+    );
+
+    if (!user) {
+      return res.render("login", {
+        error: "Verification link is invalid or has already been used.",
+        message: null,
+        verificationEmail: null,
+      });
+    }
+
+    if (user.email_verified) {
+      return res.render("login", {
+        error: null,
+        message: "Your email is already verified. You can log in now.",
+        verificationEmail: null,
+      });
+    }
+
+    const expiresAt = user.email_verification_expires_at
+      ? new Date(user.email_verification_expires_at)
+      : null;
+    if (!expiresAt || expiresAt < new Date()) {
+      return res.render("login", {
+        error: "Your verification link has expired. Please resend verification below.",
+        message: null,
+        verificationEmail: user.email,
+      });
+    }
+
+    await db.query(
+      `UPDATE users
+          SET email_verified = 1,
+              email_verification_token = NULL,
+              email_verification_expires_at = NULL
+        WHERE email_verification_token = ?`,
+      [token]
+    );
+
+    return res.render("login", {
+      error: null,
+      message: "Email verified successfully. You can now log in.",
+      verificationEmail: null,
+    });
+  } catch (err) {
+    console.error("Error verifying email:", err);
+    return res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/resend-verification", async (req, res) => {
+  const email = req.body.email?.trim().toLowerCase();
+  if (!email) {
+    return res.render("login", {
+      error: "Email is required to resend verification.",
+      message: null,
+      verificationEmail: null,
+    });
+  }
+
+  try {
+    await ensureEmailVerificationColumns();
+
+    const [[user]] = await db.query(
+      `SELECT id, full_name, email, email_verified
+         FROM users
+        WHERE email = ?`,
+      [email]
+    );
+
+    if (!user) {
+      return res.render("login", {
+        error: "No account was found for that email address.",
+        message: null,
+        verificationEmail: null,
+      });
+    }
+
+    if (user.email_verified) {
+      return res.render("login", {
+        error: null,
+        message: "That email is already verified. You can log in now.",
+        verificationEmail: null,
+      });
+    }
+
+    const verificationToken = createEmailVerificationToken();
+    const verificationExpiresAt = getEmailVerificationExpiryDate();
+
+    await db.query(
+      `UPDATE users
+          SET email_verification_token = ?,
+              email_verification_expires_at = ?
+        WHERE id = ?`,
+      [verificationToken, verificationExpiresAt, user.id]
+    );
+
+    await sendVerificationEmail({
+      email: user.email,
+      name: user.full_name,
+      token: verificationToken,
+      req,
+    });
+
+    return res.render("login", {
+      error: null,
+      message: "A new verification email has been sent.",
+      verificationEmail: user.email,
+    });
+  } catch (err) {
+    console.error("Error resending verification email:", err);
+    return res.render("login", {
+      error: "We could not resend verification right now. Please try again later.",
+      message: null,
+      verificationEmail: email,
+    });
+  }
+});
 
 app.get("/chatbot", (req, res) => {
   res.render("chatbot");
