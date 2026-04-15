@@ -14,7 +14,6 @@ import { markDayComplete, getCurrentStreak } from "./streak.js";
 import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
 import checkinData from "./checkinData.js";
-import surveyData from "./surveyData.js";
 import {
   createEmailVerificationToken,
   ensureEmailVerificationColumns,
