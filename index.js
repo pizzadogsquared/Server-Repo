@@ -13,6 +13,7 @@ import { adviceMap, questionMap } from "./advice.js";
 import { markDayComplete, getCurrentStreak } from "./streak.js";
 import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
+import checkinData from "./checkinData.js";
 import surveyData from "./surveyData.js";
 import {
   createEmailVerificationToken,
@@ -556,7 +557,7 @@ app.get("/home", async (req, res) => {
 });
 */
 
-async function getTodaySurveyContext(userId) {
+async function getTodayCheckinContext(userId) {
   const today = getLocalDateString();
 
   const tables = ["general_survey", "mental_survey", "physical_survey"];
@@ -625,11 +626,11 @@ app.get("/home", async (req, res) => {
     console.error("Error loading pet state:", err);
   }
 
-  let surveyContext = {};
+  let checkinContext = {};
   try {
-    surveyContext = await getTodaySurveyContext(userId);
+    checkinContext = await getTodayCheckinContext(userId);
   } catch (err) {
-    console.error("Error building survey context:", err);
+    console.error("Error building check-in context:", err);
   }
 
   const [planted] = await db.query(
@@ -663,7 +664,7 @@ app.get("/home", async (req, res) => {
     petMood,
     petThirsty,
     plantedFlowers: planted,
-    surveyContext,
+    checkinContext,
     streak,
     buddyCoins,
     buddyProfile,
@@ -766,7 +767,7 @@ app.get("/chart", async (req, res) => {
   });
 });
 
-app.get("/survey", async (req, res) => {
+app.get("/checkin", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const section = req.query.section;
@@ -794,11 +795,11 @@ app.get("/survey", async (req, res) => {
       delete req.session.coinsEarned;
       delete req.session.insightCalcTime;
 
-      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice, calcTime });
+      return res.render("checkin", { section: "completed", userId, coins, coinsEarned, advice, calcTime });
     }
 
-    const surveySection = section || "choice";
-    const questions = surveyData[surveySection];
+    const checkinSection = section || "choice";
+    const questions = checkinData[checkinSection];
     const [generalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, today]
@@ -820,7 +821,7 @@ app.get("/survey", async (req, res) => {
     if (allCompletedToday) {
       const coinsEarned = req.session.coinsEarned || null;
       delete req.session.coinsEarned;
-      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice });
+      return res.render("checkin", { section: "completed", userId, coins, coinsEarned, advice });
     }
 
     const sectionTableMap = {
@@ -829,18 +830,18 @@ app.get("/survey", async (req, res) => {
       physical: physicalCount
     };
 
-    if (sectionTableMap[surveySection]?.[0]?.count > 0) {
-      return res.redirect("/survey-choice");
+    if (sectionTableMap[checkinSection]?.[0]?.count > 0) {
+      return res.redirect("/checkin-choice");
     }
 
-    res.render("survey", { section: surveySection, userId, coins, advice, questions: questions });
+    res.render("checkin", { section: checkinSection, userId, coins, advice, questions: questions });
   } catch (err) {
-    console.error("Survey section check error:", err);
-    res.status(500).send("Error checking survey status");
+    console.error("Check-in section check error:", err);
+    res.status(500).send("Error checking check-in status");
   }
 });
 
-app.get("/survey-choice", async (req, res) => {
+app.get("/checkin-choice", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const userId = req.session.user.id;
@@ -876,18 +877,18 @@ app.get("/survey-choice", async (req, res) => {
     }
     delete req.session.feedback;
 
-    res.render("survey-choice", { userProgress: progress, coinsEarned, coins, advice });
+    res.render("checkin-choice", { userProgress: progress, coinsEarned, coins, advice });
   } catch (err) {
-    console.error("Survey-choice error:", err);
-    res.status(500).send("Error loading survey choice page");
+    console.error("Checkin-choice error:", err);
+    res.status(500).send("Error loading check-in choice page");
   }
 });
 
-app.post("/submit-survey", async (req, res) => {
+app.post("/submit-checkin", async (req, res) => {
 		const startTime = Date.now();
 		const localDate = getLocalDateString();
 
-		const { section, clientCoinDelta, surveyResults } = req.body;
+		const { section, clientCoinDelta, checkinResults } = req.body;
 
     if (!req.session.user) {
       return res.status(401).send("Not authenticated");
@@ -897,15 +898,15 @@ app.post("/submit-survey", async (req, res) => {
 
 		let responses;
 	try {
-		if (typeof surveyResults === "string") {
-			responses = JSON.parse(surveyResults);
-		} else if (surveyResults && typeof surveyResults === "object") {
-			responses = surveyResults;
+		if (typeof checkinResults === "string") {
+			responses = JSON.parse(checkinResults);
+		} else if (checkinResults && typeof checkinResults === "object") {
+			responses = checkinResults;
 		} else {
-			return res.status(400).send("Missing surveyResults");
+			return res.status(400).send("Missing checkinResults");
 		}
 	} catch (err) {
-    return res.status(400).send("Invalid survey data format");
+    return res.status(400).send("Invalid check-in data format");
   }
 
   try {
@@ -994,13 +995,13 @@ app.post("/submit-survey", async (req, res) => {
       }
   
       if (allCompleted) {
-        return res.redirect("/survey?section=completed");
+        return res.redirect("/checkin?section=completed");
       }
-      return res.redirect("/survey-choice");
+      return res.redirect("/checkin-choice");
     });
   } catch (err) {
     console.error("Survey Submit DB Error:", err);
-    res.status(500).send("Failed to save survey");
+    res.status(500).send("Failed to save check-in");
   }
 });
 
@@ -1026,9 +1027,9 @@ app.get("/games", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
 
-  const [[{ survey_count }]] = await db.query("SELECT survey_count FROM users WHERE id = ?", [userId]);
+  const [[{ checkin_count }]] = await db.query("SELECT survey_count FROM users WHERE id = ?", [userId]);
 
-  res.render("games", { totalSurveys: survey_count });
+  res.render("games", { totalSurveys: checkin_count });
 });
 
 app.get("/shop", async (req, res) => {
@@ -1177,9 +1178,9 @@ cron.schedule("0 1 * * *", async () => {
     await db.execute("DELETE FROM mental_survey WHERE created_at < NOW() - INTERVAL 3 MONTH");
     await db.execute("DELETE FROM physical_survey WHERE created_at < NOW() - INTERVAL 3 MONTH");
 
-    console.log("Old surveys cleaned up successfully.");
+    console.log("Old check-ins cleaned up successfully.");
   } catch (error) {
-    console.error("Error cleaning up old surveys:", error.message);
+    console.error("Error cleaning up old check-ins:", error.message);
   }
 });
 

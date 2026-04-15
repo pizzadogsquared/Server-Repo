@@ -70,7 +70,7 @@
     }
   %>
   <div class="home-container">
-    <h1>Welcome to Me Balanced</h1>
+    <h1 id="welcome_message">Welcome to MeBalanced</h1>
     <p>Your daily well-being tracker.</p>
 
     <div class="streak-badge">
@@ -147,7 +147,7 @@
     </div>
 
     <div class="home-buttons">
-      <a href="/survey?section=choice" class="btn">Take Today's Surveys</a>
+      <a href="/checkin?section=choice" class="btn">Take Today's Surveys</a>
     </div>
   </div>
 
@@ -322,7 +322,7 @@
 </script>
 
 <script>
-  const surveyContext = <%- JSON.stringify(surveyContext || {}) %>;
+  const checkinContext = <%- JSON.stringify(checkinContext || {}) %>;
 
   function buildSurveySummary(ctx) {
     const parts = [];
@@ -342,7 +342,7 @@
     return parts.join("\n\n");
   }
 
-  const surveySummary = buildSurveySummary(surveyContext);
+  const checkinSummary = buildSurveySummary(checkinContext);
   const petMessagesDiv = document.getElementById("pet-messages");
   const petPromptInput = document.getElementById("pet-prompt");
   const petSendBtn = document.getElementById("pet-send");
@@ -355,12 +355,12 @@
     },
   ];
 
-  if (surveySummary && surveySummary.trim().length > 0) {
+  if (checkinSummary && checkinSummary.trim().length > 0) {
     petConversation.push({
       role: "system",
       content:
-        "Here is the user's most recent survey information:\n\n" +
-        surveySummary +
+        "Here is the user's most recent check-in information:\n\n" +
+        checkinSummary +
         "\n\nUse this information to tailor your responses. Speak naturally, as if you just have a sense of how they are doing.",
     });
   }
