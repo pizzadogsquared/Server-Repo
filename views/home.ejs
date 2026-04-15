@@ -398,9 +398,16 @@
     aiEl.classList.add("message", "ai-message");
 
     const aiElContent = document.createElement("div");
-    aiElContent.classList.add("message", "ai-message-content");
+    const aiIcon = document.createElement("img");
+    aiIcon.src = getBuddySprite(buddyProfile.buddyType, petMood);
+
+    
+    aiIcon.classList.add("ai-icon");
+    aiElContent.classList.add("ai-message", "ai-message-content");
 
     petMessagesDiv.insertBefore(aiEl, petLoadingEl);
+    aiEl.appendChild(aiIcon);
+    aiEl.appendChild(aiElContent);
 
     const reader = resp.body.getReader();
     const decoder = new TextDecoder("utf-8");
@@ -425,13 +432,14 @@
         aiText += data;
         const formatted = formatAiText(aiText);
         aiElContent.textContent = formatted;
-        aiEl.appendChild(aiElContent);
+        //aiEl.appendChild(aiElContent);
       });
     }
     petLoadingEl.style.visibility = "hidden";
     petConversation.push({ role: "assistant", content: aiText });
     petMessagesDiv.scrollTop = petMessagesDiv.scrollHeight;
   }
+
 
   petSendBtn.onclick = sendPetMessage;
   petPromptInput.onkeydown = (e) => {
