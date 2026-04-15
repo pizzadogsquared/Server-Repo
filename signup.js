@@ -1,6 +1,12 @@
 // signup.js - handles POST signup logic and new user creation
 import bcrypt from "bcrypt";
 import db from "./db.js";
+import {
+  createEmailVerificationToken,
+  ensureEmailVerificationColumns,
+  getEmailVerificationExpiryDate,
+  sendVerificationEmail,
+} from "./verification.js";
 
 // Basic email validation regex
 const isValidEmail = (email) => {
@@ -46,6 +52,7 @@ export async function handleSignup(req, res) {
 
   let conn;
   try {
+    await ensureEmailVerificationColumns();
     conn = await db.getConnection();
 
     const [existingUser] = await conn.query("SELECT id FROM users WHERE LOWER(email) = ?", [email]);
@@ -54,13 +61,53 @@ export async function handleSignup(req, res) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = createEmailVerificationToken();
+    const verificationExpiresAt = getEmailVerificationExpiryDate();
 
     await conn.query(
-      "INSERT INTO users (full_name, email, password, age, gender, country, unsubscribed) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [name, email, hashedPassword, age || null, gender, country, false]
+      `INSERT INTO users (
+        full_name,
+        email,
+        password,
+        age,
+        gender,
+        country,
+        unsubscribed,
+        email_verified,
+        email_verification_token,
+        email_verification_expires_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        name,
+        email,
+        hashedPassword,
+        age || null,
+        gender,
+        country,
+        false,
+        false,
+        verificationToken,
+        verificationExpiresAt,
+      ]
     );
 
-    res.redirect("/login");
+    try {
+      await sendVerificationEmail({
+        email,
+        name,
+        token: verificationToken,
+        req,
+      });
+    } catch (emailErr) {
+      console.error("Error sending verification email:", emailErr);
+      return res.render("login", {
+        error: "Account created, but we could not send the verification email yet. Please resend verification below.",
+        message: null,
+        verificationEmail: email,
+      });
+    }
+
+    res.redirect(`/login?message=${encodeURIComponent("Account created. Please check your email to verify your account.")}&verificationEmail=${encodeURIComponent(email)}`);
   } catch (err) {
     console.error("Error during signup:", err);
     res.status(500).send("Internal Server Error");
