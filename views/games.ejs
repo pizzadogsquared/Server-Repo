@@ -102,7 +102,7 @@
                <p>Collect flowers and increase your score.</p>
                <% if (totalSurveys < 3) { %>
                  <div class="overlay">
-                   🔒 <br> Take <%= 3 - totalSurveys %> more surveys to unlock
+                   🔒 <br> Do <%= 3 - totalSurveys %> more check-ins to unlock
                  </div>
                <% } else { %>
                  <button class="play-button" onclick="startGame('FlowerGame')">Play</button>
@@ -114,7 +114,7 @@
                <p>Jump across platforms and avoid obstacles.</p>
                <% if (totalSurveys < 9) { %>
                  <div class="overlay">
-                   🔒 <br> Take <%= 9 - totalSurveys %> more surveys to unlock
+                   🔒 <br> Do <%= 9 - totalSurveys %> more check-ins to unlock
                  </div>
                <% } else { %>
                  <button class="play-button" onclick="startGame('PlatformBee')">Play</button>
@@ -126,7 +126,7 @@
                <p>Find your way out of the maze.</p>
                <% if (totalSurveys < 15) { %>
                  <div class="overlay">
-                   🔒 <br> Take <%= 15 - totalSurveys %> more surveys to unlock
+                   🔒 <br> Do <%= 15 - totalSurveys %> more check-ins to unlock
                  </div>
                <% } else { %>
                  <button class="play-button" onclick="startGame('MazeGame')">Play</button>

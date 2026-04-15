@@ -35,8 +35,13 @@ html {
  .home-container h1 {
    font-size: 2em;
    margin-bottom: 10px;
-   color: #ffd700;
- }
+   color: #f5b580;
+   text-shadow:
+    -1px -1px 0 #3A506B,
+     1px -1px 0 #3A506B,
+    -1px  1px 0 #3A506B,
+     1px  1px 0 #3A506B;
+  }
  
  .home-container p {
    font-size: 1.2em;
@@ -160,6 +165,7 @@ html {
  /* Navigation Bar
  .navbar {
    display: flex;
+   flex-wrap: wrap;
    align-items: center;
    justify-content: space-between;
    background-color: #222;
@@ -1012,3 +1018,4 @@ body.buddy-modal-open {
   }
 
 }
+

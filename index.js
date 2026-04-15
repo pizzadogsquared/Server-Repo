@@ -13,7 +13,21 @@ import { adviceMap, questionMap } from "./advice.js";
 import { markDayComplete, getCurrentStreak } from "./streak.js";
 import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
-import surveyData from "./surveyData.js";
+import checkinData from "./checkinData.js";
+import {
+  createEmailVerificationToken,
+  ensureEmailVerificationColumns,
+  getEmailVerificationExpiryDate,
+  sendVerificationEmail,
+} from "./verification.js";
+import {
+  DEFAULT_BUDDY_NAME,
+  BUDDY_COSTS,
+  BUDDY_OPTIONS,
+  normalizeBuddyProfile,
+  buildBuddyStatusRedirect,
+} from "./utils/buddy.js";
+import { getLowestScoringQuestion } from "./utils/survey.js";
 dotenv.config();
 const require = createRequire(import.meta.url);
 const app = express();
@@ -113,76 +127,8 @@ const tableMap = {
   physical: 'physical_survey'
 };
 
-const DEFAULT_BUDDY_NAME = "Buddy";
-const BUDDY_COSTS = {
-  pet: 30,
-  collar: 20,
-  rename: 10,
-};
-const BUDDY_OPTIONS = {
-  dog: { label: "Dog" },
-  cat: { label: "Cat" },
-  penguin: { label: "Penguin" },
-};
-
 let buddyColumnsReady = false;
 let buddyColumnsPromise = null;
-
-function parseOwnedBuddyTypes(value) {
-  if (!value) return ["dog"];
-
-  try {
-    const parsed = JSON.parse(value);
-    if (Array.isArray(parsed)) {
-      const cleaned = parsed.filter((type) => BUDDY_OPTIONS[type]);
-      if (cleaned.includes("dog")) {
-        return cleaned;
-      }
-      return ["dog", ...cleaned];
-    }
-  } catch (err) {
-    console.warn("Could not parse owned buddy types:", err.message);
-  }
-
-  return ["dog"];
-}
-
-function normalizeBuddyProfile(userRow = {}) {
-  const ownedBuddyTypes = parseOwnedBuddyTypes(userRow.owned_buddy_types);
-  let buddyType = "dog";
-  if (BUDDY_OPTIONS[userRow.buddy_type]) {
-    buddyType = userRow.buddy_type;
-  }
-
-  if (!ownedBuddyTypes.includes(buddyType)) {
-    ownedBuddyTypes.push(buddyType);
-  }
-
-  let buddyName = DEFAULT_BUDDY_NAME;
-  if (userRow.buddy_name && userRow.buddy_name.trim()) {
-    buddyName = userRow.buddy_name.trim();
-  }
-
-  return {
-    buddyType,
-    buddyName,
-    buddyHasCollar: Boolean(userRow.buddy_has_collar),
-    ownedBuddyTypes,
-  };
-}
-
-function buildBuddyStatusRedirect(message, status = "success", openModal = false) {
-  const params = new URLSearchParams({
-    buddyStatus: message,
-    buddyStatusType: status,
-  });
-
-  if (openModal) {
-    params.set("openBuddyModal", "1");
-  }
-
-  return `/home?${params.toString()}`;
-}
 
 async function ensureBuddyCustomizationColumns() {
   if (buddyColumnsReady) return;
@@ -235,21 +181,6 @@ function getLocalDateString() {
   }).format(now);
 }
 
-function getLowestScoringQuestion(scores) {
-  const entries = Object.entries(scores);
-  const values = entries.map(([, val]) => val);
-  const avg = values.reduce((a, b) => a + b, 0) / values.length;
-
-  const threshold = avg - 2;
-  const standout = entries.find(([, val]) => val <= threshold);
-  if (standout) return { key: standout[0], value: standout[1], reason: 'standout' };
-
-  const minVal = Math.min(...values);
-  const lowest = entries.find(([, val]) => val === minVal);
-  return { key: lowest[0], value: lowest[1], reason: 'low' };
-}
-
-
 app.get("/", (req, res) => {
   res.redirect("/welcome");
 });
@@ -258,11 +189,154 @@ app.get("/welcome", (req, res) => {
   res.render("welcome");
 });
 
-app.get("/login", (req, res) => res.render("login"));
+app.get("/login", (req, res) => {
+  res.render("login", {
+    error: null,
+    message: req.query.message || null,
+    verificationEmail: req.query.verificationEmail || null,
+  });
+});
 app.post("/login", handleLogin);
 
 app.get("/signup", (req, res) => res.render("signup"));
 app.post("/signup", handleSignup);
+
+app.get("/verify-email", async (req, res) => {
+  const { token } = req.query;
+
+  if (!token || typeof token !== "string") {
+    return res.render("login", {
+      error: "Verification link is invalid.",
+      message: null,
+      verificationEmail: null,
+    });
+  }
+
+  try {
+    await ensureEmailVerificationColumns();
+
+    const [[user]] = await db.query(
+      `SELECT email, email_verification_expires_at, email_verified
+         FROM users
+        WHERE email_verification_token = ?`,
+      [token]
+    );
+
+    if (!user) {
+      return res.render("login", {
+        error: "Verification link is invalid or has already been used.",
+        message: null,
+        verificationEmail: null,
+      });
+    }
+
+    if (user.email_verified) {
+      return res.render("login", {
+        error: null,
+        message: "Your email is already verified. You can log in now.",
+        verificationEmail: null,
+      });
+    }
+
+    const expiresAt = user.email_verification_expires_at
+      ? new Date(user.email_verification_expires_at)
+      : null;
+    if (!expiresAt || expiresAt < new Date()) {
+      return res.render("login", {
+        error: "Your verification link has expired. Please resend verification below.",
+        message: null,
+        verificationEmail: user.email,
+      });
+    }
+
+    await db.query(
+      `UPDATE users
+          SET email_verified = 1,
+              email_verification_token = NULL,
+              email_verification_expires_at = NULL
+        WHERE email_verification_token = ?`,
+      [token]
+    );
+
+    return res.render("login", {
+      error: null,
+      message: "Email verified successfully. You can now log in.",
+      verificationEmail: null,
+    });
+  } catch (err) {
+    console.error("Error verifying email:", err);
+    return res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/resend-verification", async (req, res) => {
+  const email = req.body.email?.trim().toLowerCase();
+  if (!email) {
+    return res.render("login", {
+      error: "Email is required to resend verification.",
+      message: null,
+      verificationEmail: null,
+    });
+  }
+
+  try {
+    await ensureEmailVerificationColumns();
+
+    const [[user]] = await db.query(
+      `SELECT id, full_name, email, email_verified
+         FROM users
+        WHERE email = ?`,
+      [email]
+    );
+
+    if (!user) {
+      return res.render("login", {
+        error: "No account was found for that email address.",
+        message: null,
+        verificationEmail: null,
+      });
+    }
+
+    if (user.email_verified) {
+      return res.render("login", {
+        error: null,
+        message: "That email is already verified. You can log in now.",
+        verificationEmail: null,
+      });
+    }
+
+    const verificationToken = createEmailVerificationToken();
+    const verificationExpiresAt = getEmailVerificationExpiryDate();
+
+    await db.query(
+      `UPDATE users
+          SET email_verification_token = ?,
+              email_verification_expires_at = ?
+        WHERE id = ?`,
+      [verificationToken, verificationExpiresAt, user.id]
+    );
+
+    await sendVerificationEmail({
+      email: user.email,
+      name: user.full_name,
+      token: verificationToken,
+      req,
+    });
+
+    return res.render("login", {
+      error: null,
+      message: "A new verification email has been sent.",
+      verificationEmail: user.email,
+    });
+  } catch (err) {
+    console.error("Error resending verification email:", err);
+    return res.render("login", {
+      error: "We could not resend verification right now. Please try again later.",
+      message: null,
+      verificationEmail: email,
+    });
+  }
+});
 
 app.get("/chatbot", (req, res) => {
   res.render("chatbot");
@@ -482,7 +556,7 @@ app.get("/home", async (req, res) => {
 });
 */
 
-async function getTodaySurveyContext(userId) {
+async function getTodayCheckinContext(userId) {
   const today = getLocalDateString();
 
   const tables = ["general_survey", "mental_survey", "physical_survey"];
@@ -551,11 +625,11 @@ app.get("/home", async (req, res) => {
     console.error("Error loading pet state:", err);
   }
 
-  let surveyContext = {};
+  let checkinContext = {};
   try {
-    surveyContext = await getTodaySurveyContext(userId);
+    checkinContext = await getTodayCheckinContext(userId);
   } catch (err) {
-    console.error("Error building survey context:", err);
+    console.error("Error building check-in context:", err);
   }
 
   const [planted] = await db.query(
@@ -589,7 +663,7 @@ app.get("/home", async (req, res) => {
     petMood,
     petThirsty,
     plantedFlowers: planted,
-    surveyContext,
+    checkinContext,
     streak,
     buddyCoins,
     buddyProfile,
@@ -692,7 +766,7 @@ app.get("/chart", async (req, res) => {
   });
 });
 
-app.get("/survey", async (req, res) => {
+app.get("/checkin", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const section = req.query.section;
@@ -720,11 +794,11 @@ app.get("/survey", async (req, res) => {
       delete req.session.coinsEarned;
       delete req.session.insightCalcTime;
 
-      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice, calcTime });
+      return res.render("checkin", { section: "completed", userId, coins, coinsEarned, advice, calcTime });
     }
 
-    const surveySection = section || "choice";
-    const questions = surveyData[surveySection];
+    const checkinSection = section || "choice";
+    const questions = checkinData[checkinSection];
     const [generalCount] = await db.query(
       `SELECT COUNT(*) AS count FROM general_survey WHERE user_id = ? AND DATE(created_at) = ?`,
       [userId, today]
@@ -746,7 +820,7 @@ app.get("/survey", async (req, res) => {
     if (allCompletedToday) {
       const coinsEarned = req.session.coinsEarned || null;
       delete req.session.coinsEarned;
-      return res.render("survey", { section: "completed", userId, coins, coinsEarned, advice });
+      return res.render("checkin", { section: "completed", userId, coins, coinsEarned, advice });
     }
 
     const sectionTableMap = {
@@ -755,18 +829,18 @@ app.get("/survey", async (req, res) => {
       physical: physicalCount
     };
 
-    if (sectionTableMap[surveySection]?.[0]?.count > 0) {
-      return res.redirect("/survey-choice");
+    if (sectionTableMap[checkinSection]?.[0]?.count > 0) {
+      return res.redirect("/checkin-choice");
     }
 
-    res.render("survey", { section: surveySection, userId, coins, advice, questions: questions });
+    res.render("checkin", { section: checkinSection, userId, coins, advice, questions: questions });
   } catch (err) {
-    console.error("Survey section check error:", err);
-    res.status(500).send("Error checking survey status");
+    console.error("Check-in section check error:", err);
+    res.status(500).send("Error checking check-in status");
   }
 });
 
-app.get("/survey-choice", async (req, res) => {
+app.get("/checkin-choice", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const userId = req.session.user.id;
@@ -802,18 +876,18 @@ app.get("/survey-choice", async (req, res) => {
     }
     delete req.session.feedback;
 
-    res.render("survey-choice", { userProgress: progress, coinsEarned, coins, advice });
+    res.render("checkin-choice", { userProgress: progress, coinsEarned, coins, advice });
   } catch (err) {
-    console.error("Survey-choice error:", err);
-    res.status(500).send("Error loading survey choice page");
+    console.error("Checkin-choice error:", err);
+    res.status(500).send("Error loading check-in choice page");
   }
 });
 
-app.post("/submit-survey", async (req, res) => {
+app.post("/submit-checkin", async (req, res) => {
 		const startTime = Date.now();
 		const localDate = getLocalDateString();
 
-		const { section, clientCoinDelta, surveyResults } = req.body;
+		const { section, clientCoinDelta, checkinResults } = req.body;
 
     if (!req.session.user) {
       return res.status(401).send("Not authenticated");
@@ -823,15 +897,15 @@ app.post("/submit-survey", async (req, res) => {
 
 		let responses;
 	try {
-		if (typeof surveyResults === "string") {
-			responses = JSON.parse(surveyResults);
-		} else if (surveyResults && typeof surveyResults === "object") {
-			responses = surveyResults;
+		if (typeof checkinResults === "string") {
+			responses = JSON.parse(checkinResults);
+		} else if (checkinResults && typeof checkinResults === "object") {
+			responses = checkinResults;
 		} else {
-			return res.status(400).send("Missing surveyResults");
+			return res.status(400).send("Missing checkinResults");
 		}
 	} catch (err) {
-    return res.status(400).send("Invalid survey data format");
+    return res.status(400).send("Invalid check-in data format");
   }
 
   try {
@@ -920,13 +994,13 @@ app.post("/submit-survey", async (req, res) => {
       }
   
       if (allCompleted) {
-        return res.redirect("/survey?section=completed");
+        return res.redirect("/checkin?section=completed");
       }
-      return res.redirect("/survey-choice");
+      return res.redirect("/checkin-choice");
     });
   } catch (err) {
     console.error("Survey Submit DB Error:", err);
-    res.status(500).send("Failed to save survey");
+    res.status(500).send("Failed to save check-in");
   }
 });
 
@@ -952,9 +1026,9 @@ app.get("/games", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const userId = req.session.user.id;
 
-  const [[{ survey_count }]] = await db.query("SELECT survey_count FROM users WHERE id = ?", [userId]);
+  const [[{ checkin_count }]] = await db.query("SELECT survey_count FROM users WHERE id = ?", [userId]);
 
-  res.render("games", { totalSurveys: survey_count });
+  res.render("games", { totalSurveys: checkin_count });
 });
 
 app.get("/shop", async (req, res) => {
@@ -1103,9 +1177,9 @@ cron.schedule("0 1 * * *", async () => {
     await db.execute("DELETE FROM mental_survey WHERE created_at < NOW() - INTERVAL 3 MONTH");
     await db.execute("DELETE FROM physical_survey WHERE created_at < NOW() - INTERVAL 3 MONTH");
 
-    console.log("Old surveys cleaned up successfully.");
+    console.log("Old check-ins cleaned up successfully.");
   } catch (error) {
-    console.error("Error cleaning up old surveys:", error.message);
+    console.error("Error cleaning up old check-ins:", error.message);
   }
 });
 

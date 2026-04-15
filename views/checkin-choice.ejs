@@ -4,21 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey Choice</title>
-  <link rel="stylesheet" href="/styles/survey.css">
+  <link rel="stylesheet" href="/styles/checkin.css">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/styles/navbar.css">
-
 </head>
 <body>
   <%- include('partials/navbar') %>
-  <div class="survey-choice-container">
+
+  <div class="checkin-choice-container">
     <div class="coins-display">
       <p><%= coins ?? 0 %> 🪙</p>
     </div>
     <% if (typeof coinsEarned !== 'undefined' && coinsEarned !== null) { %>
       <div class="reward-message">
-        <h2>You earned <%= coinsEarned %> extra coins from that survey!</h2>
+        <h2>You earned <%= coinsEarned %> extra coins for doing your check-in!</h2>
       </div>
     <% } %>
 
@@ -48,21 +48,21 @@
     <h1>Next Steps</h1>
 
     <% if (!userProgress.general || !userProgress.mental || !userProgress.physical) { %>
-      <p>Select a survey section to complete:</p>
+      <p>Select a check-in section to complete:</p>
     
       <% if (!userProgress.general) { %>
-        <a href="/survey?section=general" class="btn">General</a>
+        <a href="/checkin?section=general" class="btn">General</a>
       <% } %>
       <% if (!userProgress.mental) { %>
-        <a href="/survey?section=mental" class="btn">Mental</a>
+        <a href="/checkin?section=mental" class="btn">Mental</a>
       <% } %>
       <% if (!userProgress.physical) { %>
-        <a href="/survey?section=physical" class="btn">Physical</a>
+        <a href="/checkin?section=physical" class="btn">Physical</a>
       <% } %>
     
       <a href="/home" class="btn">Home</a>
     <% } else { %>
-      <p>All surveys are completed for today!</p>
+      <p>All check-ins are completed for today!</p>
       <a href="/home" class="btn">Home</a>
     <% } %>
     
