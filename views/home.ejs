@@ -281,7 +281,7 @@
   };
 
   function getBuddySprite(type, mood) {
-    const typeSprites = spriteMap[type] || spriteMap.penguin;
+    const typeSprites = spriteMap[type] || spriteMap.dog;
     if (typeSprites[mood]) {
       return typeSprites[mood];
     }
@@ -289,7 +289,7 @@
   }
 
   petImg.src = getBuddySprite(buddyProfile.buddyType, petMood);
-  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.penguin;
+  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.dog;
   let petCollarVisibilityClass = "hidden";
   if (buddyProfile.buddyHasCollar) {
     petCollarVisibilityClass = "visible";
