@@ -731,7 +731,6 @@ html {
 
 .ai-message {
   align-self: flex-start;
-  background-color: #6FAF9B;
   padding: 8px 12px;
   border-radius: 12px;
   max-width: 90%;
@@ -1017,5 +1016,74 @@ body.buddy-modal-open {
     padding: 22px 18px;
   }
 
+}
+
+#send{
+  border-radius: 12px;
+  background-color: white;
+  color: black;
+  animation: page-load 1s ease-out forwards;
+}
+
+.my-ai-message{
+  display: flex;
+  align-items: start;
+}
+
+.user-message{
+    display: flex;
+    align-self: end;
+    background-color: #F4A261;
+    padding: 8px 12px;
+}
+
+.ai-message-content{
+    display: flex;
+    background-color: #6FAF9B;
+    padding: 8px 12px;
+}
+
+.ai-icon{
+  text-align: left;
+  padding-right: 15px;
+  width: 5vh;
+  height: 5vh;
+  
+}
+
+.user-message {
+  align-self: flex-end;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 80%;
+  opacity: 100%;
+}
+
+.ai-message {
+  display: flex;
+  align-items: start;
+}
+
+h1 {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+h3 {
+  font-weight: 600;
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
+
+#initial-message {
+  display: flex;
+  align-items: start;
+  background-color: #6FAF9B;
+  padding: 8px 12px;
+  align-self: flex-start;
+  border-radius: 12px;
+  max-width: 90%;
+  opacity: 100%;
+  font-size: normal 400 1em;
 }
 
