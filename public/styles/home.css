@@ -1075,3 +1075,15 @@ h3 {
   margin-bottom: 6px;
 }
 
+#initial-message {
+  display: flex;
+  align-items: start;
+  background-color: #6FAF9B;
+  padding: 8px 12px;
+  align-self: flex-start;
+  border-radius: 12px;
+  max-width: 90%;
+  opacity: 100%;
+  font-size: normal 400 1em;
+}
+

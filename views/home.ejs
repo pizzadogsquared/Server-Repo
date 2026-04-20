@@ -133,7 +133,14 @@
       <div id="pet-chat-container">
         <h2>Chat with Your Buddy</h2>
 
+
         <div id="pet-messages" class="pet-messages-box">
+          <div class="message ai-message">
+          <img id="initial-ai-icon" src="" class="ai-icon">
+          <div id="initial-message">
+              Hello! Type here to start the conversation!
+          </div>
+            </div>
           <div id="pet-loading" class="pet-loading dots">
             <%= safeBuddyProfile.buddyName %> is thinking
           </div>
@@ -324,6 +331,15 @@
 <script>
   const checkinContext = <%- JSON.stringify(checkinContext || {}) %>;
 
+  const initialIcon = document.getElementById("initial-ai-icon");
+  initialIcon.src = getBuddySprite(buddyProfile.buddyType, petMood);
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const initialIcon = document.getElementById("initial-ai-icon");
+  initialIcon.src = getBuddySprite(buddyProfile.buddyType, petMood);
+  });
+  
+  
   function buildSurveySummary(ctx) {
     const parts = [];
     for (const section of Object.keys(ctx)) {
@@ -440,7 +456,7 @@
     petMessagesDiv.scrollTop = petMessagesDiv.scrollHeight;
   }
 
-
+  
   petSendBtn.onclick = sendPetMessage;
   petPromptInput.onkeydown = (e) => {
     if (e.key === "Enter") sendPetMessage();
