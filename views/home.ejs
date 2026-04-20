@@ -259,6 +259,10 @@
   const buddyModalBackdrop = document.getElementById("buddy-modal-backdrop");
 
   const spriteMap = {
+    penguin: {
+      neutral: "/images/sprites/penguin_neutral.png",
+      sad: "/images/sprites/penguin_sad.png",
+    },
     dog: {
       happy: "/images/sprites/dog_happy.png",
       neutral: "/images/sprites/dog_neutral.png",
@@ -267,21 +271,17 @@
     cat: {
       neutral: "/images/sprites/cat_neutral.png",
       sad: "/images/sprites/cat_sad.png",
-    },
-    penguin: {
-      neutral: "/images/sprites/penguin_neutral.png",
-      sad: "/images/sprites/penguin_sad.png",
-    },
+    }
   };
 
   const collarMap = {
+    penguin: "/images/sprites/penguin_collar.png",
     dog: "/images/sprites/dog_collar.png",
     cat: "/images/sprites/cat_collar.png",
-    penguin: "/images/sprites/penguin_collar.png",
   };
 
   function getBuddySprite(type, mood) {
-    const typeSprites = spriteMap[type] || spriteMap.dog;
+    const typeSprites = spriteMap[type] || spriteMap.penguin;
     if (typeSprites[mood]) {
       return typeSprites[mood];
     }
@@ -289,7 +289,7 @@
   }
 
   petImg.src = getBuddySprite(buddyProfile.buddyType, petMood);
-  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.dog;
+  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.penguin;
   let petCollarVisibilityClass = "hidden";
   if (buddyProfile.buddyHasCollar) {
     petCollarVisibilityClass = "visible";
