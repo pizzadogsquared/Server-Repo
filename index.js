@@ -22,6 +22,7 @@ import {
 } from "./verification.js";
 import {
   DEFAULT_BUDDY_NAME,
+  DEFAULT_BUDDY_TYPE,
   BUDDY_COSTS,
   BUDDY_OPTIONS,
   normalizeBuddyProfile,
@@ -137,7 +138,7 @@ async function ensureBuddyCustomizationColumns() {
   const requiredColumns = [
     {
       name: "buddy_type",
-      sql: "ADD COLUMN buddy_type VARCHAR(20) NOT NULL DEFAULT 'dog'",
+      sql: `ADD COLUMN buddy_type VARCHAR(20) NOT NULL DEFAULT '${DEFAULT_BUDDY_TYPE}'`,
     },
     {
       name: "buddy_name",
