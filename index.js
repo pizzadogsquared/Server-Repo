@@ -357,10 +357,6 @@ app.post("/resend-verification", async (req, res) => {
   }
 });
 
-app.get("/chatbot", (req, res) => {
-  res.render("chatbot");
-});
-
 // OpenAI client
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
