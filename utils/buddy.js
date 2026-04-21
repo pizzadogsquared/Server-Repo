@@ -1,4 +1,5 @@
 export const DEFAULT_BUDDY_NAME = "Buddy";
+export const DEFAULT_BUDDY_TYPE = "penguin";
 export const BUDDY_COSTS = {
   pet: 30,
   collar: 20,
@@ -11,27 +12,27 @@ export const BUDDY_OPTIONS = {
 };
 
 export function parseOwnedBuddyTypes(value) {
-  if (!value) return ["dog"];
+  if (!value) return [DEFAULT_BUDDY_TYPE];
 
   try {
     const parsed = JSON.parse(value);
     if (Array.isArray(parsed)) {
       const cleaned = parsed.filter((type) => BUDDY_OPTIONS[type]);
-      if (cleaned.includes("dog")) {
+      if (cleaned.includes(DEFAULT_BUDDY_TYPE)) {
         return cleaned;
       }
-      return ["dog", ...cleaned];
+      return [DEFAULT_BUDDY_TYPE, ...cleaned];
     }
   } catch (err) {
     console.warn("Could not parse owned buddy types:", err.message);
   }
 
-  return ["dog"];
+  return [DEFAULT_BUDDY_TYPE];
 }
 
 export function normalizeBuddyProfile(userRow = {}) {
   const ownedBuddyTypes = parseOwnedBuddyTypes(userRow.owned_buddy_types);
-  let buddyType = "dog";
+  let buddyType = DEFAULT_BUDDY_TYPE;
   if (BUDDY_OPTIONS[userRow.buddy_type]) {
     buddyType = userRow.buddy_type;
   }

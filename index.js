@@ -22,6 +22,7 @@ import {
 } from "./verification.js";
 import {
   DEFAULT_BUDDY_NAME,
+  DEFAULT_BUDDY_TYPE,
   BUDDY_COSTS,
   BUDDY_OPTIONS,
   normalizeBuddyProfile,
@@ -137,7 +138,7 @@ async function ensureBuddyCustomizationColumns() {
   const requiredColumns = [
     {
       name: "buddy_type",
-      sql: "ADD COLUMN buddy_type VARCHAR(20) NOT NULL DEFAULT 'dog'",
+      sql: `ADD COLUMN buddy_type VARCHAR(20) NOT NULL DEFAULT '${DEFAULT_BUDDY_TYPE}'`,
     },
     {
       name: "buddy_name",
@@ -179,6 +180,25 @@ function getLocalDateString() {
     month: '2-digit',
     day: '2-digit'
   }).format(now);
+}
+
+function formatOrdinal(rank) {
+  const remainder10 = rank % 10;
+  const remainder100 = rank % 100;
+
+  if (remainder10 === 1 && remainder100 !== 11) {
+    return `${rank}st`;
+  }
+
+  if (remainder10 === 2 && remainder100 !== 12) {
+    return `${rank}nd`;
+  }
+
+  if (remainder10 === 3 && remainder100 !== 13) {
+    return `${rank}rd`;
+  }
+
+  return `${rank}th`;
 }
 
 app.get("/", (req, res) => {
@@ -336,10 +356,6 @@ app.post("/resend-verification", async (req, res) => {
       verificationEmail: email,
     });
   }
-});
-
-app.get("/chatbot", (req, res) => {
-  res.render("chatbot");
 });
 
 // OpenAI client
@@ -632,6 +648,20 @@ app.get("/home", async (req, res) => {
     console.error("Error building check-in context:", err);
   }
 
+  const incompleteCheckinSections = [];
+
+  if (!checkinContext.general?.length) {
+    incompleteCheckinSections.push("General");
+  }
+
+  if (!checkinContext.mental?.length) {
+    incompleteCheckinSections.push("Mental");
+  }
+
+  if (!checkinContext.physical?.length) {
+    incompleteCheckinSections.push("Physical");
+  }
+
   const [planted] = await db.query(
     `SELECT pf.spot_index, f.image
        FROM planted_flowers pf
@@ -654,6 +684,17 @@ app.get("/home", async (req, res) => {
     buddyCoins = userRow.coins;
   }
 
+  const [[higherCoinCountRow]] = await db.query(
+    "SELECT COUNT(*) AS higherCoinCount FROM users WHERE coins > ?",
+    [buddyCoins]
+  );
+  const [[userCountRow]] = await db.query(
+    "SELECT COUNT(*) AS totalUsers FROM users"
+  );
+
+  const coinRank = (higherCoinCountRow?.higherCoinCount || 0) + 1;
+  const totalCoinUsers = userCountRow?.totalUsers || 1;
+
   if (req.session.user) {
     req.session.user.coins = buddyCoins;
   }
@@ -664,8 +705,13 @@ app.get("/home", async (req, res) => {
     petThirsty,
     plantedFlowers: planted,
     checkinContext,
+    showCheckinReminderModal: incompleteCheckinSections.length > 0,
+    incompleteCheckinSections,
     streak,
     buddyCoins,
+    coinRank,
+    coinRankLabel: formatOrdinal(coinRank),
+    totalCoinUsers,
     buddyProfile,
     buddyStatus: req.query.buddyStatus || null,
     buddyStatusType: req.query.buddyStatusType || "success",

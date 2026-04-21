@@ -22,9 +22,9 @@
 
     let safeBuddyProfile = {
       buddyName: "Buddy",
-      buddyType: "dog",
+      buddyType: "penguin",
       buddyHasCollar: false,
-      ownedBuddyTypes: ["dog"],
+      ownedBuddyTypes: ["penguin"],
     };
     if (typeof buddyProfile !== "undefined") {
       safeBuddyProfile = buddyProfile;
@@ -59,6 +59,31 @@
       safeBuddyOptions = buddyOptions;
     }
 
+    let safeCoinRank = 1;
+    if (typeof coinRank !== "undefined") {
+      safeCoinRank = coinRank;
+    }
+
+    let safeCoinRankLabel = "1st";
+    if (typeof coinRankLabel !== "undefined") {
+      safeCoinRankLabel = coinRankLabel;
+    }
+
+    let safeTotalCoinUsers = 1;
+    if (typeof totalCoinUsers !== "undefined") {
+      safeTotalCoinUsers = totalCoinUsers;
+    }
+
+    let safeShowCheckinReminderModal = false;
+    if (typeof showCheckinReminderModal !== "undefined") {
+      safeShowCheckinReminderModal = showCheckinReminderModal;
+    }
+
+    let safeIncompleteCheckinSections = [];
+    if (typeof incompleteCheckinSections !== "undefined") {
+      safeIncompleteCheckinSections = incompleteCheckinSections;
+    }
+
     let buddyCollarClass = "hidden";
     if (safeBuddyProfile.buddyHasCollar) {
       buddyCollarClass = "visible";
@@ -81,6 +106,11 @@
       <div class="buddy-coins-card">
         <span class="buddy-coins-label">Buddy Coins</span>
         <strong id="buddy-coin-count"><%= safeBuddyCoins %></strong>
+      </div>
+      <div class="buddy-rank-card">
+        <span class="buddy-coins-label">Worldwide Rank</span>
+        <strong><%= safeCoinRankLabel %> place</strong>
+        <p>You have more coins than <%= safeTotalCoinUsers - safeCoinRank %> player<%= (safeTotalCoinUsers - safeCoinRank) === 1 ? "" : "s" %>.</p>
       </div>
       <button type="button" class="btn" id="open-buddy-modal">Customize Buddy</button>
     </div>
@@ -106,13 +136,13 @@
         <div id="pet-wrapper">
           <img
             id="pet-sprite"
-            src="/images/sprites/dog_neutral.png"
+            src="/images/sprites/penguin_neutral.png"
             alt="Virtual Pet"
           />
 
           <img
             id="pet-collar"
-            src="/images/sprites/dog_collar.png"
+            src="/images/sprites/penguin_collar.png"
             alt="Buddy collar"
             class="<%= buddyCollarClass %>"
           />
@@ -163,6 +193,33 @@
       <a href="mailto:davisdaehanyi@gmail.com">davisdaehanyi@gmail.com</a>.
     </p>
   </footer>
+
+  <div class="checkin-reminder-modal hidden" id="checkin-reminder-modal">
+    <div class="checkin-reminder-backdrop"></div>
+    <div class="checkin-reminder-panel" role="dialog" aria-modal="true" aria-labelledby="checkin-reminder-title">
+      <button
+        type="button"
+        class="checkin-reminder-close"
+        id="close-checkin-reminder"
+        aria-label="Close daily check-in reminder"
+      >
+        x
+      </button>
+      <p class="checkin-reminder-kicker">Daily Reminder</p>
+      <h2 id="checkin-reminder-title">You still have check-ins to complete today.</h2>
+      <p class="checkin-reminder-copy">
+        Complete the following check-ins to keep your progress current, earn coins, and help your buddy respond to how you're doing today.
+      </p>
+      <ul class="checkin-reminder-list">
+        <% safeIncompleteCheckinSections.forEach(function(sectionName) { %>
+          <li><%= sectionName %></li>
+        <% }) %>
+      </ul>
+      <div class="checkin-reminder-actions">
+        <a href="/checkin?section=choice" class="btn">Go to Check-In Menu</a>
+      </div>
+    </div>
+  </div>
 
   <div class="buddy-modal hidden" id="buddy-modal">
     <div class="buddy-modal-backdrop" id="buddy-modal-backdrop"></div>
@@ -257,6 +314,12 @@
   const openBuddyModalBtn = document.getElementById("open-buddy-modal");
   const closeBuddyModalBtn = document.getElementById("close-buddy-modal");
   const buddyModalBackdrop = document.getElementById("buddy-modal-backdrop");
+  const checkinReminderModal = document.getElementById("checkin-reminder-modal");
+  const closeCheckinReminderBtn = document.getElementById("close-checkin-reminder");
+  let shouldShowCheckinReminderModal = false;
+  <% if (safeShowCheckinReminderModal) { %>
+    shouldShowCheckinReminderModal = true;
+  <% } %>
 
   const spriteMap = {
     dog: {
@@ -281,7 +344,7 @@
   };
 
   function getBuddySprite(type, mood) {
-    const typeSprites = spriteMap[type] || spriteMap.dog;
+    const typeSprites = spriteMap[type] || spriteMap.penguin;
     if (typeSprites[mood]) {
       return typeSprites[mood];
     }
@@ -289,7 +352,7 @@
   }
 
   petImg.src = getBuddySprite(buddyProfile.buddyType, petMood);
-  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.dog;
+  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.penguin;
   let petCollarVisibilityClass = "hidden";
   if (buddyProfile.buddyHasCollar) {
     petCollarVisibilityClass = "visible";
@@ -319,12 +382,29 @@
     document.body.classList.remove("buddy-modal-open");
   }
 
+  function openCheckinReminderModal() {
+    checkinReminderModal.classList.remove("hidden");
+    document.body.classList.add("buddy-modal-open");
+  }
+
+  function closeCheckinReminderModal() {
+    checkinReminderModal.classList.add("hidden");
+    if (buddyModal.classList.contains("hidden")) {
+      document.body.classList.remove("buddy-modal-open");
+    }
+  }
+
   openBuddyModalBtn.addEventListener("click", openBuddyModal);
   closeBuddyModalBtn.addEventListener("click", closeBuddyModal);
   buddyModalBackdrop.addEventListener("click", closeBuddyModal);
+  closeCheckinReminderBtn.addEventListener("click", closeCheckinReminderModal);
 
   if (shouldOpenBuddyModal) {
     openBuddyModal();
+  }
+
+  if (shouldShowCheckinReminderModal) {
+    openCheckinReminderModal();
   }
 </script>
 

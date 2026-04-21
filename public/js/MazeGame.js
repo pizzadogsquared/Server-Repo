@@ -86,9 +86,9 @@ class MazeGame extends Phaser.Scene {
              }
          };
  
-         safeLoad('bee_sprite', 'images/bee.png');
+         safeLoad('penguin_sprite', 'images/sprites/game_penguin.png');
          safeLoad('background_sky', 'images/background_sky.jpg');
-         safeLoad('honey_pot', 'images/honey.png');
+         safeLoad('fish', 'images/game_fish.png');
          safeLoad('cloud', 'images/cloud.png');
      }
  
@@ -116,15 +116,15 @@ class MazeGame extends Phaser.Scene {
              }
          }
  
-         this.player = this.physics.add.sprite(offsetX + this.cellSize * 1.5, offsetY + this.cellSize * 1.5, 'bee_sprite');
+         this.player = this.physics.add.sprite(offsetX + this.cellSize * 1.5, offsetY + this.cellSize * 1.5, 'penguin_sprite');
          this.player.setScale(0.04).setCollideWorldBounds(true).setBounce(0);
          this.player.body.setSize(this.player.width * 0.4, this.player.height * 0.4);
  
-         this.honey = this.physics.add.sprite(offsetX + (this.mazeWidth - 1.5) * this.cellSize, offsetY + (this.mazeHeight - 1.5) * this.cellSize, 'honey_pot');
-         this.honey.setScale(0.1);
+         this.fish = this.physics.add.sprite(offsetX + (this.mazeWidth - 1.5) * this.cellSize, offsetY + (this.mazeHeight - 1.5) * this.cellSize, 'fish');
+         this.fish.setScale(0.1);
  
          this.physics.add.collider(this.player, this.walls);
-         this.physics.add.overlap(this.player, this.honey, this.reachGoal, null, this);
+         this.physics.add.overlap(this.player, this.fish, this.reachGoal, null, this);
  
          this.timeLeft = 20;
          this.timeText = this.add.text(16, 16, `Level ${this.currentLevel} - Time: ${this.timeLeft}`, { fontSize: '24px', color: '#000' });
@@ -133,7 +133,7 @@ class MazeGame extends Phaser.Scene {
  
          this.cursors = this.input.keyboard.createCursorKeys();
  
-         this.add.text(400, 40, 'Guide the bee through the maze\nto reach the honey pot!', { fontSize: '24px', color: '#000', align: 'center' }).setOrigin(0.5);
+         this.add.text(400, 40, 'Guide the penguin through the maze\nto reach the fish!', { fontSize: '24px', color: '#000', align: 'center' }).setOrigin(0.5);
      }
  
      updateTimer() {
