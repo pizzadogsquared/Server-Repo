@@ -74,6 +74,16 @@
       safeTotalCoinUsers = totalCoinUsers;
     }
 
+    let safeShowCheckinReminderModal = false;
+    if (typeof showCheckinReminderModal !== "undefined") {
+      safeShowCheckinReminderModal = showCheckinReminderModal;
+    }
+
+    let safeIncompleteCheckinSections = [];
+    if (typeof incompleteCheckinSections !== "undefined") {
+      safeIncompleteCheckinSections = incompleteCheckinSections;
+    }
+
     let buddyCollarClass = "hidden";
     if (safeBuddyProfile.buddyHasCollar) {
       buddyCollarClass = "visible";
@@ -184,6 +194,33 @@
     </p>
   </footer>
 
+  <div class="checkin-reminder-modal hidden" id="checkin-reminder-modal">
+    <div class="checkin-reminder-backdrop"></div>
+    <div class="checkin-reminder-panel" role="dialog" aria-modal="true" aria-labelledby="checkin-reminder-title">
+      <button
+        type="button"
+        class="checkin-reminder-close"
+        id="close-checkin-reminder"
+        aria-label="Close daily check-in reminder"
+      >
+        x
+      </button>
+      <p class="checkin-reminder-kicker">Daily Reminder</p>
+      <h2 id="checkin-reminder-title">You still have check-ins to complete today.</h2>
+      <p class="checkin-reminder-copy">
+        Complete the following check-ins to keep your progress current, earn coins, and help your buddy respond to how you're doing today.
+      </p>
+      <ul class="checkin-reminder-list">
+        <% safeIncompleteCheckinSections.forEach(function(sectionName) { %>
+          <li><%= sectionName %></li>
+        <% }) %>
+      </ul>
+      <div class="checkin-reminder-actions">
+        <a href="/checkin?section=choice" class="btn">Go to Check-In Menu</a>
+      </div>
+    </div>
+  </div>
+
   <div class="buddy-modal hidden" id="buddy-modal">
     <div class="buddy-modal-backdrop" id="buddy-modal-backdrop"></div>
     <div class="buddy-modal-panel" role="dialog" aria-modal="true" aria-labelledby="buddy-modal-title">
@@ -277,6 +314,12 @@
   const openBuddyModalBtn = document.getElementById("open-buddy-modal");
   const closeBuddyModalBtn = document.getElementById("close-buddy-modal");
   const buddyModalBackdrop = document.getElementById("buddy-modal-backdrop");
+  const checkinReminderModal = document.getElementById("checkin-reminder-modal");
+  const closeCheckinReminderBtn = document.getElementById("close-checkin-reminder");
+  let shouldShowCheckinReminderModal = false;
+  <% if (safeShowCheckinReminderModal) { %>
+    shouldShowCheckinReminderModal = true;
+  <% } %>
 
   const spriteMap = {
     dog: {
@@ -339,12 +382,29 @@
     document.body.classList.remove("buddy-modal-open");
   }
 
+  function openCheckinReminderModal() {
+    checkinReminderModal.classList.remove("hidden");
+    document.body.classList.add("buddy-modal-open");
+  }
+
+  function closeCheckinReminderModal() {
+    checkinReminderModal.classList.add("hidden");
+    if (buddyModal.classList.contains("hidden")) {
+      document.body.classList.remove("buddy-modal-open");
+    }
+  }
+
   openBuddyModalBtn.addEventListener("click", openBuddyModal);
   closeBuddyModalBtn.addEventListener("click", closeBuddyModal);
   buddyModalBackdrop.addEventListener("click", closeBuddyModal);
+  closeCheckinReminderBtn.addEventListener("click", closeCheckinReminderModal);
 
   if (shouldOpenBuddyModal) {
     openBuddyModal();
+  }
+
+  if (shouldShowCheckinReminderModal) {
+    openCheckinReminderModal();
   }
 </script>
 

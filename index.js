@@ -648,6 +648,20 @@ app.get("/home", async (req, res) => {
     console.error("Error building check-in context:", err);
   }
 
+  const incompleteCheckinSections = [];
+
+  if (!checkinContext.general?.length) {
+    incompleteCheckinSections.push("General");
+  }
+
+  if (!checkinContext.mental?.length) {
+    incompleteCheckinSections.push("Mental");
+  }
+
+  if (!checkinContext.physical?.length) {
+    incompleteCheckinSections.push("Physical");
+  }
+
   const [planted] = await db.query(
     `SELECT pf.spot_index, f.image
        FROM planted_flowers pf
@@ -691,6 +705,8 @@ app.get("/home", async (req, res) => {
     petThirsty,
     plantedFlowers: planted,
     checkinContext,
+    showCheckinReminderModal: incompleteCheckinSections.length > 0,
+    incompleteCheckinSections,
     streak,
     buddyCoins,
     coinRank,
