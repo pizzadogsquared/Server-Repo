@@ -181,6 +181,25 @@ function getLocalDateString() {
   }).format(now);
 }
 
+function formatOrdinal(rank) {
+  const remainder10 = rank % 10;
+  const remainder100 = rank % 100;
+
+  if (remainder10 === 1 && remainder100 !== 11) {
+    return `${rank}st`;
+  }
+
+  if (remainder10 === 2 && remainder100 !== 12) {
+    return `${rank}nd`;
+  }
+
+  if (remainder10 === 3 && remainder100 !== 13) {
+    return `${rank}rd`;
+  }
+
+  return `${rank}th`;
+}
+
 app.get("/", (req, res) => {
   res.redirect("/welcome");
 });
@@ -654,6 +673,17 @@ app.get("/home", async (req, res) => {
     buddyCoins = userRow.coins;
   }
 
+  const [[higherCoinCountRow]] = await db.query(
+    "SELECT COUNT(*) AS higherCoinCount FROM users WHERE coins > ?",
+    [buddyCoins]
+  );
+  const [[userCountRow]] = await db.query(
+    "SELECT COUNT(*) AS totalUsers FROM users"
+  );
+
+  const coinRank = (higherCoinCountRow?.higherCoinCount || 0) + 1;
+  const totalCoinUsers = userCountRow?.totalUsers || 1;
+
   if (req.session.user) {
     req.session.user.coins = buddyCoins;
   }
@@ -666,6 +696,9 @@ app.get("/home", async (req, res) => {
     checkinContext,
     streak,
     buddyCoins,
+    coinRank,
+    coinRankLabel: formatOrdinal(coinRank),
+    totalCoinUsers,
     buddyProfile,
     buddyStatus: req.query.buddyStatus || null,
     buddyStatusType: req.query.buddyStatusType || "success",
