@@ -807,10 +807,31 @@ html {
   color: #6b4b00;
 }
 
+.buddy-rank-card {
+  min-width: 220px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eef7ff, #cfe5ff);
+  box-shadow: 0 10px 25px rgba(49, 104, 173, 0.16);
+  color: #163d6c;
+}
+
 .buddy-coins-card strong {
   display: block;
   font-size: 1.6rem;
   margin-top: 4px;
+}
+
+.buddy-rank-card strong {
+  display: block;
+  font-size: 1.35rem;
+  margin-top: 4px;
+}
+
+.buddy-rank-card p {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: #2d5688;
 }
 
 .buddy-coins-label {

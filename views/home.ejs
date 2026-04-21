@@ -59,6 +59,21 @@
       safeBuddyOptions = buddyOptions;
     }
 
+    let safeCoinRank = 1;
+    if (typeof coinRank !== "undefined") {
+      safeCoinRank = coinRank;
+    }
+
+    let safeCoinRankLabel = "1st";
+    if (typeof coinRankLabel !== "undefined") {
+      safeCoinRankLabel = coinRankLabel;
+    }
+
+    let safeTotalCoinUsers = 1;
+    if (typeof totalCoinUsers !== "undefined") {
+      safeTotalCoinUsers = totalCoinUsers;
+    }
+
     let buddyCollarClass = "hidden";
     if (safeBuddyProfile.buddyHasCollar) {
       buddyCollarClass = "visible";
@@ -81,6 +96,11 @@
       <div class="buddy-coins-card">
         <span class="buddy-coins-label">Buddy Coins</span>
         <strong id="buddy-coin-count"><%= safeBuddyCoins %></strong>
+      </div>
+      <div class="buddy-rank-card">
+        <span class="buddy-coins-label">Worldwide Rank</span>
+        <strong><%= safeCoinRankLabel %> place</strong>
+        <p>You have more coins than <%= safeTotalCoinUsers - safeCoinRank %> player<%= (safeTotalCoinUsers - safeCoinRank) === 1 ? "" : "s" %>.</p>
       </div>
       <button type="button" class="btn" id="open-buddy-modal">Customize Buddy</button>
     </div>
