@@ -11,9 +11,9 @@ class PlatformBee extends Phaser.Scene {
              }
          };
  
-         safeLoad('bee_sprite', 'images/bee.png');
+         safeLoad('cat_sprite', 'images/sprites/game_cat.png');
          safeLoad('background_sky', 'images/background_sky.jpg');
-         safeLoad('honey_pot', 'images/honey.png');
+         safeLoad('yarn_ball', 'images/ball_yarn.png');
          safeLoad('cloud', 'images/cloud.png');
      }
  
@@ -30,15 +30,15 @@ class PlatformBee extends Phaser.Scene {
          this.timeText = this.add.text(20, 20, `Time: ${this.timeRemaining}`, { fontSize: '24px', color: '#000' });
  
          this.platforms = this.physics.add.staticGroup();
-         this.bee = this.physics.add.sprite(50, 550, 'bee_sprite');
-         this.bee.setScale(0.08).setCollideWorldBounds(true).setBounce(0.2).body.setGravityY(500);
+         this.cat = this.physics.add.sprite(50, 550, 'cat_sprite');
+         this.cat.setScale(0.08).setCollideWorldBounds(true).setBounce(0.2).body.setGravityY(500);
  
-         this.honey = this.physics.add.image(750, 50, 'honey_pot').setScale(0.2);
+         this.yarn = this.physics.add.image(750, 50, 'yarn_ball').setScale(0.2);
  
          this.createLevel(this.currentLevel);
  
-         this.physics.add.collider(this.bee, this.platforms);
-         this.physics.add.overlap(this.bee, this.honey, this.collectHoney, null, this);
+         this.physics.add.collider(this.cat, this.platforms);
+         this.physics.add.overlap(this.cat, this.yarn, this.collectYarn, null, this);
  
          this.cursors = this.input.keyboard.createCursorKeys();
  
@@ -62,28 +62,28 @@ class PlatformBee extends Phaser.Scene {
          layouts[level].forEach(([x, y]) => {
              this.platforms.create(x, y, 'cloud').setScale(0.20).refreshBody();
          });
-         const honeyPositions = {
+         const yarnPositions = {
              1: [750, 160],
              2: [750, 340],
              3: [750, 120],
              4: [750, 100],
              5: [750, 270]
          };
-         this.honey.setPosition(...honeyPositions[level]);
-         this.bee.setPosition(50, 550);
+         this.yarn.setPosition(...yarnPositions[level]);
+         this.cat.setPosition(50, 550);
      }
  
      update() {
          const speed = 160;
          if (this.cursors.left.isDown) {
-             this.bee.setVelocityX(-speed);
+             this.cat.setVelocityX(-speed);
          } else if (this.cursors.right.isDown) {
-             this.bee.setVelocityX(speed);
+             this.cat.setVelocityX(speed);
          } else {
-             this.bee.setVelocityX(0);
+             this.cat.setVelocityX(0);
          }
-         if (this.cursors.space.isDown && (this.bee.body.touching.down || this.bee.body.blocked.down)) {
-             this.bee.setVelocityY(-450);
+         if (this.cursors.space.isDown && (this.cat.body.touching.down || this.cat.body.blocked.down)) {
+             this.cat.setVelocityY(-450);
          }
      }
  
@@ -96,7 +96,7 @@ class PlatformBee extends Phaser.Scene {
          }
      }
  
-     collectHoney() {
+     collectYarn() {
          if (this.currentLevel < 5) {
              this.advanceLevel();
          } else {

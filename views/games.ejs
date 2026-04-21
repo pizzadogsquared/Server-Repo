@@ -98,8 +98,8 @@
          <h1>🎮 Choose a Mini Game</h1>
          <div class="games-grid">
              <div class="game-card <%= totalSurveys < 3 ? 'locked' : '' %>">
-               <h3>🌸 Flower Game</h3>
-               <p>Collect flowers and increase your score.</p>
+               <h3>🦴 Treat Game</h3>
+               <p>Collect the falling treats and increase your score!</p>
                <% if (totalSurveys < 3) { %>
                  <div class="overlay">
                    🔒 <br> Do <%= 3 - totalSurveys %> more check-ins to unlock
@@ -110,8 +110,8 @@
              </div>
              
              <div class="game-card <%= totalSurveys < 9 ? 'locked' : '' %>">
-               <h3>🕹️ Platform Bee</h3>
-               <p>Jump across platforms and avoid obstacles.</p>
+               <h3>🧶 Platform Cat</h3>
+               <p>Jump across platforms and avoid obstacles. Try to get to the yarn!</p>
                <% if (totalSurveys < 9) { %>
                  <div class="overlay">
                    🔒 <br> Do <%= 9 - totalSurveys %> more check-ins to unlock
@@ -122,8 +122,8 @@
              </div>
              
              <div class="game-card <%= totalSurveys < 15 ? 'locked' : '' %>">
-               <h3>🧹 Maze Game</h3>
-               <p>Find your way out of the maze.</p>
+               <h3>🧊 Maze Game</h3>
+               <p>Help the penguin travel safely through the maze to reach the fish!</p>
                <% if (totalSurveys < 15) { %>
                  <div class="overlay">
                    🔒 <br> Do <%= 15 - totalSurveys %> more check-ins to unlock

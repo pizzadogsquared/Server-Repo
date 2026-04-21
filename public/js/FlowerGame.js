@@ -10,9 +10,9 @@ class FlowerGame extends Phaser.Scene {
              }
          };
      
-         safeLoad('bee_sprite', 'images/bee.png');
+         safeLoad('dog_sprite', 'images/sprites/game_dog.png');
          safeLoad('background_sky', 'images/background_sky.jpg');
-         safeLoad('flower', 'images/flower.png');
+         safeLoad('treat', 'images/dog_treat.png');
          safeLoad('cloud', 'images/cloud.png');
      }
  
@@ -22,28 +22,28 @@ class FlowerGame extends Phaser.Scene {
          this.lives = 3;
          this.currentLevel = 1;
          this.levelScoreThreshold = 100;
-         this.flowerSpeed = 200;
+         this.treatSpeed = 200;
  
          const sky = this.add.image(0, 0, 'background_sky').setOrigin(0);
          sky.setScale(this.scale.width / sky.width, this.scale.height / sky.height);
  
          this.levelText = this.add.text(400, 20, 'Level 1', { fontSize: '24px', color: '#000' }).setOrigin(0.5);
  
-         this.add.text(400, 100, 'Catch the falling flowers!\nMove the bee with your mouse.\nYou have 30 seconds!\nReach 100 points to advance to next level!', {
+         this.add.text(400, 100, 'Catch the falling treats!\nMove the dog with your mouse.\nYou have 30 seconds!\nReach 100 points to advance to next level!', {
              fontSize: '24px', color: '#000', align: 'center' }).setOrigin(0.5);
  
          this.scoreText = this.add.text(20, 20, 'Score: 0', { fontSize: '24px', color: '#000' });
          this.livesText = this.add.text(620, 20, '❤️'.repeat(this.lives), { fontSize: '24px', color: '#000' });
  
-         this.bee = this.physics.add.image(400, 500, 'bee_sprite');
-         this.bee.setScale(0.08);
-         this.bee.setCollideWorldBounds(true);
+         this.dog = this.physics.add.image(400, 500, 'dog_sprite');
+         this.dog.setScale(0.08);
+         this.dog.setCollideWorldBounds(true);
  
-         this.flowers = this.physics.add.group();
+         this.treats = this.physics.add.group();
  
-         this.flowerSpawnEvent = this.time.addEvent({ // 👈 CAMBIO AQUÍ
+         this.treatSpawnEvent = this.time.addEvent({ // 👈 CAMBIO AQUÍ
              delay: 1500,
-             callback: this.spawnFlower,
+             callback: this.spawnTreat,
              callbackScope: this,
              loop: true
          });
@@ -51,7 +51,7 @@ class FlowerGame extends Phaser.Scene {
          this.time.addEvent({ delay: 1000, callback: this.updateTimer, callbackScope: this, loop: true });
  
          this.input.on('pointermove', pointer => {
-             this.bee.x = Phaser.Math.Clamp(pointer.x, 50, 750);
+             this.dog.x = Phaser.Math.Clamp(pointer.x, 50, 750);
          });
  
          this.countdownText = this.add.text(400, 300, '3', { fontSize: '64px', color: '#000' }).setOrigin(0.5);
@@ -67,18 +67,18 @@ class FlowerGame extends Phaser.Scene {
          }
      }
  
-     spawnFlower() {
+     spawnTreat() {
          const x = Phaser.Math.Between(50, 750);
-         const flower = this.flowers.create(x, 0, 'flower').setScale(0.12);
+         const treat = this.treats.create(x, 0, 'treat').setScale(0.12);
  
-         this.flowerSpeed = 200 + 100 * (this.currentLevel - 1);
-         flower.setVelocityY(this.flowerSpeed);
+         this.treatSpeed = 200 + 100 * (this.currentLevel - 1);
+         treat.setVelocityY(this.treatSpeed);
  
-         this.physics.add.overlap(this.bee, flower, this.collectFlower, null, this);
+         this.physics.add.overlap(this.dog, treat, this.collectTreat, null, this);
      }
  
-     collectFlower(bee, flower) {
-         flower.destroy();
+     collectTreat(dog, treat) {
+         treat.destroy();
          this.score += 10;
          this.scoreText.setText(`Score: ${this.score}`);
  
@@ -116,10 +116,10 @@ class FlowerGame extends Phaser.Scene {
      endGame(completed = false) {
          this.physics.pause();
  
-         if (this.flowerSpawnEvent) { // 👈 NUEVO
-             this.flowerSpawnEvent.remove();
+         if (this.treatSpawnEvent) { // 👈 NUEVO
+             this.treatSpawnEvent.remove();
          }
-         this.flowers.clear(true, true); // 👈 NUEVO
+         this.treats.clear(true, true); // 👈 NUEVO
  
          let msg = completed || (this.currentLevel === 5 && this.score >= this.levelScoreThreshold * 5)
              ? `Congratulations!\nYou completed all levels!\nFinal Score: ${this.score}`
@@ -134,9 +134,9 @@ class FlowerGame extends Phaser.Scene {
      }
  
      update() {
-         this.flowers.getChildren().forEach(flower => {
-             if (flower.y > 600) {
-                 flower.destroy();
+         this.treats.getChildren().forEach(treat => {
+             if (treat.y > 600) {
+                 treat.destroy();
                  this.loseLife();
              }
          });
