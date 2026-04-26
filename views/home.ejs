@@ -133,26 +133,30 @@
           <% } %>
         </p>
 
-        <div id="pet-wrapper">
-          <img
-            id="pet-sprite"
-            src="/images/sprites/penguin_neutral.png"
-            alt="Virtual Pet"
-          />
+        <div id="pet-interact">
+          <!-- Actual Pet-->
+          <div id="pet-wrapper">
+            <img
+              id="pet-sprite"
+              src="/images/sprites/penguin_neutral.png"
+              alt="Virtual Pet"
+            />
 
-          <img
-            id="pet-collar"
-            src="/images/sprites/penguin_collar.png"
-            alt="Buddy collar"
-            class="<%= buddyCollarClass %>"
-          />
+            <img
+              id="pet-collar"
+              src="/images/sprites/penguin_collar.png"
+              alt="Buddy collar"
+              class="<%= buddyCollarClass %>"
+            />
 
-          <img
-            id="thirsty-icon"
-            src="/images/sprites/thirsty.png"
-            alt="Thirsty"
-            class="<%= thirstyIconClass %>"
-          />
+            <img
+              id="thirsty-icon"
+              src="/images/sprites/thirsty.png"
+              alt="Thirsty"
+              class="<%= thirstyIconClass %>"
+            />
+          </div>
+          <!-- Pet Thought Appears here-->
         </div>
 
         <p id="pet-caption">
@@ -406,6 +410,20 @@
   if (shouldShowCheckinReminderModal) {
     openCheckinReminderModal();
   }
+
+  // hovering over pet trigger thought bubble
+  const petInteraction = document.getElementById("pet-interact");
+  const petAvatar = document.getElementById("pet-wrapper");
+  petAvatar.addEventListener("mouseover", (event) => {
+    const petThought = document.createElement('div');
+    petThought.innerHTML = "";
+    petThought.id = "pet-thought";
+    petInteraction.appendChild(petThought);
+    
+    petAvatar.addEventListener("mouseout", (event) => {
+      petThought.remove();
+    })
+  })
 </script>
 
 <script>
