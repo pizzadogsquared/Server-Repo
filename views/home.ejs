@@ -123,6 +123,14 @@
       </div>
     <% } %>
 
+    <% if (typeof reminderBanner !== "undefined" && reminderBanner) { %>
+      <% let reminderBannerClass = "buddy-status-success"; %>
+      <% if (typeof reminderBannerType !== "undefined" && reminderBannerType === "error") { reminderBannerClass = "buddy-status-error"; } %>
+      <div class="buddy-status <%= reminderBannerClass %>">
+        <%= reminderBanner %>
+      </div>
+    <% } %>
+
     <div class="home-main-row">
       <div id="pet-container">
         <h2>Your Wellness Buddy</h2>
@@ -185,6 +193,9 @@
 
     <div class="home-buttons">
       <a href="/checkin?section=choice" class="btn">Take Today's Surveys</a>
+      <form action="/test-checkin-reminder" method="POST" class="inline-button-form">
+        <button type="submit" class="btn">Send Test Reminder Email</button>
+      </form>
     </div>
   </div>
 

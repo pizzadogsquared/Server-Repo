@@ -959,6 +959,10 @@ html {
   margin-top: 22px;
 }
 
+.inline-button-form {
+  display: inline;
+}
+
 .checkin-reminder-secondary {
   background: #fff;
   color: #163d6c;
