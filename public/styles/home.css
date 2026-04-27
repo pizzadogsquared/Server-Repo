@@ -671,6 +671,66 @@ html {
   display: block;
 }
 
+#pet-sunglasses,
+#pet-propeller-cap {
+  position: absolute;
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#pet-sunglasses.hidden,
+#pet-propeller-cap.hidden {
+  display: none;
+}
+
+#pet-sunglasses.visible,
+#pet-propeller-cap.visible {
+  display: block;
+}
+
+#pet-sunglasses.pet-sunglasses-dog {
+  width: 70px;
+  left: 50%;
+  top: 25px;
+  transform: translateX(-50%);
+}
+
+#pet-sunglasses.pet-sunglasses-cat {
+  width: 45px;
+  left: 50%;
+  top: 15px;
+  transform: translateX(-50%);
+}
+
+#pet-sunglasses.pet-sunglasses-penguin {
+  width: 40px;
+  left: 50%;
+  top: 28px;
+  transform: translateX(-50%);
+}
+
+#pet-propeller-cap.pet-propeller-cap-dog {
+  width: 100px;
+  left: 50%;
+  top: -55px;
+  transform: translateX(-50%);
+}
+
+#pet-propeller-cap.pet-propeller-cap-cat {
+  width: 90px;
+  left: 50%;
+  top: -50px;
+  transform: translateX(-50%);
+}
+
+#pet-propeller-cap.pet-propeller-cap-penguin {
+  width: 117px;
+  left: 50%;
+  top: -60px;
+  transform: translateX(-50%);
+}
+
 #thirsty-icon {
   position: absolute;
   right: -10px;
@@ -1093,6 +1153,14 @@ html {
   gap: 12px;
   align-items: center;
   margin-top: 16px;
+}
+
+.buddy-accessory-form {
+  align-items: stretch;
+}
+
+.buddy-accessory-summary {
+  text-align: center;
 }
 
 .buddy-name-input {

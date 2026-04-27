@@ -3,12 +3,34 @@ export const DEFAULT_BUDDY_TYPE = "penguin";
 export const BUDDY_COSTS = {
   pet: 30,
   collar: 20,
+  sunglasses: 15,
+  propellerCap: 18,
   rename: 10,
 };
 export const BUDDY_OPTIONS = {
   dog: { label: "Dog" },
   cat: { label: "Cat" },
   penguin: { label: "Penguin" },
+};
+export const BUDDY_ACCESSORY_OPTIONS = {
+  collar: {
+    label: "Collar",
+    cost: BUDDY_COSTS.collar,
+    ownedKey: "buddy_has_collar",
+    equippedKey: "buddy_collar_equipped",
+  },
+  sunglasses: {
+    label: "Sunglasses",
+    cost: BUDDY_COSTS.sunglasses,
+    ownedKey: "buddy_has_sunglasses",
+    equippedKey: "buddy_sunglasses_equipped",
+  },
+  propellerCap: {
+    label: "Propeller Cap",
+    cost: BUDDY_COSTS.propellerCap,
+    ownedKey: "buddy_has_propeller_cap",
+    equippedKey: "buddy_propeller_cap_equipped",
+  },
 };
 
 export function parseOwnedBuddyTypes(value) {
@@ -46,10 +68,20 @@ export function normalizeBuddyProfile(userRow = {}) {
     buddyName = userRow.buddy_name.trim();
   }
 
+  const accessories = Object.fromEntries(
+    Object.entries(BUDDY_ACCESSORY_OPTIONS).map(([key, option]) => {
+      const owned = Boolean(userRow[option.ownedKey]);
+      const equipped = owned && Boolean(userRow[option.equippedKey]);
+
+      return [key, { owned, equipped }];
+    })
+  );
+
   return {
     buddyType,
     buddyName,
-    buddyHasCollar: Boolean(userRow.buddy_has_collar),
+    buddyHasCollar: accessories.collar.owned,
+    buddyAccessories: accessories,
     ownedBuddyTypes,
   };
 }

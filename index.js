@@ -21,6 +21,7 @@ import {
   sendVerificationEmail,
 } from "./verification.js";
 import {
+  BUDDY_ACCESSORY_OPTIONS,
   DEFAULT_BUDDY_NAME,
   DEFAULT_BUDDY_TYPE,
   BUDDY_COSTS,
@@ -150,6 +151,26 @@ async function ensureBuddyCustomizationColumns() {
       sql: "ADD COLUMN buddy_has_collar TINYINT(1) NOT NULL DEFAULT 0",
     },
     {
+      name: "buddy_collar_equipped",
+      sql: "ADD COLUMN buddy_collar_equipped TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "buddy_has_sunglasses",
+      sql: "ADD COLUMN buddy_has_sunglasses TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "buddy_sunglasses_equipped",
+      sql: "ADD COLUMN buddy_sunglasses_equipped TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "buddy_has_propeller_cap",
+      sql: "ADD COLUMN buddy_has_propeller_cap TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "buddy_propeller_cap_equipped",
+      sql: "ADD COLUMN buddy_propeller_cap_equipped TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
       name: "owned_buddy_types",
       sql: "ADD COLUMN owned_buddy_types TEXT NULL",
     },
@@ -162,6 +183,13 @@ async function ensureBuddyCustomizationColumns() {
         await db.query(`ALTER TABLE users ${column.sql}`);
       }
     }
+
+    await db.query(
+      `UPDATE users
+          SET buddy_collar_equipped = 1
+        WHERE buddy_has_collar = 1
+          AND buddy_collar_equipped = 0`
+    );
     buddyColumnsReady = true;
   })();
 
@@ -694,7 +722,16 @@ app.get("/home", async (req, res) => {
   );
 
   const [[userRow]] = await db.query(
-    `SELECT coins, buddy_type, buddy_name, buddy_has_collar, owned_buddy_types
+    `SELECT coins,
+            buddy_type,
+            buddy_name,
+            buddy_has_collar,
+            buddy_collar_equipped,
+            buddy_has_sunglasses,
+            buddy_sunglasses_equipped,
+            buddy_has_propeller_cap,
+            buddy_propeller_cap_equipped,
+            owned_buddy_types
        FROM users
       WHERE id = ?`,
     [userId]
@@ -1155,13 +1192,22 @@ app.post("/customize-buddy", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const userId = req.session.user.id;
-  const { customAction, petType, buddyName } = req.body;
+  const { customAction, petType, buddyName, accessoryType } = req.body;
 
   try {
     await ensureBuddyCustomizationColumns();
 
     const [[userRow]] = await db.query(
-      `SELECT coins, buddy_type, buddy_name, buddy_has_collar, owned_buddy_types
+      `SELECT coins,
+              buddy_type,
+              buddy_name,
+              buddy_has_collar,
+              buddy_collar_equipped,
+              buddy_has_sunglasses,
+              buddy_sunglasses_equipped,
+              buddy_has_propeller_cap,
+              buddy_propeller_cap_equipped,
+              owned_buddy_types
          FROM users
         WHERE id = ?`,
       [userId]
@@ -1201,22 +1247,58 @@ app.post("/customize-buddy", async (req, res) => {
       return res.redirect(buildBuddyStatusRedirect(`${BUDDY_OPTIONS[petType].label} unlocked and equipped.`));
     }
 
-    if (customAction === "collar") {
-      if (buddyProfile.buddyHasCollar) {
-        return res.redirect(buildBuddyStatusRedirect("Your buddy already has a collar.", "error", true));
+    if (customAction === "accessory") {
+      const accessoryConfig = BUDDY_ACCESSORY_OPTIONS[accessoryType];
+
+      if (!accessoryConfig) {
+        return res.redirect(buildBuddyStatusRedirect("That accessory option is not available.", "error", true));
       }
 
-      if ((userRow.coins || 0) < BUDDY_COSTS.collar) {
-        return res.redirect(buildBuddyStatusRedirect("You need 20 coins to buy a collar.", "error", true));
+      const accessoryState = buddyProfile.buddyAccessories?.[accessoryType];
+
+      if (!accessoryState?.owned) {
+        if ((userRow.coins || 0) < accessoryConfig.cost) {
+          return res.redirect(
+            buildBuddyStatusRedirect(
+              `You need ${accessoryConfig.cost} coins to buy ${accessoryConfig.label.toLowerCase()}.`,
+              "error",
+              true
+            )
+          );
+        }
+
+        await db.query(
+          `UPDATE users
+              SET coins = coins - ?,
+                  ${accessoryConfig.ownedKey} = 1,
+                  ${accessoryConfig.equippedKey} = 1
+            WHERE id = ?`,
+          [accessoryConfig.cost, userId]
+        );
+
+        req.session.user.coins = (userRow.coins || 0) - accessoryConfig.cost;
+        return res.redirect(buildBuddyStatusRedirect(`${accessoryConfig.label} purchased and equipped.`));
+      }
+
+      if (accessoryState.equipped) {
+        await db.query(
+          `UPDATE users
+              SET ${accessoryConfig.equippedKey} = 0
+            WHERE id = ?`,
+          [userId]
+        );
+
+        return res.redirect(buildBuddyStatusRedirect(`${accessoryConfig.label} removed.`));
       }
 
       await db.query(
-        "UPDATE users SET coins = coins - ?, buddy_has_collar = 1 WHERE id = ?",
-        [BUDDY_COSTS.collar, userId]
+        `UPDATE users
+            SET ${accessoryConfig.equippedKey} = 1
+          WHERE id = ?`,
+        [userId]
       );
 
-      req.session.user.coins = (userRow.coins || 0) - BUDDY_COSTS.collar;
-      return res.redirect(buildBuddyStatusRedirect("Collar purchased for your buddy."));
+      return res.redirect(buildBuddyStatusRedirect(`${accessoryConfig.label} equipped.`));
     }
 
     if (customAction === "name") {
