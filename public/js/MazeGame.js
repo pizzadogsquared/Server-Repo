@@ -87,15 +87,15 @@ class MazeGame extends Phaser.Scene {
          };
  
          safeLoad('penguin_sprite', 'images/sprites/game_penguin.png');
-         safeLoad('background_sky', 'images/background_sky.jpg');
+         safeLoad('ice_background', 'images/ice_bg.jpg');
          safeLoad('fish', 'images/game_fish.png');
-         safeLoad('cloud', 'images/cloud.png');
+         safeLoad('icecube', 'images/icecube.png');
      }
  
      create(data) {
          this.parentScene = data?.parentScene || null;
  
-         const sky = this.add.image(0, 0, 'background_sky').setOrigin(0);
+         const sky = this.add.image(0, 0, 'ice_background').setOrigin(0);
          sky.setScale(this.scale.width / sky.width, this.scale.height / sky.height);
  
          this.walls = this.physics.add.staticGroup();
@@ -107,7 +107,7 @@ class MazeGame extends Phaser.Scene {
          for (let y = 0; y < this.mazeHeight; y++) {
              for (let x = 0; x < this.mazeWidth; x++) {
                  if (this.mazeLayout[y][x] === 1) {
-                     const wall = this.walls.create(offsetX + x * this.cellSize + this.cellSize / 2, offsetY + y * this.cellSize + this.cellSize / 2, 'cloud');
+                     const wall = this.walls.create(offsetX + x * this.cellSize + this.cellSize / 2, offsetY + y * this.cellSize + this.cellSize / 2, 'icecube');
                      wall.setScale(0.08);
                      wall.setImmovable(true);
                      wall.body.moves = false;
@@ -196,7 +196,7 @@ class MazeGame extends Phaser.Scene {
          for (let y = 0; y < this.mazeHeight; y++) {
              for (let x = 0; x < this.mazeWidth; x++) {
                  if (this.mazeLayout[y][x] === 1) {
-                     const wall = this.walls.create(offsetX + x * this.cellSize + this.cellSize / 2, offsetY + y * this.cellSize + this.cellSize / 2, 'cloud');
+                     const wall = this.walls.create(offsetX + x * this.cellSize + this.cellSize / 2, offsetY + y * this.cellSize + this.cellSize / 2, 'icecube');
                      wall.setScale(0.08);
                      wall.setImmovable(true);
                      wall.body.moves = false;
