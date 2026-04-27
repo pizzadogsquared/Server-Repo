@@ -9,7 +9,7 @@ import { handleSignup } from "./signup.js";
 import db from "./db.js";
 import cron from "node-cron";
 import { adviceMap, questionMap } from "./advice.js";
-// import { scheduleReminderJob } from "./sendReminders.js";
+import { scheduleNightlyCheckinReminderJob, sendTestCheckinReminder } from "./sendReminders.js";
 import { markDayComplete, getCurrentStreak } from "./streak.js";
 import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
@@ -21,6 +21,7 @@ import {
   sendVerificationEmail,
 } from "./verification.js";
 import {
+  BUDDY_ACCESSORY_OPTIONS,
   DEFAULT_BUDDY_NAME,
   DEFAULT_BUDDY_TYPE,
   BUDDY_COSTS,
@@ -29,6 +30,7 @@ import {
   buildBuddyStatusRedirect,
 } from "./utils/buddy.js";
 import { getLowestScoringQuestion } from "./utils/survey.js";
+import { isValidUnsubscribeToken } from "./utils/reminders.js";
 dotenv.config();
 const require = createRequire(import.meta.url);
 const app = express();
@@ -149,6 +151,26 @@ async function ensureBuddyCustomizationColumns() {
       sql: "ADD COLUMN buddy_has_collar TINYINT(1) NOT NULL DEFAULT 0",
     },
     {
+      name: "buddy_collar_equipped",
+      sql: "ADD COLUMN buddy_collar_equipped TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "buddy_has_sunglasses",
+      sql: "ADD COLUMN buddy_has_sunglasses TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "buddy_sunglasses_equipped",
+      sql: "ADD COLUMN buddy_sunglasses_equipped TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "buddy_has_propeller_cap",
+      sql: "ADD COLUMN buddy_has_propeller_cap TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
+      name: "buddy_propeller_cap_equipped",
+      sql: "ADD COLUMN buddy_propeller_cap_equipped TINYINT(1) NOT NULL DEFAULT 0",
+    },
+    {
       name: "owned_buddy_types",
       sql: "ADD COLUMN owned_buddy_types TEXT NULL",
     },
@@ -161,6 +183,13 @@ async function ensureBuddyCustomizationColumns() {
         await db.query(`ALTER TABLE users ${column.sql}`);
       }
     }
+
+    await db.query(
+      `UPDATE users
+          SET buddy_collar_equipped = 1
+        WHERE buddy_has_collar = 1
+          AND buddy_collar_equipped = 0`
+    );
     buddyColumnsReady = true;
   })();
 
@@ -389,9 +418,13 @@ app.post("/api/chatbot", async (req, res) => {
 
 // unsubscribe from email notifications
 app.get("/unsubscribe", async (req, res) => {
-  const { userId } = req.query;
-  if (!userId) {
-    return res.status(400).send("Missing user ID.");
+  const { userId, token } = req.query;
+  if (!userId || !token) {
+    return res.status(400).send("This unsubscribe link is incomplete.");
+  }
+
+  if (!isValidUnsubscribeToken(userId, token)) {
+    return res.status(400).send("This unsubscribe link is invalid.");
   }
 
   try {
@@ -400,6 +433,24 @@ app.get("/unsubscribe", async (req, res) => {
   } catch (err) {
     console.error("Error unsubscribing:", err);
     res.status(500).send("Error unsubscribing. Please try again later.");
+  }
+});
+
+app.post("/test-checkin-reminder", async (req, res) => {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+
+  try {
+    await sendTestCheckinReminder(req.session.user.id);
+    return res.redirect("/home?reminderStatus=test-sent");
+  } catch (err) {
+    console.error("Error sending test reminder:", err);
+    return res.redirect(
+      `/home?reminderStatus=${encodeURIComponent("test-failed")}&reminderMessage=${encodeURIComponent(
+        err.message || "We could not send the test reminder."
+      )}`
+    );
   }
 });
 
@@ -671,13 +722,31 @@ app.get("/home", async (req, res) => {
   );
 
   const [[userRow]] = await db.query(
-    `SELECT coins, buddy_type, buddy_name, buddy_has_collar, owned_buddy_types
+    `SELECT coins,
+            buddy_type,
+            buddy_name,
+            buddy_has_collar,
+            buddy_collar_equipped,
+            buddy_has_sunglasses,
+            buddy_sunglasses_equipped,
+            buddy_has_propeller_cap,
+            buddy_propeller_cap_equipped,
+            owned_buddy_types
        FROM users
       WHERE id = ?`,
     [userId]
   );
   const streak = await getCurrentStreak(userId);
   const buddyProfile = normalizeBuddyProfile(userRow);
+  let reminderBanner = null;
+  let reminderBannerType = "success";
+
+  if (req.query.reminderStatus === "test-sent") {
+    reminderBanner = "Test reminder email sent. Check your inbox.";
+  } else if (req.query.reminderStatus === "test-failed") {
+    reminderBanner = req.query.reminderMessage || "We could not send the test reminder.";
+    reminderBannerType = "error";
+  }
 
   let buddyCoins = 0;
   if (userRow && typeof userRow.coins !== "undefined") {
@@ -713,6 +782,8 @@ app.get("/home", async (req, res) => {
     coinRankLabel: formatOrdinal(coinRank),
     totalCoinUsers,
     buddyProfile,
+    reminderBanner,
+    reminderBannerType,
     buddyStatus: req.query.buddyStatus || null,
     buddyStatusType: req.query.buddyStatusType || "success",
     openBuddyModal: req.query.openBuddyModal === "1",
@@ -1121,13 +1192,22 @@ app.post("/customize-buddy", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const userId = req.session.user.id;
-  const { customAction, petType, buddyName } = req.body;
+  const { customAction, petType, buddyName, accessoryType } = req.body;
 
   try {
     await ensureBuddyCustomizationColumns();
 
     const [[userRow]] = await db.query(
-      `SELECT coins, buddy_type, buddy_name, buddy_has_collar, owned_buddy_types
+      `SELECT coins,
+              buddy_type,
+              buddy_name,
+              buddy_has_collar,
+              buddy_collar_equipped,
+              buddy_has_sunglasses,
+              buddy_sunglasses_equipped,
+              buddy_has_propeller_cap,
+              buddy_propeller_cap_equipped,
+              owned_buddy_types
          FROM users
         WHERE id = ?`,
       [userId]
@@ -1167,22 +1247,58 @@ app.post("/customize-buddy", async (req, res) => {
       return res.redirect(buildBuddyStatusRedirect(`${BUDDY_OPTIONS[petType].label} unlocked and equipped.`));
     }
 
-    if (customAction === "collar") {
-      if (buddyProfile.buddyHasCollar) {
-        return res.redirect(buildBuddyStatusRedirect("Your buddy already has a collar.", "error", true));
+    if (customAction === "accessory") {
+      const accessoryConfig = BUDDY_ACCESSORY_OPTIONS[accessoryType];
+
+      if (!accessoryConfig) {
+        return res.redirect(buildBuddyStatusRedirect("That accessory option is not available.", "error", true));
       }
 
-      if ((userRow.coins || 0) < BUDDY_COSTS.collar) {
-        return res.redirect(buildBuddyStatusRedirect("You need 20 coins to buy a collar.", "error", true));
+      const accessoryState = buddyProfile.buddyAccessories?.[accessoryType];
+
+      if (!accessoryState?.owned) {
+        if ((userRow.coins || 0) < accessoryConfig.cost) {
+          return res.redirect(
+            buildBuddyStatusRedirect(
+              `You need ${accessoryConfig.cost} coins to buy ${accessoryConfig.label.toLowerCase()}.`,
+              "error",
+              true
+            )
+          );
+        }
+
+        await db.query(
+          `UPDATE users
+              SET coins = coins - ?,
+                  ${accessoryConfig.ownedKey} = 1,
+                  ${accessoryConfig.equippedKey} = 1
+            WHERE id = ?`,
+          [accessoryConfig.cost, userId]
+        );
+
+        req.session.user.coins = (userRow.coins || 0) - accessoryConfig.cost;
+        return res.redirect(buildBuddyStatusRedirect(`${accessoryConfig.label} purchased and equipped.`));
+      }
+
+      if (accessoryState.equipped) {
+        await db.query(
+          `UPDATE users
+              SET ${accessoryConfig.equippedKey} = 0
+            WHERE id = ?`,
+          [userId]
+        );
+
+        return res.redirect(buildBuddyStatusRedirect(`${accessoryConfig.label} removed.`));
       }
 
       await db.query(
-        "UPDATE users SET coins = coins - ?, buddy_has_collar = 1 WHERE id = ?",
-        [BUDDY_COSTS.collar, userId]
+        `UPDATE users
+            SET ${accessoryConfig.equippedKey} = 1
+          WHERE id = ?`,
+        [userId]
       );
 
-      req.session.user.coins = (userRow.coins || 0) - BUDDY_COSTS.collar;
-      return res.redirect(buildBuddyStatusRedirect("Collar purchased for your buddy."));
+      return res.redirect(buildBuddyStatusRedirect(`${accessoryConfig.label} equipped.`));
     }
 
     if (customAction === "name") {
@@ -1231,5 +1347,5 @@ cron.schedule("0 1 * * *", async () => {
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
-//  scheduleReminderJob();
+    scheduleNightlyCheckinReminderJob();
 });
