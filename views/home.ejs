@@ -20,12 +20,17 @@
       safeBuddyCoins = user.coins;
     }
 
-    let safeBuddyProfile = {
-      buddyName: "Buddy",
-      buddyType: "penguin",
-      buddyHasCollar: false,
-      ownedBuddyTypes: ["penguin"],
-    };
+	    let safeBuddyProfile = {
+	      buddyName: "Buddy",
+	      buddyType: "penguin",
+	      buddyHasCollar: false,
+	      buddyAccessories: {
+	        collar: { owned: false, equipped: false },
+	        sunglasses: { owned: false, equipped: false },
+	        propellerCap: { owned: false, equipped: false },
+	      },
+	      ownedBuddyTypes: ["penguin"],
+	    };
     if (typeof buddyProfile !== "undefined") {
       safeBuddyProfile = buddyProfile;
     }
@@ -45,7 +50,7 @@
       safeOpenBuddyModal = openBuddyModal;
     }
 
-    let safeBuddyCosts = { pet: 30, collar: 20, rename: 10 };
+	    let safeBuddyCosts = { pet: 30, collar: 20, sunglasses: 15, propellerCap: 18, rename: 10 };
     if (typeof buddyCosts !== "undefined") {
       safeBuddyCosts = buddyCosts;
     }
@@ -84,10 +89,20 @@
       safeIncompleteCheckinSections = incompleteCheckinSections;
     }
 
-    let buddyCollarClass = "hidden";
-    if (safeBuddyProfile.buddyHasCollar) {
-      buddyCollarClass = "visible";
-    }
+	    let buddyCollarClass = "hidden";
+	    if (safeBuddyProfile.buddyAccessories?.collar?.equipped) {
+	      buddyCollarClass = "visible";
+	    }
+
+	    let buddySunglassesClass = "hidden";
+	    if (safeBuddyProfile.buddyAccessories?.sunglasses?.equipped) {
+	      buddySunglassesClass = "visible";
+	    }
+
+	    let buddyPropellerCapClass = "hidden";
+	    if (safeBuddyProfile.buddyAccessories?.propellerCap?.equipped) {
+	      buddyPropellerCapClass = "visible";
+	    }
 
     let thirstyIconClass = "hidden";
     if (petThirsty) {
@@ -126,14 +141,19 @@
       </div>
     <% } %>
 
+    <% if (typeof reminderBanner !== "undefined" && reminderBanner) { %>
+      <% let reminderBannerClass = "buddy-status-success"; %>
+      <% if (typeof reminderBannerType !== "undefined" && reminderBannerType === "error") { reminderBannerClass = "buddy-status-error"; } %>
+      <div class="buddy-status <%= reminderBannerClass %>">
+        <%= reminderBanner %>
+      </div>
+    <% } %>
+
     <div class="home-main-row">
       <div id="pet-container">
         <h2>Your Wellness Buddy</h2>
         <p class="buddy-nameplate">
           <span id="buddy-name-display"><%= safeBuddyProfile.buddyName %></span>
-          <% if (safeBuddyProfile.buddyHasCollar) { %>
-            <span class="buddy-accessory-tag">Collar On</span>
-          <% } %>
         </p>
 
         <div id="pet-interact">
@@ -153,13 +173,26 @@
             />
 
             <img
+              id="pet-sunglasses"
+              src="/images/sprites/sunglasses.png"
+              alt="Buddy sunglasses"
+              class="<%= buddySunglassesClass %>"
+            />
+
+            <img
+              id="pet-propeller-cap"
+              src="/images/sprites/propeller_cap.png"
+              alt="Buddy propeller cap"
+              class="<%= buddyPropellerCapClass %>"
+            />
+
+            <img
               id="thirsty-icon"
               src="/images/sprites/thirsty.png"
               alt="Thirsty"
               class="<%= thirstyIconClass %>"
             />
           </div>
-          <!-- Pet Thought Appears here-->
         </div>
 
         <p id="pet-caption">
@@ -233,9 +266,9 @@
         x
       </button>
       <h2 id="buddy-modal-title">Customize <%= safeBuddyProfile.buddyName %></h2>
-      <p class="buddy-modal-subtitle">
-        Spend coins to unlock a new pet, add a collar, or rename your buddy.
-      </p>
+	      <p class="buddy-modal-subtitle">
+	        Spend coins to unlock a new pet, dress up your buddy, or rename them.
+	      </p>
 
       <div class="buddy-modal-grid">
         <section class="buddy-option-card">
@@ -263,18 +296,41 @@
           </div>
         </section>
 
-        <section class="buddy-option-card">
-          <h3>Add a Collar</h3>
-          <p>Purchase a collar for <strong><%= safeBuddyCosts.collar %> coins</strong>.</p>
+	        <section class="buddy-option-card">
+	          <h3>Accessories</h3>
+	          <p>Buy an accessory once, then equip or remove it whenever you like.</p>
 
-          <% let collarButtonLabel = "Buy Collar"; %>
-          <% let collarButtonDisabled = ""; %>
-          <% if (safeBuddyProfile.buddyHasCollar) { collarButtonLabel = "Collar Owned"; collarButtonDisabled = "disabled"; } %>
-          <form action="/customize-buddy" method="POST" class="buddy-action-form">
-            <input type="hidden" name="customAction" value="collar">
-            <button type="submit" class="btn" <%= collarButtonDisabled %>><%= collarButtonLabel %></button>
-          </form>
-        </section>
+	          <div class="buddy-pet-options">
+	            <% 
+	              const accessoryCards = [
+	                { key: "collar", label: "Collar", cost: safeBuddyCosts.collar },
+	                { key: "sunglasses", label: "Sunglasses", cost: safeBuddyCosts.sunglasses },
+	                { key: "propellerCap", label: "Propeller Cap", cost: safeBuddyCosts.propellerCap },
+	              ];
+	              accessoryCards.forEach(function(accessory) {
+	                const accessoryState = safeBuddyProfile.buddyAccessories?.[accessory.key] || { owned: false, equipped: false };
+	                let accessoryMeta = accessory.cost + " coins";
+	                let accessoryButtonLabel = "Buy and Equip";
+	                if (accessoryState.owned && accessoryState.equipped) {
+	                  accessoryMeta = "Owned - currently worn";
+	                  accessoryButtonLabel = "Remove";
+	                } else if (accessoryState.owned) {
+	                  accessoryMeta = "Owned - equip free";
+	                  accessoryButtonLabel = "Equip";
+	                }
+	            %>
+	              <form action="/customize-buddy" method="POST" class="buddy-action-form buddy-accessory-form">
+	                <input type="hidden" name="customAction" value="accessory">
+	                <input type="hidden" name="accessoryType" value="<%= accessory.key %>">
+	                <div class="buddy-accessory-summary">
+	                  <span class="buddy-pet-label"><%= accessory.label %></span>
+	                  <span class="buddy-pet-meta"><%= accessoryMeta %></span>
+	                </div>
+	                <button type="submit" class="btn"><%= accessoryButtonLabel %></button>
+	              </form>
+	            <% }) %>
+	          </div>
+	        </section>
 
         <section class="buddy-option-card">
           <h3>Rename Buddy</h3>
@@ -311,9 +367,11 @@
     shouldOpenBuddyModal = true;
   <% } %>
 
-  const petImg = document.getElementById("pet-sprite");
-  const petCollar = document.getElementById("pet-collar");
-  const petMoodText = document.getElementById("pet-mood-text");
+	  const petImg = document.getElementById("pet-sprite");
+	  const petCollar = document.getElementById("pet-collar");
+	  const petSunglasses = document.getElementById("pet-sunglasses");
+	  const petPropellerCap = document.getElementById("pet-propeller-cap");
+	  const petMoodText = document.getElementById("pet-mood-text");
   const buddyNameDisplay = document.getElementById("buddy-name-display");
   const buddyModal = document.getElementById("buddy-modal");
   const openBuddyModalBtn = document.getElementById("open-buddy-modal");
@@ -356,14 +414,20 @@
     return typeSprites.neutral;
   }
 
-  petImg.src = getBuddySprite(buddyProfile.buddyType, petMood);
-  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.penguin;
-  let petCollarVisibilityClass = "hidden";
-  if (buddyProfile.buddyHasCollar) {
-    petCollarVisibilityClass = "visible";
-  }
-  petCollar.className = `${petCollarVisibilityClass} pet-collar-${buddyProfile.buddyType}`;
-  buddyNameDisplay.textContent = buddyProfile.buddyName;
+	  petImg.src = getBuddySprite(buddyProfile.buddyType, petMood);
+	  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.penguin;
+	  let petCollarVisibilityClass = "hidden";
+	  if (buddyProfile.buddyAccessories?.collar?.equipped) {
+	    petCollarVisibilityClass = "visible";
+	  }
+	  petCollar.className = `${petCollarVisibilityClass} pet-collar-${buddyProfile.buddyType}`;
+	  petSunglasses.className = buddyProfile.buddyAccessories?.sunglasses?.equipped
+	    ? `visible pet-sunglasses-${buddyProfile.buddyType}`
+	    : `hidden pet-sunglasses-${buddyProfile.buddyType}`;
+	  petPropellerCap.className = buddyProfile.buddyAccessories?.propellerCap?.equipped
+	    ? `visible pet-propeller-cap-${buddyProfile.buddyType}`
+	    : `hidden pet-propeller-cap-${buddyProfile.buddyType}`;
+	  buddyNameDisplay.textContent = buddyProfile.buddyName;
 
   if (petMood === "happy") {
     petMoodText.textContent = `${buddyProfile.buddyName} is feeling really good today!`;
