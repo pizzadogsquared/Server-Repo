@@ -96,23 +96,26 @@
   %>
   <div class="home-container">
     <h1 id="welcome_message">Welcome to MeBalanced</h1>
-    <p>Your daily well-being tracker.</p>
+    <p id="purpose_message">Your daily well-being tracker.</p>
 
-    <div class="streak-badge">
-      Current Streak: <strong><%= streak %></strong> 🔥
+    <div class="home-buttons">
+      <a href="/checkin?section=choice" class="btn">Complete Your Daily Check-In →</a>
     </div>
 
     <div class="buddy-toolbar">
       <div class="buddy-coins-card">
         <span class="buddy-coins-label">Buddy Coins</span>
-        <strong id="buddy-coin-count"><%= safeBuddyCoins %></strong>
+        <strong id="buddy-coin-count"><%= safeBuddyCoins %>🪙</strong>
       </div>
       <div class="buddy-rank-card">
         <span class="buddy-coins-label">Worldwide Rank</span>
         <strong><%= safeCoinRankLabel %> place</strong>
         <p>You have more coins than <%= safeTotalCoinUsers - safeCoinRank %> player<%= (safeTotalCoinUsers - safeCoinRank) === 1 ? "" : "s" %>.</p>
       </div>
-      <button type="button" class="btn" id="open-buddy-modal">Customize Buddy</button>
+      <div class="buddy-coins-card">
+        <span class="buddy-coins-label">Current Streak</span>
+        <strong><%= streak %>🔥</strong>
+      </div>
     </div>
 
     <% if (safeBuddyStatus) { %>
@@ -162,6 +165,8 @@
         <p id="pet-caption">
           <span id="pet-mood-text"></span>
         </p>
+        
+        <button type="button" class="btn" id="open-buddy-modal">Customize Buddy</button>
       </div>
 
       <div id="pet-chat-container">
@@ -185,10 +190,6 @@
           <button id="pet-send">Send</button>
         </div>
       </div>
-    </div>
-
-    <div class="home-buttons">
-      <a href="/checkin?section=choice" class="btn">Take Today's Surveys</a>
     </div>
   </div>
 
@@ -416,7 +417,14 @@
   const petAvatar = document.getElementById("pet-wrapper");
   petAvatar.addEventListener("mouseover", (event) => {
     const petThought = document.createElement('div');
-    petThought.innerHTML = "";
+    // if (petMood === "happy") {
+    //   petThought.textContent = `${buddyProfile.buddyName} `;
+    // } else if (petMood === "sad") {
+    //   petThought.textContent = `${buddyProfile.buddyName} seems a bit down. Maybe some self-care would help.`;
+    // } else {
+    //   petThought.textContent = `${buddyProfile.buddyName} is feeling okay. Keep up your habits!`;
+    // }
+    petThought.innerHTML = "<strong>BARK!</strong> I've been wagging my tail all day. My owner has been keeping up with their habits!"
     petThought.id = "pet-thought";
     petInteraction.appendChild(petThought);
     
