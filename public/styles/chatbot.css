@@ -3,8 +3,8 @@ html, body {
   margin: 0;
   background: linear-gradient(
     135deg,
-    #B8C6FF 0%, 
-    #FFD6C9 100%
+    #fdf3bd 0%,
+    #ffb65c 100%
   );
   /* remove this: overflow: hidden; */
   font-family: Arial, sans-serif;

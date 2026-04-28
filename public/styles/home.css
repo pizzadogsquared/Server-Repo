@@ -3,8 +3,8 @@ html, body {
   margin: 0;
   background: linear-gradient(
     135deg,
-    #B8C6FF 0%, 
-    #FFD6C9 100%
+    #fdf3bd 0%,
+    #ffb65c 100%
   );
   /* remove this: overflow: hidden; */
   font-family: Arial, sans-serif;
@@ -37,10 +37,10 @@ html {
    margin-bottom: 10px;
    color: #f5b580;
    text-shadow:
-    -1px -1px 0 #3A506B,
-     1px -1px 0 #3A506B,
-    -1px  1px 0 #3A506B,
-     1px  1px 0 #3A506B;
+    -1px -1px 0 #ffffff,
+     1px -1px 0 #ffffff,
+    -1px  1px 0 #ffffff,
+     1px  1px 0 #ffffff;
   }
  
  .home-container p {
@@ -208,7 +208,7 @@ html {
    margin: 50px auto 0 auto;
    font-family: Arial, sans-serif;
    max-width: 600px;
-   background-color: #cae9f6;
+   background-color: #fdf3bd;
    border-radius: 8px;
    padding: 20px;
    overflow-x: auto;
@@ -956,9 +956,9 @@ html {
   min-width: 220px;
   padding: 12px 18px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #eef7ff, #cfe5ff);
-  box-shadow: 0 10px 25px rgba(49, 104, 173, 0.16);
-  color: #163d6c;
+  background: linear-gradient(135deg, #fff8cc 0%, #ffe7a3 45%, #ffc98a 100%);
+  box-shadow: 0 10px 25px rgba(191, 111, 28, 0.14);
+  color: #6e3d08;
 }
 
 .buddy-coins-card strong {
@@ -976,7 +976,7 @@ html {
 .buddy-rank-card p {
   margin: 6px 0 0;
   font-size: 0.9rem;
-  color: #2d5688;
+  color: #8b4c12;
 }
 
 .buddy-coins-label {
@@ -1309,8 +1309,9 @@ body.buddy-modal-open {
 
 .ai-message-content{
     display: flex;
-    background-color: #6FAF9B;
+    background-color: #ff9f1c;
     padding: 8px 12px;
+    color: #2f1a00;
 }
 
 .ai-icon{
@@ -1348,13 +1349,14 @@ h3 {
 #initial-message {
   display: flex;
   align-items: start;
-  background-color: #6FAF9B;
+  background-color: #ff9f1c;
   padding: 8px 12px;
   align-self: flex-start;
   border-radius: 12px;
   max-width: 90%;
   opacity: 100%;
   font-size: normal 400 1em;
+  color: #2f1a00;
 }
 
 #welcome_message {
