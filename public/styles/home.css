@@ -736,44 +736,44 @@ html {
 }
 
 #pet-sunglasses.pet-sunglasses-dog {
-  width: 70px;
+  width: 110px;
   left: 50%;
-  top: 25px;
+  top: 75px;
   transform: translateX(-50%);
 }
 
 #pet-sunglasses.pet-sunglasses-cat {
-  width: 45px;
+  width: 110px;
   left: 50%;
-  top: 15px;
+  top: 30px;
   transform: translateX(-50%);
 }
 
 #pet-sunglasses.pet-sunglasses-penguin {
-  width: 40px;
+  width: 110px;
   left: 50%;
-  top: 28px;
+  top: 55px;
   transform: translateX(-50%);
 }
 
 #pet-propeller-cap.pet-propeller-cap-dog {
-  width: 100px;
+  width: 220px;
   left: 50%;
-  top: -55px;
+  top: -105px;
   transform: translateX(-50%);
 }
 
 #pet-propeller-cap.pet-propeller-cap-cat {
-  width: 90px;
+  width: 175px;
   left: 50%;
-  top: -50px;
+  top: -100px;
   transform: translateX(-50%);
 }
 
 #pet-propeller-cap.pet-propeller-cap-penguin {
-  width: 117px;
+  width: 200px;
   left: 50%;
-  top: -60px;
+  top: -100px;
   transform: translateX(-50%);
 }
 
