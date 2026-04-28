@@ -42,6 +42,13 @@
              width: 250px;
              transition: transform 0.2s;
          }
+         .game-card img {
+             width: 110px;
+             height: 110px;
+             object-fit: contain;
+             image-rendering: pixelated;
+             margin-bottom: 0.75rem;
+         }
          .game-card:hover {
              transform: scale(1.05);
          }
@@ -98,6 +105,7 @@
          <h1>🎮 Choose a Mini Game</h1>
          <div class="games-grid">
              <div class="game-card <%= totalSurveys < 3 ? 'locked' : '' %>">
+               <img src="/images/sprites/dog_happy.png" alt="Happy dog">
                <h3>🦴 Treat Game</h3>
                <p>Collect the falling treats and increase your score!</p>
                <% if (totalSurveys < 3) { %>
@@ -110,6 +118,7 @@
              </div>
              
              <div class="game-card <%= totalSurveys < 9 ? 'locked' : '' %>">
+               <img src="/images/sprites/game_cat.png" alt="Happy cat">
                <h3>🧶 Platform Cat</h3>
                <p>Jump across platforms and avoid obstacles. Try to get to the yarn!</p>
                <% if (totalSurveys < 9) { %>
@@ -122,6 +131,7 @@
              </div>
              
              <div class="game-card <%= totalSurveys < 15 ? 'locked' : '' %>">
+               <img src="/images/sprites/game_penguin.png" alt="Happy penguin">
                <h3>🧊 Maze Game</h3>
                <p>Help the penguin travel safely through the maze to reach the fish!</p>
                <% if (totalSurveys < 15) { %>
