@@ -13,10 +13,13 @@ import {
 dotenv.config();
 
 const PHOENIX_TIME_ZONE = "America/Phoenix";
-const NIGHTLY_REMINDER_CRON = "0 22 * * *";
+const REMINDER_ELIGIBILITY_CHECK_CRON = "0 * * * *";
+const REMINDER_INTERVAL_HOURS = 72;
 const REMINDER_WORKFLOW_FALLBACK = "reminder";
 
 let reminderJobScheduled = false;
+let reminderColumnsReady = false;
+let reminderColumnsPromise = null;
 
 function getEnvValue(name) {
   const value = process.env[name];
@@ -49,6 +52,33 @@ function getLocalDateString(date = new Date(), timeZone = PHOENIX_TIME_ZONE) {
   }).format(date);
 }
 
+async function ensureReminderColumns() {
+  if (reminderColumnsReady) return;
+  if (reminderColumnsPromise) return reminderColumnsPromise;
+
+  reminderColumnsPromise = (async () => {
+    const [rows] = await db.query(
+      "SHOW COLUMNS FROM users LIKE ?",
+      ["last_checkin_reminder_sent_at"]
+    );
+
+    if (!rows.length) {
+      await db.query(
+        "ALTER TABLE users ADD COLUMN last_checkin_reminder_sent_at DATETIME NULL"
+      );
+    }
+
+    reminderColumnsReady = true;
+  })();
+
+  try {
+    await reminderColumnsPromise;
+  } catch (err) {
+    reminderColumnsPromise = null;
+    throw err;
+  }
+}
+
 function createReminderPayload(user, missingSections, options = {}) {
   const baseUrl = getAppBaseUrl();
   const unsubscribeToken = createUnsubscribeToken(user.id);
@@ -68,11 +98,14 @@ function createReminderPayload(user, missingSections, options = {}) {
 }
 
 async function getUsersMissingCheckins(localDate) {
+  await ensureReminderColumns();
+
   const [rows] = await db.query(
     `SELECT
         u.id,
         u.email,
         u.full_name,
+        u.last_checkin_reminder_sent_at,
         EXISTS(
           SELECT 1
             FROM general_survey gs
@@ -96,16 +129,22 @@ async function getUsersMissingCheckins(localDate) {
         AND COALESCE(u.unsubscribed, 0) = 0
         AND u.email IS NOT NULL
         AND TRIM(u.email) <> ""
+        AND (
+          u.last_checkin_reminder_sent_at IS NULL
+          OR u.last_checkin_reminder_sent_at <= (NOW() - INTERVAL ? HOUR)
+        )
       HAVING has_general = 0
           OR has_mental = 0
           OR has_physical = 0`,
-    [localDate, localDate, localDate]
+    [localDate, localDate, localDate, REMINDER_INTERVAL_HOURS]
   );
 
   return rows;
 }
 
 async function getReminderUserById(userId, localDate) {
+  await ensureReminderColumns();
+
   const [[user]] = await db.query(
     `SELECT
         u.id,
@@ -166,6 +205,11 @@ async function sendReminder(knock, workflowKey, user) {
     workflowRunId: workflowRun.workflow_run_id,
   });
 
+  await db.query(
+    "UPDATE users SET last_checkin_reminder_sent_at = NOW() WHERE id = ?",
+    [user.id]
+  );
+
   return workflowRun;
 }
 
@@ -223,7 +267,7 @@ export async function sendNightlyCheckinReminders() {
   const users = await getUsersMissingCheckins(localDate);
 
   if (!users.length) {
-    console.log(`No nightly check-in reminders needed for ${localDate}.`);
+    console.log(`No 72-hour check-in reminders needed for ${localDate}.`);
     return [];
   }
 
@@ -236,11 +280,11 @@ export async function sendNightlyCheckinReminders() {
     .filter(({ result }) => result.status === "rejected");
 
   failedEmails.forEach(({ result, user }) => {
-    console.error(`Failed to send nightly reminder to ${user.email}:`, result.reason);
+    console.error(`Failed to send 72-hour reminder to ${user.email}:`, result.reason);
   });
 
   console.log(
-    `Nightly check-in reminders processed for ${localDate}: ${users.length - failedEmails.length} sent, ${failedEmails.length} failed.`
+    `72-hour check-in reminders processed for ${localDate}: ${users.length - failedEmails.length} sent, ${failedEmails.length} failed.`
   );
 
   return results;
@@ -252,12 +296,12 @@ export function scheduleNightlyCheckinReminderJob() {
   }
 
   cron.schedule(
-    NIGHTLY_REMINDER_CRON,
+    REMINDER_ELIGIBILITY_CHECK_CRON,
     async () => {
       try {
         await sendNightlyCheckinReminders();
       } catch (error) {
-        console.error("Nightly check-in reminder job failed:", error);
+        console.error("72-hour check-in reminder job failed:", error);
       }
     },
     {
@@ -266,7 +310,7 @@ export function scheduleNightlyCheckinReminderJob() {
   );
 
   reminderJobScheduled = true;
-  console.log("Nightly check-in reminder job scheduled for 10:00 PM America/Phoenix.");
+  console.log("72-hour check-in reminder job scheduled with hourly eligibility checks in America/Phoenix.");
 }
 
 const currentFilePath = fileURLToPath(import.meta.url);

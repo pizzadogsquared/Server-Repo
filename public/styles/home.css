@@ -3,8 +3,8 @@ html, body {
   margin: 0;
   background: linear-gradient(
     135deg,
-    #B8C6FF 0%, 
-    #FFD6C9 100%
+    #fdf3bd 0%,
+    #ffb65c 100%
   );
   /* remove this: overflow: hidden; */
   font-family: Arial, sans-serif;
@@ -37,10 +37,10 @@ html {
    margin-bottom: 10px;
    color: #f5b580;
    text-shadow:
-    -1px -1px 0 #3A506B,
-     1px -1px 0 #3A506B,
-    -1px  1px 0 #3A506B,
-     1px  1px 0 #3A506B;
+    -1px -1px 0 #ffffff,
+     1px -1px 0 #ffffff,
+    -1px  1px 0 #ffffff,
+     1px  1px 0 #ffffff;
   }
  
  .home-container p {
@@ -208,7 +208,7 @@ html {
    margin: 50px auto 0 auto;
    font-family: Arial, sans-serif;
    max-width: 600px;
-   background-color: #cae9f6;
+   background-color: #fdf3bd;
    border-radius: 8px;
    padding: 20px;
    overflow-x: auto;
@@ -736,44 +736,44 @@ html {
 }
 
 #pet-sunglasses.pet-sunglasses-dog {
-  width: 70px;
+  width: 110px;
   left: 50%;
-  top: 25px;
+  top: 75px;
   transform: translateX(-50%);
 }
 
 #pet-sunglasses.pet-sunglasses-cat {
-  width: 45px;
+  width: 110px;
   left: 50%;
-  top: 15px;
+  top: 30px;
   transform: translateX(-50%);
 }
 
 #pet-sunglasses.pet-sunglasses-penguin {
-  width: 40px;
+  width: 110px;
   left: 50%;
-  top: 28px;
+  top: 55px;
   transform: translateX(-50%);
 }
 
 #pet-propeller-cap.pet-propeller-cap-dog {
-  width: 100px;
+  width: 220px;
   left: 50%;
-  top: -55px;
+  top: -105px;
   transform: translateX(-50%);
 }
 
 #pet-propeller-cap.pet-propeller-cap-cat {
-  width: 90px;
+  width: 175px;
   left: 50%;
-  top: -50px;
+  top: -100px;
   transform: translateX(-50%);
 }
 
 #pet-propeller-cap.pet-propeller-cap-penguin {
-  width: 117px;
+  width: 200px;
   left: 50%;
-  top: -60px;
+  top: -100px;
   transform: translateX(-50%);
 }
 
@@ -857,11 +857,12 @@ html {
 
 .user-message {
   align-self: flex-end;
-  background-color: #F4A261;
+  background-color: #fdf3bd;
   padding: 8px 12px;
   border-radius: 12px;
   max-width: 80%;
   opacity: 100%;
+  color: #5b3f08;
 }
 
 .ai-message {
@@ -874,17 +875,34 @@ html {
 
 
 .pet-input-row {
-  margin-top: 10px;
   width: 100%;
   max-width: 600px;
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .pet-input-row input {
   flex: 1;
-  padding: 6px 8px;
+  height: 42px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+#pet-edit-memory {
+  white-space: nowrap;
+  min-width: 92px;
+  height: 42px;
+  padding: 0 18px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+#pet-send {
+  height: 42px;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
 .pet-loading {
@@ -956,9 +974,9 @@ html {
   min-width: 220px;
   padding: 12px 18px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #eef7ff, #cfe5ff);
-  box-shadow: 0 10px 25px rgba(49, 104, 173, 0.16);
-  color: #163d6c;
+  background: linear-gradient(135deg, #fff8cc 0%, #ffe7a3 45%, #ffc98a 100%);
+  box-shadow: 0 10px 25px rgba(191, 111, 28, 0.14);
+  color: #6e3d08;
 }
 
 .buddy-coins-card strong {
@@ -976,7 +994,7 @@ html {
 .buddy-rank-card p {
   margin: 6px 0 0;
   font-size: 0.9rem;
-  color: #2d5688;
+  color: #8b4c12;
 }
 
 .buddy-coins-label {
@@ -1116,6 +1134,101 @@ html {
 
 .buddy-modal.hidden {
   display: none;
+}
+
+.buddy-memory-modal.hidden {
+  display: none;
+}
+
+.buddy-memory-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+}
+
+.buddy-memory-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(22, 18, 14, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.buddy-memory-panel {
+  position: relative;
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  margin: 20px auto;
+  padding: 28px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #fffdf7 0%, #fef5e8 100%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+.buddy-memory-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: #222;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.buddy-memory-subtitle {
+  margin: 10px 0 18px;
+  color: #5f5343;
+}
+
+.buddy-memory-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #3c2e1c;
+}
+
+.buddy-memory-input {
+  width: 100%;
+  min-height: 180px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #d8c4a0;
+  font: inherit;
+  line-height: 1.45;
+  box-sizing: border-box;
+  resize: vertical;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.buddy-memory-help {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  color: #6d5b40;
+}
+
+.buddy-memory-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.buddy-memory-status {
+  min-height: 1.4em;
+  margin: 14px 0 0;
+  font-size: 0.95rem;
+  color: #6d5b40;
+}
+
+.buddy-memory-status.success {
+  color: #1c6a36;
+}
+
+.buddy-memory-status.error {
+  color: #9c2f25;
 }
 
 .buddy-modal {
@@ -1281,6 +1394,10 @@ body.buddy-modal-open {
     padding: 22px 18px;
   }
 
+  .buddy-memory-panel {
+    padding: 22px 18px;
+  }
+
   .checkin-reminder-panel {
     margin: 32px auto;
     padding: 24px 18px 20px;
@@ -1303,14 +1420,16 @@ body.buddy-modal-open {
 .user-message{
     display: flex;
     align-self: end;
-    background-color: #F4A261;
+    background-color: #fdf3bd;
     padding: 8px 12px;
+    color: #5b3f08;
 }
 
 .ai-message-content{
     display: flex;
-    background-color: #6FAF9B;
+    background-color: #ff9f1c;
     padding: 8px 12px;
+    color: #2f1a00;
 }
 
 .ai-icon{
@@ -1348,13 +1467,14 @@ h3 {
 #initial-message {
   display: flex;
   align-items: start;
-  background-color: #6FAF9B;
+  background-color: #ff9f1c;
   padding: 8px 12px;
   align-self: flex-start;
   border-radius: 12px;
   max-width: 90%;
   opacity: 100%;
   font-size: normal 400 1em;
+  color: #2f1a00;
 }
 
 #welcome_message {

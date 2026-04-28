@@ -51,7 +51,7 @@
 
         if (!x.length) {
           document.getElementById(chartId).innerHTML = 
-          '<div style="display: flex; justify-content: center; align-items: center; height: 100%; background-color: #cae9f6; border-radius: 8px; border: 2px solid #ffd700; font-size: 24px; font-weight: bold; color: #ffd700; text-align: center; box-sizing: border-box;">No data for the past 2 weeks.</div>';
+          '<div style="display: flex; justify-content: center; align-items: center; height: 100%; background-color: #fdf3bd; border-radius: 8px; border: 2px solid #ffd700; font-size: 24px; font-weight: bold; color: #ffd700; text-align: center; box-sizing: border-box;">No data for the past 2 weeks.</div>';
           return;
         }
         const lastX = x.at(-1);
@@ -79,8 +79,8 @@
             tickfont: { color: '#37AE0F' },
             linecolor: '#37AE0F'
           },
-          plot_bgcolor: '#cae9f6',
-          paper_bgcolor: '#cae9f6',
+          plot_bgcolor: '#fdf3bd',
+          paper_bgcolor: '#fdf3bd',
           images: [{
             source: "/images/bee.gif",
             x: lastX,
