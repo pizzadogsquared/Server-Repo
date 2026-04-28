@@ -7,7 +7,7 @@ html, body {
     #ffb65c 100%
   );
   /* remove this: overflow: hidden; */
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 html {
@@ -15,7 +15,7 @@ html {
 }
 /* General Styles */
  body {
-   font-family: Arial, sans-serif;
+   font-family: 'Poppins', sans-serif;
    background-size: cover;
    color: #333;
    text-align: center;
@@ -70,7 +70,7 @@ html {
    background: #333;
    color: #ffd700;
    padding: 10px 15px;
-   border-radius: 4px;
+   border-radius: 14px;
    text-decoration: none;
    margin: 10px;
  }
@@ -206,7 +206,7 @@ html {
  /* Calendar Styles */
  .calendar {
    margin: 50px auto 0 auto;
-   font-family: Arial, sans-serif;
+   font-family: 'Poppins', sans-serif;
    max-width: 600px;
    background-color: #fdf3bd;
    border-radius: 8px;
@@ -597,7 +597,7 @@ html {
   font-size: 0.95em;
 }
 .feedback-text {
-  font-family: 'Georgia', serif;
+  font-family: 'Inter', serif;
   font-style: italic;
   background: #fff8dc;
   padding: 10px 15px;
@@ -651,7 +651,7 @@ html {
   border: 1px solid #000000;
   height: 80px;
   font-size: small;
-  font-family:'Lucida Sans';
+  font-family:'Inter', sans-serif;
   margin-left: 15px;
 }
 
@@ -903,6 +903,24 @@ html {
   height: 42px;
   padding: 0 16px;
   box-sizing: border-box;
+  border-radius: 12px;
+  background-color: #f47c48;
+  color: white;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#pet-send:hover {
+  background-color: #e86f3d;
+}
+
+#pet-prompt {
+  border-radius: 12px;
+  padding: 0 12px;
+  height: 42px;
+  border: 1px solid #ccc;
 }
 
 .pet-loading {

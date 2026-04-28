@@ -7,7 +7,7 @@ html, body {
     #ffb65c 100%
   );
   /* remove this: overflow: hidden; */
-  font-family: Arial, sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .chat-page {
