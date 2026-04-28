@@ -292,6 +292,10 @@ body {
   text-align: center;
 }
 
+.circular-card {
+  width: 130px;
+}
+
 @media screen and (max-width: 970px){
   #iconResponse {
     flex-direction: column;
@@ -326,12 +330,11 @@ body {
   }
 
   .circular-card {
-    width: 90px;
-    height: 50px;
+    width: 120px;
   }
 
   .circular-card div {
-    font-size: 10px;
+    font-size: 15px;
   }
 
   #backButton, #nextButton {
