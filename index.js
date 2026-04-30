@@ -824,20 +824,30 @@ app.get("/home", async (req, res) => {
   let petThirsty = false;
 
   try {
-    const [moodRows] = await db.query(
-      "SELECT score FROM mental_survey WHERE user_id = ? AND question = ? ORDER BY created_at DESC LIMIT 1",
-      [userId, "q5"]     // q5 = "How do you feel about your current emotional balance?"
+    // scores for users mental survey
+    const [mentalMoodRows] = await db.query(
+      "SELECT SUM(score) as score FROM mental_survey WHERE user_id = ? AND DATE(created_at) = CURDATE();",
+      [userId] 
     );
-
-    if (moodRows.length > 0) {
-      const score = moodRows[0].score; // 1–5
-      if (score >= 4) petMood = "happy";
-      else if (score <= 3) petMood = "sad";
+    // scores for users physical survey
+    const [physicalMoodRows] = await db.query(
+      "SELECT SUM(score) as score FROM physical_survey WHERE user_id = ? AND DATE(created_at) = CURDATE();",
+      [userId]
+    )
+    // scores for users general survey
+    const [generalMoodRows] = await db.query(
+      "SELECT SUM(score) as score FROM general_survey WHERE user_id = ? AND DATE(created_at) = CURDATE();",
+      [userId]
+    )
+    if (mentalMoodRows.length > 0 && physicalMoodRows.length > 0 && generalMoodRows.length > 0) {
+      const score = mentalMoodRows[0].score + physicalMoodRows[0].score + generalMoodRows[0].score; // 1–5
+      if (score >= 75) petMood = "happy";
+      else if (score <= 30) petMood = "sad";
       else petMood = "neutral";
     }
 
     const [waterRows] = await db.query(
-      "SELECT score FROM general_survey WHERE user_id = ? AND question = ? ORDER BY created_at DESC LIMIT 1",
+      "SELECT score as score FROM general_survey WHERE user_id = ? AND question = ? AND DATE(created_at) = CURDATE()",
       [userId, "q1"]     // q1 = "What was your water intake for today?
     );
 
