@@ -534,20 +534,39 @@
   if (shouldShowCheckinReminderModal) {
     openCheckinReminderModal();
   }
-
+  // pet thought data
+  const thoughtMap = {
+      dog: {
+          happy: "BARK! I've been wagging my tail all day, my owner has been keeping up with their habits!",
+          sad: "I don't feel like doing the zoomies today.. maybe we can try one small healthy habit together.",
+          neutral: "I'm feeling okay, a little water, a little rest, and a little routine go a long way.",
+      },
+      cat: {
+          happy: "Healthy habits detected... PURR mode activated!",
+          sad: "I'm feeling a little droopy, but I still believe my owner can get back on track.",
+          neutral: "My whiskers are relaxed.. my owner's habits have been steady lately.",
+      },    
+      penguin: {
+          happy: "I'm one proud little penguin today.. my owner has been showing up for themself!",
+          sad: "My feathers feel a little ruffled.. I think my owner could use some gentleness.",
+          neutral: "My waddle are calm today.. things feel pretty balanced.",
+          }
+  };
+  // get the current active pet
+  function getCurrentPetThought(type, mood) {
+    const thoughts = thoughtMap[type] || thoughtMap.penguin;
+    if (thoughts[mood]) {
+      return thoughts[mood];
+    }
+    return thoughts.neutral;
+  }
   // hovering over pet trigger thought bubble
   const petInteraction = document.getElementById("pet-interact");
   const petAvatar = document.getElementById("pet-wrapper");
   petAvatar.addEventListener("mouseover", (event) => {
     const petThought = document.createElement('div');
-    // if (petMood === "happy") {
-    //   petThought.textContent = `${buddyProfile.buddyName} `;
-    // } else if (petMood === "sad") {
-    //   petThought.textContent = `${buddyProfile.buddyName} seems a bit down. Maybe some self-care would help.`;
-    // } else {
-    //   petThought.textContent = `${buddyProfile.buddyName} is feeling okay. Keep up your habits!`;
-    // }
-    petThought.innerHTML = "<strong>BARK!</strong> I've been wagging my tail all day. My owner has been keeping up with their habits!"
+    const currentPetThought = getCurrentPetThought(buddyProfile.buddyType, petMood);
+    petThought.innerHTML = `${currentPetThought}`;
     petThought.id = "pet-thought";
     petInteraction.appendChild(petThought);
     

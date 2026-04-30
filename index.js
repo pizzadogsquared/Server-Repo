@@ -826,24 +826,24 @@ app.get("/home", async (req, res) => {
   try {
     const [moodRows] = await db.query(
       "SELECT score FROM mental_survey WHERE user_id = ? AND question = ? ORDER BY created_at DESC LIMIT 1",
-      [userId, "q5"]     // q5 = "I generally feel happy and emotionally balanced."
+      [userId, "q5"]     // q5 = "How do you feel about your current emotional balance?"
     );
 
     if (moodRows.length > 0) {
-      const score = moodRows[0].score; // 1–10
-      if (score >= 8) petMood = "happy";
+      const score = moodRows[0].score; // 1–5
+      if (score >= 4) petMood = "happy";
       else if (score <= 3) petMood = "sad";
       else petMood = "neutral";
     }
 
     const [waterRows] = await db.query(
       "SELECT score FROM general_survey WHERE user_id = ? AND question = ? ORDER BY created_at DESC LIMIT 1",
-      [userId, "q1"]     // q1 = "I drink 8 glasses of water daily."
+      [userId, "q1"]     // q1 = "What was your water intake for today?
     );
 
     if (waterRows.length > 0) {
-      const waterScore = waterRows[0].score; // 1–10
-      if (waterScore <= 6) petThirsty = true;
+      const waterScore = waterRows[0].score; // 1–5
+      if (waterScore <= 2) petThirsty = true;
     }
   } catch (err) {
     console.error("Error loading pet state:", err);
