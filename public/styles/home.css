@@ -35,12 +35,13 @@ html {
  .home-container h1 {
    font-size: 2em;
    margin-bottom: 10px;
-   color: #f5b580;
+   color: #F47C48;
    text-shadow:
     -1px -1px 0 #ffffff,
      1px -1px 0 #ffffff,
     -1px  1px 0 #ffffff,
      1px  1px 0 #ffffff;
+    
   }
  
  .home-container p {
@@ -545,22 +546,16 @@ html {
 }
 
 .resource-box {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(248, 192, 103, 0.5);
   padding: 20px;
   margin: 20px auto;
-  max-width: 700px;
+  max-width: 900px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   text-align: center;
-  animation: fadeIn 0.5 ease;
 }
 
-.resource-box h2 {
-  color: #222;
-  margin-bottom: 20px;
-  font-size: 2rem;
-  padding-bottom: 5px;
-}
+
 
 .resource-box h3 {
   color: #222;
@@ -569,14 +564,9 @@ html {
   padding-bottom: 5px;
 }
 
-.resource-box a {
-  font-size: 1rem;
-}
 
-.resource-box a:hover{
-  font-size: 1.1rem;
-  transition: all 1.5 ease-out;
-}
+
+
 
 .advice-box h2 {
   color: #222;
@@ -1504,3 +1494,36 @@ h3 {
   font-size: large;
 }
 
+/* Feedback Button-Links */
+
+.buttonlink {
+  background-color: white;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  display: block;
+  max-width: 700px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  font-size: 2rem;
+  margin: auto;
+  display: grid;
+  align-self: flex-start;
+  place-items: center;
+  text-decoration: none;
+  border-radius: 15px;
+}
+
+.resource-box img {
+  height: 4rem;
+}
+
+
+.resource-box p {
+  font-size: 1.2rem;
+  
+}
+
+.resource-box a, a:visited, a:hover, a:active {
+  color: black;
+  text-decoration: none;
+}
