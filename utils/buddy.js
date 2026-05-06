@@ -1,5 +1,5 @@
 export const DEFAULT_BUDDY_NAME = "Buddy";
-export const DEFAULT_BUDDY_TYPE = "penguin";
+export const DEFAULT_BUDDY_TYPE = "dog";
 export const BUDDY_COSTS = {
   pet: 30,
   collar: 20,

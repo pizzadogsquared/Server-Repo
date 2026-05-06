@@ -22,14 +22,14 @@
 
 	    let safeBuddyProfile = {
 	      buddyName: "Buddy",
-	      buddyType: "penguin",
+	      buddyType: "dog",
 	      buddyHasCollar: false,
 	      buddyAccessories: {
 	        collar: { owned: false, equipped: false },
 	        sunglasses: { owned: false, equipped: false },
 	        propellerCap: { owned: false, equipped: false },
 	      },
-	      ownedBuddyTypes: ["penguin"],
+	      ownedBuddyTypes: ["dog"],
 	    };
     if (typeof buddyProfile !== "undefined") {
       safeBuddyProfile = buddyProfile;
@@ -166,13 +166,13 @@
           <div id="pet-wrapper">
             <img
               id="pet-sprite"
-              src="/images/sprites/penguin_neutral.png"
+              src="/images/sprites/dog_neutral.png"
               alt="Virtual Pet"
             />
 
             <img
               id="pet-collar"
-              src="/images/sprites/penguin_collar.png"
+              src="/images/sprites/dog_collar.png"
               alt="Buddy collar"
               class="<%= buddyCollarClass %>"
             />
@@ -446,7 +446,7 @@
   };
 
   function getBuddySprite(type, mood) {
-    const typeSprites = spriteMap[type] || spriteMap.penguin;
+    const typeSprites = spriteMap[type] || spriteMap.dog;
     if (typeSprites[mood]) {
       return typeSprites[mood];
     }
@@ -454,7 +454,7 @@
   }
 
 	  petImg.src = getBuddySprite(buddyProfile.buddyType, petMood);
-	  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.penguin;
+	  petCollar.src = collarMap[buddyProfile.buddyType] || collarMap.dog;
 	  let petCollarVisibilityClass = "hidden";
 	  if (buddyProfile.buddyAccessories?.collar?.equipped) {
 	    petCollarVisibilityClass = "visible";
