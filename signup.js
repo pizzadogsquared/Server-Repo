@@ -25,6 +25,21 @@ const ERRORS = {
 export async function handleSignup(req, res) {
   let { name, email, password, confirm_password, age, gender, country } = req.body;
 
+  if(
+    typeof name !== "string" ||
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    typeof confirm_password !== "string" ||
+    !name.trim() ||
+    !email.trim() ||
+    !password.trim() ||
+    !confirm_password.trim() 
+  ) {
+    return res.render("signup", {
+      Error: ERRORS.missingFields
+    });
+  }
+
   name = name.trim();
   email = email.trim().toLowerCase();
   gender = gender || "Prefer not to answer";
