@@ -42,44 +42,9 @@
             <option value="Prefer not to answer" <%= user.gender === 'Prefer not to answer' ? 'selected' : '' %>>Prefer not to answer</option>
           </select>
         </div>
-        <div class="input-group">
-          <select name="country" id="country-select" >
-            <option value="" disabled>Select your country</option>
-          </select>
-        </div>
 
-        <script>
-          document.addEventListener("DOMContentLoaded", () => {
-            const select = document.getElementById("country-select");
-            const currentCountry = "<%= user.country %>";
 
-            fetch("https://restcountries.com/v3.1/all")
-              .then(res => res.json())
-              .then(data => {
-                data
-                  .sort((a, b) => a.name.common.localeCompare(b.name.common))
-                  .forEach(country => {
-                    const name = country.name.common;
-                    const option = document.createElement("option");
-                    option.value = name;
-                    option.textContent = name;
-                    if (name === currentCountry) {
-                      option.selected = true;
-                    }
-                    select.appendChild(option);
-                  });
 
-                const opt = document.createElement("option");
-                opt.value = "Prefer not to answer";
-                opt.textContent = "Prefer not to answer";
-                if (currentCountry === "Prefer not to answer") {
-                  opt.selected = true;
-                }
-                select.appendChild(opt);
-              })
-              .catch(err => console.error("Failed to load countries:", err));
-          });
-        </script>
 
         <button type="submit" class="btn">Save Changes</button>
       </form>
