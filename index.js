@@ -9,17 +9,10 @@ import { handleSignup } from "./signup.js";
 import db from "./db.js";
 import cron from "node-cron";
 import { adviceMap, questionMap } from "./advice.js";
-import { scheduleNightlyCheckinReminderJob, sendTestCheckinReminder } from "./sendReminders.js";
 import { markDayComplete, getCurrentStreak } from "./streak.js";
 import { getAdviceFor } from './advice.js';
 import OpenAI from "openai";
 import checkinData from "./checkinData.js";
-import {
-  createEmailVerificationToken,
-  ensureEmailVerificationColumns,
-  getEmailVerificationExpiryDate,
-  sendVerificationEmail,
-} from "./verification.js";
 import {
   BUDDY_ACCESSORY_OPTIONS,
   DEFAULT_BUDDY_NAME,
@@ -30,7 +23,6 @@ import {
   buildBuddyStatusRedirect,
 } from "./utils/buddy.js";
 import { getLowestScoringQuestion } from "./utils/survey.js";
-import { isValidUnsubscribeToken } from "./utils/reminders.js";
 dotenv.config();
 const require = createRequire(import.meta.url);
 const app = express();
@@ -310,154 +302,13 @@ app.get("/welcome", (req, res) => {
   res.render("welcome");
 });
 
-app.get("/login", (req, res) => {
-  res.render("login", {
-    error: null,
-    message: req.query.message || null,
-    verificationEmail: req.query.verificationEmail || null,
-  });
-});
+app.get("/login", (req, res) => res.render("login"));
+
+
 app.post("/login", handleLogin);
 
 app.get("/signup", (req, res) => res.render("signup"));
 app.post("/signup", handleSignup);
-
-app.get("/verify-email", async (req, res) => {
-  const { token } = req.query;
-
-  if (!token || typeof token !== "string") {
-    return res.render("login", {
-      error: "Verification link is invalid.",
-      message: null,
-      verificationEmail: null,
-    });
-  }
-
-  try {
-    await ensureEmailVerificationColumns();
-
-    const [[user]] = await db.query(
-      `SELECT email, email_verification_expires_at, email_verified
-         FROM users
-        WHERE email_verification_token = ?`,
-      [token]
-    );
-
-    if (!user) {
-      return res.render("login", {
-        error: "Verification link is invalid or has already been used.",
-        message: null,
-        verificationEmail: null,
-      });
-    }
-
-    if (user.email_verified) {
-      return res.render("login", {
-        error: null,
-        message: "Your email is already verified. You can log in now.",
-        verificationEmail: null,
-      });
-    }
-
-    const expiresAt = user.email_verification_expires_at
-      ? new Date(user.email_verification_expires_at)
-      : null;
-    if (!expiresAt || expiresAt < new Date()) {
-      return res.render("login", {
-        error: "Your verification link has expired. Please resend verification below.",
-        message: null,
-        verificationEmail: user.email,
-      });
-    }
-
-    await db.query(
-      `UPDATE users
-          SET email_verified = 1,
-              email_verification_token = NULL,
-              email_verification_expires_at = NULL
-        WHERE email_verification_token = ?`,
-      [token]
-    );
-
-    return res.render("login", {
-      error: null,
-      message: "Email verified successfully. You can now log in.",
-      verificationEmail: null,
-    });
-  } catch (err) {
-    console.error("Error verifying email:", err);
-    return res.status(500).send("Internal Server Error");
-  }
-});
-
-app.post("/resend-verification", async (req, res) => {
-  const email = req.body.email?.trim().toLowerCase();
-  if (!email) {
-    return res.render("login", {
-      error: "Email is required to resend verification.",
-      message: null,
-      verificationEmail: null,
-    });
-  }
-
-  try {
-    await ensureEmailVerificationColumns();
-
-    const [[user]] = await db.query(
-      `SELECT id, full_name, email, email_verified
-         FROM users
-        WHERE email = ?`,
-      [email]
-    );
-
-    if (!user) {
-      return res.render("login", {
-        error: "No account was found for that email address.",
-        message: null,
-        verificationEmail: null,
-      });
-    }
-
-    if (user.email_verified) {
-      return res.render("login", {
-        error: null,
-        message: "That email is already verified. You can log in now.",
-        verificationEmail: null,
-      });
-    }
-
-    const verificationToken = createEmailVerificationToken();
-    const verificationExpiresAt = getEmailVerificationExpiryDate();
-
-    await db.query(
-      `UPDATE users
-          SET email_verification_token = ?,
-              email_verification_expires_at = ?
-        WHERE id = ?`,
-      [verificationToken, verificationExpiresAt, user.id]
-    );
-
-    await sendVerificationEmail({
-      email: user.email,
-      name: user.full_name,
-      token: verificationToken,
-      req,
-    });
-
-    return res.render("login", {
-      error: null,
-      message: "A new verification email has been sent.",
-      verificationEmail: user.email,
-    });
-  } catch (err) {
-    console.error("Error resending verification email:", err);
-    return res.render("login", {
-      error: "We could not resend verification right now. Please try again later.",
-      message: null,
-      verificationEmail: email,
-    });
-  }
-});
 
 // OpenAI client
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -574,6 +425,7 @@ app.post("/buddy-memory", async (req, res) => {
 });
 
 // unsubscribe from email notifications
+/*
 app.get("/unsubscribe", async (req, res) => {
   const { userId, token } = req.query;
   if (!userId || !token) {
@@ -610,6 +462,7 @@ app.post("/test-checkin-reminder", async (req, res) => {
     );
   }
 });
+*/
 
 app.get("/admin/data-analysis", async (req, res) => {
   if (!req.session.user || !req.session.user.is_admin) {
@@ -1516,5 +1369,4 @@ cron.schedule("0 1 * * *", async () => {
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
-    scheduleNightlyCheckinReminderJob();
 });

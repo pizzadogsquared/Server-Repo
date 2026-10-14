@@ -38,13 +38,6 @@
                 <button type="submit" class="btn" id="login-btn">Login</button>
             </form>
 
-            <% if (typeof verificationEmail !== 'undefined' && verificationEmail) { %>
-                <form action="/resend-verification" method="POST" class="resend-form">
-                    <input type="hidden" name="email" value="<%= verificationEmail %>" />
-                    <button type="submit" class="btn secondary-btn">Resend Verification Email</button>
-                </form>
-            <% } %>
-
             <div class="form-footer">
                 <p>Don't have an account? <a href="/signup">Sign Up</a></p>
                 <p>Any questions? Contact Davis Yi at <a href="mailto:davisdaehanyi@gmail.com">davisdaehanyi@gmail.com</a></p>

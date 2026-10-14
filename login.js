@@ -1,7 +1,6 @@
 // login.js - handles POST login logic and session setup
 import bcrypt from "bcrypt";
 import db from "./db.js";
-import { ensureEmailVerificationColumns } from "./verification.js";
 
 const INVALID_LOGIN_MSG = "Invalid email or password. Please try again.";
 // Valid bcrypt hash for a throwaway string used to normalize timing on missing users.
@@ -18,7 +17,6 @@ export async function handleLogin(req, res) {
   let conn;
 
   try {
-    await ensureEmailVerificationColumns();
     conn = await db.getConnection();
 
     // Query the database for the user
@@ -46,13 +44,6 @@ export async function handleLogin(req, res) {
       return res.render("login", { error: INVALID_LOGIN_MSG });
     }
 
-    if (!user.email_verified) {
-      return res.render("login", {
-        error: "Please verify your email before logging in.",
-        message: null,
-        verificationEmail: normalizedEmail,
-      });
-    }
 
     // Store user session
     req.session.user = {
